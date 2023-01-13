@@ -37,6 +37,7 @@ int main( int argc, char** argv ) {
    struct RETROFLAT_ARGS args;
    int i = 0,
       j = 0;
+   struct DEMO_DATA data;
 
    /* === Setup === */
 
@@ -69,9 +70,11 @@ int main( int argc, char** argv ) {
          j, i, gc_demo_names[j] );
    }
 
+   memset( &data, '\0', sizeof( struct DEMO_DATA ) );
+
    /* === Main Loop === */
 
-   retroflat_loop( (retroflat_loop_iter)g_loop, NULL );
+   retroflat_loop( (retroflat_loop_iter)g_loop, &data );
 
 cleanup:
 
