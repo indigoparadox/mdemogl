@@ -6,16 +6,17 @@
 #include <retroglu.h>
 
 void draw_cube_iter( void* data );
+void draw_tree_iter( void* data );
 
 #ifdef DEMOS_C
 
 const char* gc_demo_names[] = {
-   "cube",
+   "tree",
    ""
 };
 
 retroflat_loop_iter gc_demo_loops[] = {
-   draw_cube_iter,
+   draw_tree_iter,
    NULL
 };
 
