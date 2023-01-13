@@ -6,6 +6,8 @@
 #define RETROFLT_C
 #include <retroflt.h>
 
+#include <retroglu.h>
+
 #include "demos.h"
 
 retroflat_loop_iter g_loop = NULL;
