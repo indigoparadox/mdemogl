@@ -5,6 +5,14 @@
 #include <retroflt.h>
 #include <retroglu.h>
 
+#define DEMO_VERTICES_SZ_MAX 1024
+#define DEMO_FACES_SZ_MAX 1024
+#define DEMO_ZOOM_INC 0.1f
+
+#define hash_mat_r( m ) (fmod( m[0] * 0.01f, 1.0f ) * 2)
+#define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
+#define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
+
 void draw_cube_iter( void* data );
 void draw_tree_iter( void* data );
 

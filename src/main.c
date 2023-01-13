@@ -42,8 +42,8 @@ int main( int argc, char** argv ) {
 
    srand( time( NULL ) );
 
-   args.screen_w = 320;
-   args.screen_h = 200;
+   args.screen_w = 800;
+   args.screen_h = 600;
    args.title = "mdemo";
    args.assets_path = "";
 
