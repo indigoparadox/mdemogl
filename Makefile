@@ -33,11 +33,11 @@ endif
 # Target-specific options.
 .PHONY: clean
 
-all: mdemo mdemnt.exe
+all: mdemogl mdemglnt.exe
 
 # Unix
 
-mdemo: $(addprefix obj/$(shell uname -s)/,$(subst .c,.o,$(MDEMO_C_FILES)))
+mdemogl: $(addprefix obj/$(shell uname -s)/,$(subst .c,.o,$(MDEMO_C_FILES)))
 	$(CC_GCC) -o $@ $^ $(LDFLAGS_GCC)
 
 obj/$(shell uname -s)/%.o: %.c
@@ -46,7 +46,7 @@ obj/$(shell uname -s)/%.o: %.c
 
 # WinNT
 
-mdemnt.exe: $(addprefix obj/nt/,$(subst .c,.o,$(MDEMO_C_FILES)))
+mdemglnt.exe: $(addprefix obj/nt/,$(subst .c,.o,$(MDEMO_C_FILES)))
 	wlink name $@ system nt_win libr opengl32 fil {$^}
 
 obj/nt/%.o: %.c
@@ -56,5 +56,5 @@ obj/nt/%.o: %.c
 # Clean
 
 clean:
-	rm -rf obj mdemo *.err mdemnt.exe
+	rm -rf obj mdemogl *.err mdemglnt.exe
 
