@@ -10,6 +10,9 @@
 #define DEMO_MATERIALS_SZ_MAX 1024
 
 #define DEMO_ZOOM_INC 0.1f
+#define DEMO_ROTATE_INC 10
+
+#define DEMO_OBJ_NAME_SZ_MAX 255
 
 #define hash_mat_r( m ) (fmod( m[0] * 0.01f, 1.0f ) * 2)
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
@@ -28,28 +31,37 @@ struct DEMO_DATA {
    int materials_sz;
 };
 
+int demo_load_obj(
+   const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
+);
+void demo_dump_obj( const char* filename, struct DEMO_DATA* data );
 void draw_cube_iter( struct DEMO_DATA* data );
-void draw_tree_iter( struct DEMO_DATA* data );
+void draw_obj_iter( struct DEMO_DATA* data );
 
 #ifdef DEMOS_C
 
 const char* gc_demo_names[] = {
-   "tree",
+   "cube",
+   "obj",
    ""
 };
 
 retroflat_loop_iter gc_demo_loops[] = {
-   (retroflat_loop_iter)draw_tree_iter,
+   (retroflat_loop_iter)draw_cube_iter,
+   (retroflat_loop_iter)draw_obj_iter,
    NULL
 };
 
 int g_timer = 0;
+
+char g_demo_obj_name[DEMO_OBJ_NAME_SZ_MAX] = "treeHigh.obj";
 
 #else
 
 extern const char* gc_demo_names[];
 extern retroflat_loop_iter gc_demo_loops[];
 extern int g_timer;
+extern char g_demo_obj_name[];
 
 #endif /* DEMOS_C */
 
