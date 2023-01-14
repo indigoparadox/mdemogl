@@ -7,6 +7,11 @@
 #define RETROGLU_C
 #include "demos.h"
 
+void demo_init_scene() {
+   glEnable( GL_DEPTH_TEST );
+   glEnable( GL_CULL_FACE );
+}
+
 int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
 ) {
@@ -73,7 +78,7 @@ void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
       j = 0;
 
    /* Dump */
-   obj_file = fopen( "test.txt", "w" );
+   obj_file = fopen( filename, "w" );
    assert( NULL != obj_file );
    for( i = 0 ; data->vertices_sz > i ; i++ ) {
       fprintf( obj_file, "v %f %f %f\n",
@@ -114,7 +119,6 @@ void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
 
 void draw_cube_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   long unsigned int next = 0;
    int input = 0;
    static int rotate_x = 10;
    static int rotate_y = 10;
@@ -125,13 +129,9 @@ void draw_cube_iter( struct DEMO_DATA* data ) {
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
-   case RETROFLAT_KEY_Q:
+   case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
-   }
-
-   if( retroflat_get_ms() < next ) {
-      return;
    }
 
    /* Draw */
@@ -139,7 +139,7 @@ void draw_cube_iter( struct DEMO_DATA* data ) {
    retroflat_draw_lock( NULL );
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-   glClear( GL_COLOR_BUFFER_BIT );
+   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
    glLoadIdentity();
    glRotatef( rotate_x, 1.0f, 0.0f, 0.0f );
@@ -240,13 +240,10 @@ void draw_cube_iter( struct DEMO_DATA* data ) {
    retroflat_draw_release( NULL );
 
    rotate_y += 5;
-
-   next = retroflat_get_ms() + retroflat_fps_next();
 }
 
 void draw_obj_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   long unsigned int next = 0;
    int input = 0;
    int i = 0,
       j = 0;
@@ -271,7 +268,10 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
       assert( 0 < data->faces_sz );
       assert( 0 < data->materials_sz );
 
-      demo_dump_obj( "test.txt", data );
+      if( '\0' != g_demo_dump_name[0] ) {
+         demo_dump_obj( g_demo_dump_name, data );
+         printf( "demo data dumped to %s\n", g_demo_dump_name );
+      }
    }
 
    /* Input */
@@ -325,10 +325,6 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
       break;
    }
 
-   if( retroflat_get_ms() < next ) {
-      return;
-   }
-
    /* Draw */
 
    retroflat_draw_lock( NULL );
@@ -360,35 +356,12 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    glEnable( GL_LIGHTING );
 
    /*
-   glEnable( GL_CULL_FACE );
-   */
-
-   /*
    glPushMatrix();
    */
 
    glBegin( GL_TRIANGLES );
    for( i = 0 ; data->faces_sz > i ; i++ ) {
    
-      /*
-      if(
-         0 == i ||
-         0 != strncmp(
-            faces[i].material, faces[i - 1].material,
-            RETROGLU_FACE_MATERIAL_SZ_MAX )
-      ) {
-         glColor3f(
-            fmod( rand() * 0.1, 1.0f ),
-            fmod( rand() * 0.1, 1.0f ),
-            fmod( rand() * 0.1, 1.0f ) ); 
-      }
-      */
-
-      /*
-      glColor3fv(
-         data->materials[data->faces[i].material_idx].diffuse );
-      */
-
       glMaterialfv( GL_FRONT, GL_DIFFUSE,
          data->materials[data->faces[i].material_idx].diffuse );
       glMaterialf( GL_FRONT, GL_SHININESS, 100.0f );
@@ -419,6 +392,29 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
 
    rotate_y += 5;
 
-   next = retroflat_get_ms() + retroflat_fps_next();
+}
+
+void draw_fp_iter( struct DEMO_DATA* data ) {
+   struct RETROFLAT_INPUT input_evt;
+   int input = 0;
+
+   /* Input */
+
+   input_evt.allow_repeat = 1;
+   input = retroflat_poll_input( &input_evt );
+
+   switch( input ) {
+   case RETROFLAT_KEY_ESC:
+      retroflat_quit( 0 );
+      break;
+   }
+
+   /* Draw */
+
+   retroflat_draw_lock( NULL );
+
+
+   glFlush();
+   retroflat_draw_release( NULL );
 }
 
