@@ -33,10 +33,19 @@ static int demo_timer_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
 }
 
 static int demo_obj_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
-   if( '-' != arg[0] ) {
+   if( 0 != strncmp( RETROFLAT_CLI_SIGIL, arg, RETROFLAT_CLI_SIGIL_SZ ) ) {
       strncpy( g_demo_obj_name, arg, DEMO_OBJ_NAME_SZ_MAX );
+      printf( "demo obj manually selected: %s\n", g_demo_obj_name );
    }
 
+   return RETROFLAT_OK;
+}
+
+static int demo_dump_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
+   if( 0 != strncmp( RETROFLAT_CLI_SIGIL, arg, RETROFLAT_CLI_SIGIL_SZ ) ) {
+      strncpy( g_demo_dump_name, arg, DEMO_OBJ_NAME_SZ_MAX );
+      printf( "demo dump manually selected: %s\n", g_demo_dump_name );
+   }
    return RETROFLAT_OK;
 }
 
@@ -64,6 +73,10 @@ int main( int argc, char** argv ) {
       RETROFLAT_CLI_SIGIL "o", 0, "load the specified object", 0,
       demo_obj_cli_cb );
 
+   retroflat_add_arg(
+      RETROFLAT_CLI_SIGIL "d", 0, "dump demo object", 0,
+      demo_dump_cli_cb );
+
    /* Add demos to CLI parser. */
    for( i = 0 ; '\0' != gc_demo_names[i][0] ; i++ ) {
       retroflat_add_arg(
@@ -86,6 +99,7 @@ int main( int argc, char** argv ) {
 
    /* === Main Loop === */
 
+   demo_init_scene();
    retroflat_loop( (retroflat_loop_iter)g_loop, &data );
 
 cleanup:
