@@ -245,8 +245,6 @@ void draw_cube_iter( struct DEMO_DATA* data ) {
 void draw_obj_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
-   int i = 0,
-      j = 0;
    /*
    static int rotate_x = 10;
    */
@@ -359,30 +357,12 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    glPushMatrix();
    */
 
-   glBegin( GL_TRIANGLES );
-   for( i = 0 ; data->faces_sz > i ; i++ ) {
-   
-      glMaterialfv( GL_FRONT, GL_DIFFUSE,
-         data->materials[data->faces[i].material_idx].diffuse );
-      glMaterialf( GL_FRONT, GL_SHININESS, 100.0f );
-   
-      for( j = 0 ; data->faces[i].vertex_idxs_sz > j ; j++ ) {
-         assert( 0 < data->faces[i].vertex_idxs[j] );
-         assert( 3 == data->faces[i].vertex_idxs_sz );
-
-         glNormal3f(
-            data->vnormals[data->faces[i].vnormal_idxs[j] - 1].x,
-            data->vnormals[data->faces[i].vnormal_idxs[j] - 1].y,
-            data->vnormals[data->faces[i].vnormal_idxs[j] - 1].z );
-
-         glVertex3f(
-            data->vertices[data->faces[i].vertex_idxs[j] - 1].x,
-            data->vertices[data->faces[i].vertex_idxs[j] - 1].y,
-            data->vertices[data->faces[i].vertex_idxs[j] - 1].z );
-      }
-
-   }
-   glEnd();
+   retroglu_draw_poly(
+      data->vertices, data->vertices_sz,
+      data->vnormals, data->vnormals_sz,
+      data->vtextures, data->vtextures_sz,
+      data->faces, data->faces_sz,
+      data->materials, data->materials_sz );
 
    /* glPopMatrix(); */
 
@@ -397,6 +377,7 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
 void draw_fp_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
+   static float yrot;
 
    /* Input */
 
