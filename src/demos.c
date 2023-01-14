@@ -7,6 +7,111 @@
 #define RETROGLU_C
 #include "demos.h"
 
+int demo_load_obj(
+   const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
+) {
+   FILE* obj_file = NULL;
+   unsigned long int i = 0; /* Index in file buffer, so long. */
+   long int obj_read = 0;
+   int auto_parser = 0; /* Did we provision parser? */
+   unsigned char* obj_buf = NULL;
+   unsigned long int obj_buf_sz = 0;
+
+   if( NULL == parser ) {
+      parser = calloc( 1, sizeof( struct RETROGLU_PARSER ) );
+      assert( NULL != parser );
+      auto_parser = 1;
+   }
+
+   /* Open the file and allocate the buffer. */
+   obj_file = fopen( filename, "r" );
+   assert( NULL != obj_file );
+   fseek( obj_file, 0, SEEK_END );
+   obj_buf_sz = ftell( obj_file );
+   fseek( obj_file, 0, SEEK_SET );
+   printf( "opened %s, %lu bytes\n", filename, obj_buf_sz );
+   obj_buf = calloc( 1, obj_buf_sz );
+   assert( NULL != obj_buf );
+   obj_read = fread( obj_buf, 1, obj_buf_sz, obj_file );
+   assert( obj_read == obj_buf_sz );
+   fclose( obj_file );
+
+   retroglu_parse_init(
+      parser,
+      data->vertices, data->vertices_sz, DEMO_VERTICES_SZ_MAX,
+      data->vnormals, data->vnormals_sz, DEMO_VERTICES_SZ_MAX,
+      data->vtextures, data->vtextures_sz, DEMO_VERTICES_SZ_MAX,
+      data->faces, data->faces_sz, DEMO_FACES_SZ_MAX,
+      data->materials, data->materials_sz, DEMO_MATERIALS_SZ_MAX,
+      (retroglu_mtl_cb)demo_load_obj, (void*)data );
+
+   /* Parse the obj, byte by byte. */
+   for( i = 0 ; obj_buf_sz > i ; i++ ) {
+      obj_read = retroglu_parse_obj_c( parser, obj_buf[i] );
+      assert( 0 <= obj_read );
+   }
+   free( obj_buf );
+   obj_buf = NULL;
+   obj_buf_sz = 0;
+   data->vertices_sz = parser->vertices_sz;
+   data->vnormals_sz = parser->vnormals_sz;
+   data->vtextures_sz = parser->vtextures_sz;
+   data->faces_sz = parser->faces_sz;
+   data->materials_sz = parser->materials_sz;
+
+   if( auto_parser ) {
+      free( parser );
+      parser = NULL;
+   }
+
+   return RETROFLAT_OK;
+}
+
+void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
+   FILE* obj_file = NULL;
+   unsigned long int i = 0, /* Index in file buffer, so long. */
+      j = 0;
+
+   /* Dump */
+   obj_file = fopen( "test.txt", "w" );
+   assert( NULL != obj_file );
+   for( i = 0 ; data->vertices_sz > i ; i++ ) {
+      fprintf( obj_file, "v %f %f %f\n",
+         data->vertices[i].x, data->vertices[i].y, data->vertices[i].z );
+   }
+
+   fprintf( obj_file, "\n" );
+   
+   for( i = 0 ; data->vnormals_sz > i ; i++ ) {
+      fprintf( obj_file, "vn %f %f %f\n",
+         data->vnormals[i].x, data->vnormals[i].y, data->vnormals[i].z );
+   }
+
+   for( i = 0 ; data->faces_sz > i ; i++ ) {
+      if(
+         0 == i ||
+         data->faces[i].material_idx != data->faces[i - 1].material_idx
+      ) {
+         fprintf( obj_file, "\nusemtl %s\n\n",
+            data->materials[data->faces[i].material_idx].name );
+      }
+      fprintf( obj_file, "f " );
+      for( j = 0 ; data->faces[i].vertex_idxs_sz > j ; j++ ) {
+         fprintf( obj_file, "%d/%d/%d",
+            data->faces[i].vertex_idxs[j],
+            data->faces[i].vtexture_idxs[j],
+            data->faces[i].vnormal_idxs[j] );
+         if( j + 1 < data->faces[i].vertex_idxs_sz ) {
+            fprintf( obj_file, " " );
+         }
+      }
+      fprintf( obj_file, "\n" );
+   }
+
+   fclose( obj_file );
+   obj_file = NULL;
+}
+
 void draw_cube_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    long unsigned int next = 0;
@@ -139,127 +244,28 @@ void draw_cube_iter( struct DEMO_DATA* data ) {
    next = retroflat_get_ms() + retroflat_fps_next();
 }
 
-int demo_load_obj(
-   const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
-) {
-   FILE* obj_file = NULL;
-   unsigned long int i = 0; /* Index in file buffer, so long. */
-   long int obj_read = 0;
-   int auto_parser = 0; /* Did we provision parser? */
-   unsigned char* obj_buf = NULL;
-   unsigned long int obj_buf_sz = 0;
-
-   if( NULL == parser ) {
-      parser = calloc( 1, sizeof( struct RETROGLU_PARSER ) );
-      assert( NULL != parser );
-      auto_parser = 1;
-   }
-
-   /* Open the file and allocate the buffer. */
-   obj_file = fopen( filename, "r" );
-   assert( NULL != obj_file );
-   fseek( obj_file, 0, SEEK_END );
-   obj_buf_sz = ftell( obj_file );
-   fseek( obj_file, 0, SEEK_SET );
-   printf( "opened %s, %lu bytes\n", filename, obj_buf_sz );
-   obj_buf = calloc( 1, obj_buf_sz );
-   assert( NULL != obj_buf );
-   obj_read = fread( obj_buf, 1, obj_buf_sz, obj_file );
-   assert( obj_read == obj_buf_sz );
-   fclose( obj_file );
-
-   retroglu_parse_init(
-      parser,
-      data->vertices, data->vertices_sz, DEMO_VERTICES_SZ_MAX,
-      data->vnormals, data->vnormals_sz, DEMO_VERTICES_SZ_MAX,
-      data->vtextures, data->vtextures_sz, DEMO_VERTICES_SZ_MAX,
-      data->faces, data->faces_sz, DEMO_FACES_SZ_MAX,
-      data->materials, data->materials_sz, DEMO_MATERIALS_SZ_MAX,
-      (retroglu_mtl_cb)demo_load_obj, (void*)data );
-
-   /* Parse the obj, byte by byte. */
-   for( i = 0 ; obj_buf_sz > i ; i++ ) {
-      obj_read = retroglu_parse_obj_c( parser, obj_buf[i] );
-      assert( 0 <= obj_read );
-   }
-   free( obj_buf );
-   obj_buf = NULL;
-   obj_buf_sz = 0;
-   data->vertices_sz = parser->vertices_sz;
-   data->vnormals_sz = parser->vnormals_sz;
-   data->vtextures_sz = parser->vtextures_sz;
-   data->faces_sz = parser->faces_sz;
-   data->materials_sz = parser->materials_sz;
-
-   if( auto_parser ) {
-      free( parser );
-      parser = NULL;
-   }
-
-   return RETROFLAT_OK;
-}
-
-void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
-   FILE* obj_file = NULL;
-   unsigned long int i = 0, /* Index in file buffer, so long. */
-      j = 0;
-
-   /* Dump */
-   obj_file = fopen( "test.txt", "w" );
-   assert( NULL != obj_file );
-   for( i = 0 ; data->vertices_sz > i ; i++ ) {
-      fprintf( obj_file, "v %f %f %f\n",
-         data->vertices[i].x, data->vertices[i].y, data->vertices[i].z );
-   }
-
-   fprintf( obj_file, "\n" );
-   
-   for( i = 0 ; data->vnormals_sz > i ; i++ ) {
-      fprintf( obj_file, "vn %f %f %f\n",
-         data->vnormals[i].x, data->vnormals[i].y, data->vnormals[i].z );
-   }
-
-   for( i = 0 ; data->faces_sz > i ; i++ ) {
-      if(
-         0 == i ||
-         data->faces[i].material_idx != data->faces[i - 1].material_idx
-      ) {
-         fprintf( obj_file, "\nusemtl %s\n\n",
-            data->materials[data->faces[i].material_idx].name );
-      }
-      fprintf( obj_file, "f " );
-      for( j = 0 ; data->faces[i].vertex_idxs_sz > j ; j++ ) {
-         fprintf( obj_file, "%d/%d/%d",
-            data->faces[i].vertex_idxs[j],
-            data->faces[i].vtexture_idxs[j],
-            data->faces[i].vnormal_idxs[j] );
-         if( j + 1 < data->faces[i].vertex_idxs_sz ) {
-            fprintf( obj_file, " " );
-         }
-      }
-      fprintf( obj_file, "\n" );
-   }
-
-   fclose( obj_file );
-   obj_file = NULL;
-}
-
-void draw_tree_iter( struct DEMO_DATA* data ) {
+void draw_obj_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    long unsigned int next = 0;
    int input = 0;
    int i = 0,
       j = 0;
+   /*
    static int rotate_x = 10;
+   */
    static int rotate_y = 10;
+   static int rotate_z = 0;
    static float tx = 0.0f,
       ty = 0.0f,
       tz = 0.0f;
+   const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-   const float l_position[] = {1.0f, 1.0f, 0.3f, 0.0f};
+   /*
+   const float l_position[] = {0.0f, 0.0f, 2.0f, 1.0f};
+   */
 
    if( 0 == data->vertices_sz ) {
-      demo_load_obj( "treeHigh.obj", NULL, data );
+      demo_load_obj( g_demo_obj_name, NULL, data );
 
       assert( 0 < data->vertices_sz );
       assert( 0 < data->faces_sz );
@@ -304,6 +310,16 @@ void draw_tree_iter( struct DEMO_DATA* data ) {
       printf( "%f, %f, %f\n", tx, ty, tz );
       break;
 
+   case RETROFLAT_KEY_R:
+      rotate_z += DEMO_ROTATE_INC;
+      printf( "%d\n", rotate_z );
+      break;
+
+   case RETROFLAT_KEY_F:
+      rotate_z -= DEMO_ROTATE_INC;
+      printf( "%d\n", rotate_z );
+      break;
+
    case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
@@ -318,18 +334,41 @@ void draw_tree_iter( struct DEMO_DATA* data ) {
    retroflat_draw_lock( NULL );
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-   glClear( GL_COLOR_BUFFER_BIT );
+   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+   glMatrixMode( GL_PROJECTION );
    glLoadIdentity();
+   glMatrixMode( GL_MODELVIEW );
+   glLoadIdentity();
+
    glTranslatef( tx, ty, tz );
-   glRotatef( rotate_x, 1.0f, 0.0f, 0.0f );
+
+   /* glRotatef( 1, 1.0f, 0.0f, 0.0f ); */
    glRotatef( rotate_y, 0.0f, 1.0f, 0.0f );
+   glRotatef( rotate_z, 0.0f, 0.0f, 1.0f );
 
+   glMatrixMode( GL_PROJECTION );
+   glLoadIdentity();
+   glMatrixMode( GL_MODELVIEW );
+   
+   /*
    glLightfv( GL_LIGHT0, GL_POSITION, l_position );
+   */
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
+   glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
+   glEnable( GL_LIGHT0 );
+   glEnable( GL_LIGHTING );
 
+   /*
+   glEnable( GL_CULL_FACE );
+   */
+
+   /*
+   glPushMatrix();
+   */
+
+   glBegin( GL_TRIANGLES );
    for( i = 0 ; data->faces_sz > i ; i++ ) {
-      glBegin( GL_TRIANGLES );
    
       /*
       if(
@@ -345,11 +384,14 @@ void draw_tree_iter( struct DEMO_DATA* data ) {
       }
       */
 
+      /*
       glColor3fv(
          data->materials[data->faces[i].material_idx].diffuse );
+      */
 
       glMaterialfv( GL_FRONT, GL_DIFFUSE,
          data->materials[data->faces[i].material_idx].diffuse );
+      glMaterialf( GL_FRONT, GL_SHININESS, 100.0f );
    
       for( j = 0 ; data->faces[i].vertex_idxs_sz > j ; j++ ) {
          assert( 0 < data->faces[i].vertex_idxs[j] );
@@ -366,8 +408,10 @@ void draw_tree_iter( struct DEMO_DATA* data ) {
             data->vertices[data->faces[i].vertex_idxs[j] - 1].z );
       }
 
-      glEnd();
    }
+   glEnd();
+
+   /* glPopMatrix(); */
 
    glFlush();
 
