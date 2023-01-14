@@ -18,7 +18,8 @@ static int demo_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
    for( i = 0 ; '\0' != gc_demo_names[i][0] ; i++ ) {
       if( 0 == strncmp( gc_demo_names[i], arg, strlen( gc_demo_names[i] ) ) ) {
          g_loop = gc_demo_loops[i];
-         printf( "demo loop manually selected: %s\n", gc_demo_names[i] );
+         debug_printf(
+            3, "demo loop manually selected: %s", gc_demo_names[i] );
          break;
       }
    }
@@ -28,14 +29,14 @@ static int demo_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
 
 static int demo_timer_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
    g_timer = 1;
-   printf( "timer enabled\n" );
+   debug_printf( 3, "timer enabled" );
    return RETROFLAT_OK;
 }
 
 static int demo_obj_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
    if( 0 != strncmp( RETROFLAT_CLI_SIGIL, arg, RETROFLAT_CLI_SIGIL_SZ ) ) {
       strncpy( g_demo_obj_name, arg, DEMO_OBJ_NAME_SZ_MAX );
-      printf( "demo obj manually selected: %s\n", g_demo_obj_name );
+      debug_printf( 3, "demo obj manually selected: %s", g_demo_obj_name );
    }
 
    return RETROFLAT_OK;
@@ -44,7 +45,7 @@ static int demo_obj_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
 static int demo_dump_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
    if( 0 != strncmp( RETROFLAT_CLI_SIGIL, arg, RETROFLAT_CLI_SIGIL_SZ ) ) {
       strncpy( g_demo_dump_name, arg, DEMO_OBJ_NAME_SZ_MAX );
-      printf( "demo dump manually selected: %s\n", g_demo_dump_name );
+      debug_printf( 3, "demo dump manually selected: %s", g_demo_dump_name );
    }
    return RETROFLAT_OK;
 }
@@ -91,7 +92,7 @@ int main( int argc, char** argv ) {
    if( NULL == g_loop ) {
       j = rand() % i;
       g_loop = gc_demo_loops[j];
-      printf( "auto-selecting demo loop (%d of %d): %s\n",
+      debug_printf( 3, "auto-selecting demo loop (%d of %d): %s",
          j, i, gc_demo_names[j] );
    }
 

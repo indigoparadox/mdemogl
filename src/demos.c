@@ -16,11 +16,11 @@ int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
 ) {
    FILE* obj_file = NULL;
-   unsigned long int i = 0; /* Index in file buffer, so long. */
+   uint32_t i = 0; /* Index in file buffer, so long. */
    long int obj_read = 0;
    int auto_parser = 0; /* Did we provision parser? */
-   unsigned char* obj_buf = NULL;
-   unsigned long int obj_buf_sz = 0;
+   uint8_t* obj_buf = NULL;
+   uint32_t obj_buf_sz = 0;
 
    if( NULL == parser ) {
       parser = calloc( 1, sizeof( struct RETROGLU_PARSER ) );
@@ -34,7 +34,7 @@ int demo_load_obj(
    fseek( obj_file, 0, SEEK_END );
    obj_buf_sz = ftell( obj_file );
    fseek( obj_file, 0, SEEK_SET );
-   printf( "opened %s, %lu bytes\n", filename, obj_buf_sz );
+   debug_printf( 3, "opened %s, " UPRINTF_U32 " bytes", filename, obj_buf_sz );
    obj_buf = calloc( 1, obj_buf_sz );
    assert( NULL != obj_buf );
    obj_read = fread( obj_buf, 1, obj_buf_sz, obj_file );
@@ -74,7 +74,7 @@ int demo_load_obj(
 
 void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
    FILE* obj_file = NULL;
-   unsigned long int i = 0, /* Index in file buffer, so long. */
+   uint32_t i = 0, /* Index in file buffer, so long. */
       j = 0;
 
    /* Dump */
@@ -268,7 +268,7 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
 
       if( '\0' != g_demo_dump_name[0] ) {
          demo_dump_obj( g_demo_dump_name, data );
-         printf( "demo data dumped to %s\n", g_demo_dump_name );
+         debug_printf( 3, "demo data dumped to %s", g_demo_dump_name );
       }
    }
 
@@ -280,42 +280,42 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    switch( input ) {
    case RETROFLAT_KEY_Q:
       tx += DEMO_ZOOM_INC;
-      printf( "%f, %f, %f\n", tx, ty, tz );
+      debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
    case RETROFLAT_KEY_A:
       tx -= DEMO_ZOOM_INC;
-      printf( "%f, %f, %f\n", tx, ty, tz );
+      debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
    case RETROFLAT_KEY_W:
       ty += DEMO_ZOOM_INC;
-      printf( "%f, %f, %f\n", tx, ty, tz );
+      debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
    case RETROFLAT_KEY_S:
       ty -= DEMO_ZOOM_INC;
-      printf( "%f, %f, %f\n", tx, ty, tz );
+      debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
    case RETROFLAT_KEY_E:
       tz += DEMO_ZOOM_INC;
-      printf( "%f, %f, %f\n", tx, ty, tz );
+      debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
    case RETROFLAT_KEY_D:
       tz -= DEMO_ZOOM_INC;
-      printf( "%f, %f, %f\n", tx, ty, tz );
+      debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
    case RETROFLAT_KEY_R:
       rotate_z += DEMO_ROTATE_INC;
-      printf( "%d\n", rotate_z );
+      debug_printf( 3, "%d", rotate_z );
       break;
 
    case RETROFLAT_KEY_F:
       rotate_z -= DEMO_ROTATE_INC;
-      printf( "%d\n", rotate_z );
+      debug_printf( 3, "%d", rotate_z );
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -394,6 +394,106 @@ void draw_fp_iter( struct DEMO_DATA* data ) {
 
    retroflat_draw_lock( NULL );
 
+
+   glFlush();
+   retroflat_draw_release( NULL );
+}
+
+void draw_bmp_iter( struct DEMO_DATA* data ) {
+   struct RETROFLAT_INPUT input_evt;
+   int input = 0;
+   static float yrot;
+   static GLuint texture = 0;
+   static uint8_t* bmp_buf = NULL;
+   uint32_t bmp_buf_sz = 0;
+   uint32_t bmp_read = 0;
+   FILE* bmp_file;
+   uint32_t bmp_offset = 0;
+   static uint32_t bmp_w = 0;
+   static uint32_t bmp_h = 0;
+   uint32_t bmp_bpp = 0;
+   static int init = 0;
+
+   if( 0 == init ) {
+      /* Open the file and allocate the buffer. */
+      bmp_file = fopen( "test.bmp", "rb" );
+      assert( NULL != bmp_file );
+      fseek( bmp_file, 0, SEEK_END );
+      bmp_buf_sz = ftell( bmp_file );
+      fseek( bmp_file, 0, SEEK_SET );
+      debug_printf( 3, "opened test.bmp, " UPRINTF_U32 " bytes", bmp_buf_sz );
+      assert( NULL == bmp_buf );
+      bmp_buf = calloc( 1, bmp_buf_sz );
+      assert( NULL != bmp_buf );
+      bmp_read = fread( bmp_buf, 1, bmp_buf_sz, bmp_file );
+      assert( bmp_read == bmp_buf_sz );
+      fclose( bmp_file );
+
+      assert( 40 == bmp_read_uint32( &(bmp_buf[0x0e]) ) );
+
+      bmp_offset = bmp_read_uint32( &(bmp_buf[0x0a]) );
+      bmp_w = bmp_read_uint32( &(bmp_buf[0x12]) );
+      bmp_h = bmp_read_uint32( &(bmp_buf[0x16]) );
+      bmp_bpp = bmp_read_uint32( &(bmp_buf[0x1c]) );
+
+      debug_printf( 3,
+         "bitmap " UPRINTF_U32 " x " UPRINTF_U32 " x " UPRINTF_U32
+         " starting at " UPRINTF_U32 " bytes",
+         bmp_w, bmp_h, bmp_bpp, bmp_offset );
+
+      glGenTextures( 1, &texture );
+      glBindTexture( GL_TEXTURE_2D, texture );
+      glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, bmp_w, bmp_h, 0,
+         GL_BGR_EXT, GL_UNSIGNED_BYTE, &(bmp_buf[bmp_offset]) ); 
+
+      init = 1;
+   }
+
+   /* Input */
+
+   input_evt.allow_repeat = 1;
+   input = retroflat_poll_input( &input_evt );
+
+   switch( input ) {
+   case RETROFLAT_KEY_ESC:
+      retroflat_quit( 0 );
+      break;
+   }
+
+   /* Draw */
+
+   retroflat_draw_lock( NULL );
+
+   glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
+   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   glEnable( GL_TEXTURE_2D );
+   glBindTexture( GL_TEXTURE_2D, texture );
+   glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+   glBegin( GL_QUADS );
+
+   glColor3f(   1.0,  1.0, 1.0 );
+
+   glTexCoord2f( 0.0, 0.75 );
+   glVertex2f( -1.0, -1.0 );
+
+   glTexCoord2f( 1.0, 0.75 );
+   glVertex2f( 1.0, -1.0 );
+
+   glTexCoord2f( 1.0, 1.0 );
+   glVertex2f( 1.0, 1.0 );
+
+   glTexCoord2f( 0.0, 1.0 );
+   glVertex2f( -1.0, 1.0 );
+
+   glEnd();
+
+   /* glDrawPixels( bmp_w, bmp_h, GL_BGR_EXT, GL_UNSIGNED_BYTE, &(bmp_buf[bmp_offset]) ); */
 
    glFlush();
    retroflat_draw_release( NULL );
