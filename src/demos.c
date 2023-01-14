@@ -117,6 +117,36 @@ void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
    obj_file = NULL;
 }
 
+void demo_load_bmp(
+   const char* filename, GLuint* p_texture_id,
+   uint32_t* p_bmp_w, uint32_t* p_bmp_h
+) {
+   static uint8_t* bmp_buf = NULL;
+   uint32_t bmp_buf_sz = 0;
+   uint32_t bmp_read = 0;
+   FILE* bmp_file;
+
+   /* Open the file and allocate the buffer. */
+   bmp_file = fopen( "test.bmp", "rb" );
+   assert( NULL != bmp_file );
+   fseek( bmp_file, 0, SEEK_END );
+   bmp_buf_sz = ftell( bmp_file );
+   fseek( bmp_file, 0, SEEK_SET );
+   debug_printf( 3, "opened test.bmp, " UPRINTF_U32 " bytes", bmp_buf_sz );
+   assert( NULL == bmp_buf );
+   bmp_buf = calloc( 1, bmp_buf_sz );
+   assert( NULL != bmp_buf );
+   bmp_read = fread( bmp_buf, 1, bmp_buf_sz, bmp_file );
+   assert( bmp_read == bmp_buf_sz );
+   fclose( bmp_file );
+
+   retroglu_load_tex_bmp(
+      bmp_buf, bmp_buf_sz, p_texture_id,
+      p_bmp_w, p_bmp_h );
+
+   free( bmp_buf );
+}
+
 void draw_cube_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
@@ -404,49 +434,15 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    int input = 0;
    static float yrot;
    static GLuint texture = 0;
-   static uint8_t* bmp_buf = NULL;
-   uint32_t bmp_buf_sz = 0;
-   uint32_t bmp_read = 0;
-   FILE* bmp_file;
-   uint32_t bmp_offset = 0;
+   static int init = 0;
    static uint32_t bmp_w = 0;
    static uint32_t bmp_h = 0;
-   uint32_t bmp_bpp = 0;
-   static int init = 0;
+   static int rotate_y = 0;
+   const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
+   const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
    if( 0 == init ) {
-      /* Open the file and allocate the buffer. */
-      bmp_file = fopen( "test.bmp", "rb" );
-      assert( NULL != bmp_file );
-      fseek( bmp_file, 0, SEEK_END );
-      bmp_buf_sz = ftell( bmp_file );
-      fseek( bmp_file, 0, SEEK_SET );
-      debug_printf( 3, "opened test.bmp, " UPRINTF_U32 " bytes", bmp_buf_sz );
-      assert( NULL == bmp_buf );
-      bmp_buf = calloc( 1, bmp_buf_sz );
-      assert( NULL != bmp_buf );
-      bmp_read = fread( bmp_buf, 1, bmp_buf_sz, bmp_file );
-      assert( bmp_read == bmp_buf_sz );
-      fclose( bmp_file );
-
-      assert( 40 == bmp_read_uint32( &(bmp_buf[0x0e]) ) );
-
-      bmp_offset = bmp_read_uint32( &(bmp_buf[0x0a]) );
-      bmp_w = bmp_read_uint32( &(bmp_buf[0x12]) );
-      bmp_h = bmp_read_uint32( &(bmp_buf[0x16]) );
-      bmp_bpp = bmp_read_uint32( &(bmp_buf[0x1c]) );
-
-      debug_printf( 3,
-         "bitmap " UPRINTF_U32 " x " UPRINTF_U32 " x " UPRINTF_U32
-         " starting at " UPRINTF_U32 " bytes",
-         bmp_w, bmp_h, bmp_bpp, bmp_offset );
-
-      glGenTextures( 1, &texture );
-      glBindTexture( GL_TEXTURE_2D, texture );
-      glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, bmp_w, bmp_h, 0,
-         GL_BGR_EXT, GL_UNSIGNED_BYTE, &(bmp_buf[bmp_offset]) ); 
-
+      demo_load_bmp( "test.bmp", &texture, &bmp_w, &bmp_h );
       init = 1;
    }
 
@@ -456,6 +452,14 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
+   case RETROFLAT_KEY_A:
+      rotate_y += 10;
+      break;
+
+   case RETROFLAT_KEY_D:
+      rotate_y -= 10;
+      break;
+
    case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
@@ -467,6 +471,14 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   glLoadIdentity();
+   glRotatef( rotate_y, 0.0f, 1.0f, 0.0f );
+
+   glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
+   glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
+   glEnable( GL_LIGHT0 );
+   glEnable( GL_LIGHTING );
 
    glEnable( GL_TEXTURE_2D );
    glBindTexture( GL_TEXTURE_2D, texture );

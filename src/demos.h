@@ -36,6 +36,9 @@ int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
 );
 void demo_dump_obj( const char* filename, struct DEMO_DATA* data );
+void demo_load_bmp(
+   const char* filename, GLuint* p_texture_id,
+   uint32_t* p_bmp_w, uint32_t* p_bmp_h );
 void draw_cube_iter( struct DEMO_DATA* data );
 void draw_obj_iter( struct DEMO_DATA* data );
 void draw_fp_iter( struct DEMO_DATA* data );
