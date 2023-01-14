@@ -39,6 +39,7 @@ void demo_dump_obj( const char* filename, struct DEMO_DATA* data );
 void draw_cube_iter( struct DEMO_DATA* data );
 void draw_obj_iter( struct DEMO_DATA* data );
 void draw_fp_iter( struct DEMO_DATA* data );
+void draw_bmp_iter( struct DEMO_DATA* data );
 
 #ifdef DEMOS_C
 
@@ -46,6 +47,7 @@ const char* gc_demo_names[] = {
    "cube",
    "obj",
    "fp",
+   "bmp",
    ""
 };
 
@@ -53,6 +55,7 @@ retroflat_loop_iter gc_demo_loops[] = {
    (retroflat_loop_iter)draw_cube_iter,
    (retroflat_loop_iter)draw_obj_iter,
    (retroflat_loop_iter)draw_fp_iter,
+   (retroflat_loop_iter)draw_bmp_iter,
    NULL
 };
 
