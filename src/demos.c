@@ -10,6 +10,8 @@
 void demo_init_scene() {
    glEnable( GL_DEPTH_TEST );
    glEnable( GL_CULL_FACE );
+   glEnable( GL_BLEND );
+   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
 int demo_load_obj(
@@ -281,7 +283,7 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    static int rotate_y = 10;
    static int rotate_z = 0;
    static float tx = 0.0f,
-      ty = 0.0f,
+      ty = -0.5f,
       tz = 0.0f;
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -471,7 +473,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    retroflat_draw_lock( NULL );
 
-   glClearColor( 1.0f, 0.0f, 0.0f, 0.0f );
+   glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
    glLoadIdentity();
