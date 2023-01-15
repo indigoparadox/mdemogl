@@ -440,6 +440,8 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    static int rotate_y = 0;
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+   static float tex_x = 0;
+   static int tex_countdown = 0;
 
    if( 0 == init ) {
       demo_load_bmp( "test.bmp", &texture, &bmp_w, &bmp_h );
@@ -491,21 +493,27 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    glColor3f(   1.0,  1.0, 1.0 );
 
-   glTexCoord2f( 0.0, 0.75 );
+   glTexCoord2f( tex_x, 0.75 );
    glVertex2f( -1.0, -1.0 );
 
-   glTexCoord2f( 1.0, 0.75 );
+   glTexCoord2f( tex_x + 0.5, 0.75 );
    glVertex2f( 1.0, -1.0 );
 
-   glTexCoord2f( 1.0, 1.0 );
+   glTexCoord2f( tex_x + 0.5, 1.0 );
    glVertex2f( 1.0, 1.0 );
 
-   glTexCoord2f( 0.0, 1.0 );
+   glTexCoord2f( tex_x, 1.0 );
    glVertex2f( -1.0, 1.0 );
 
    glEnd();
 
    /* glDrawPixels( bmp_w, bmp_h, GL_BGR_EXT, GL_UNSIGNED_BYTE, &(bmp_buf[bmp_offset]) ); */
+
+   tex_countdown--;
+   if( 0 >= tex_countdown ) {
+      tex_x = (0 == tex_x ? 0.5 : 0);
+      tex_countdown = 30;
+   }
 
    glFlush();
    retroflat_draw_release( NULL );
