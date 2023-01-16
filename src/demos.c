@@ -13,6 +13,7 @@ void demo_init_scene() {
    glEnable( GL_BLEND );
    glEnable( GL_TEXTURE_2D );
    glEnable( GL_LIGHTING );
+   glEnable( GL_NORMALIZE );
    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
@@ -375,10 +376,6 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    glRotatef( rotate_y, 0.0f, 1.0f, 0.0f );
    glRotatef( rotate_z, 0.0f, 0.0f, 1.0f );
 
-   glMatrixMode( GL_PROJECTION );
-   glLoadIdentity();
-   glMatrixMode( GL_MODELVIEW );
-   
    /*
    glLightfv( GL_LIGHT0, GL_POSITION, l_position );
    */
@@ -410,7 +407,6 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
 void draw_fp_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
-   static float yrot;
 
    /* Input */
 
@@ -436,9 +432,8 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0,
       i = 0;
-   static float yrot;
-   static float sprite_fv[4][2];
-   static float sprite_tx_fv[4][2];
+   static float sprite_fv[8][2];
+   static float sprite_tx_fv[8][2];
    static GLuint texture = 0;
    static int init = 0;
    static uint32_t bmp_w = 0;
@@ -469,6 +464,20 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
       
       sprite_fv[SPRITE_UL][SPRITE_X] = 0;
       sprite_fv[SPRITE_UL][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
+
+      /* Back face. */
+
+      sprite_fv[4][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
+      sprite_fv[4][SPRITE_Y] = 0;
+
+      sprite_fv[5][SPRITE_X] = 0;
+      sprite_fv[5][SPRITE_Y] = 0;
+
+      sprite_fv[6][SPRITE_X] = 0;
+      sprite_fv[6][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
+
+      sprite_fv[7][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
+      sprite_fv[7][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
    
       /* Setup the sprite texture selection. */
       sprite_tx_fv[0][SPRITE_X] = tex_x;
@@ -483,6 +492,20 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
       sprite_tx_fv[3][SPRITE_X] = tex_x;
       sprite_tx_fv[3][SPRITE_Y] = 1.0;
 
+      /* Back face. */
+
+      sprite_tx_fv[4][SPRITE_X] = tex_x;
+      sprite_tx_fv[4][SPRITE_Y] = 0.5;
+
+      sprite_tx_fv[5][SPRITE_X] = tex_x + 0.5;
+      sprite_tx_fv[5][SPRITE_Y] = 0.5;
+
+      sprite_tx_fv[6][SPRITE_X] = tex_x + 0.5;
+      sprite_tx_fv[6][SPRITE_Y] = 0.75;
+
+      sprite_tx_fv[7][SPRITE_X] = tex_x;
+      sprite_tx_fv[7][SPRITE_Y] = 0.75;
+
       init = 1;
    }
 
@@ -490,6 +513,11 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    sprite_tx_fv[1][SPRITE_X] = tex_x + 0.5;
    sprite_tx_fv[2][SPRITE_X] = tex_x + 0.5;
    sprite_tx_fv[3][SPRITE_X] = tex_x;
+
+   sprite_tx_fv[4][SPRITE_X] = tex_x;
+   sprite_tx_fv[5][SPRITE_X] = tex_x + 0.5;
+   sprite_tx_fv[6][SPRITE_X] = tex_x + 0.5;
+   sprite_tx_fv[7][SPRITE_X] = tex_x;
 
    /* Input */
 
@@ -541,7 +569,11 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+   glMatrixMode( GL_PROJECTION );
    glLoadIdentity();
+   glMatrixMode( GL_MODELVIEW );
+   glLoadIdentity();
+
    glRotatef( rotate_y, 0.0f, 1.0f, 0.0f );
 
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
@@ -563,24 +595,10 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    sprite_h = 16 * 1.0 / retroflat_screen_h();
    */
 
-   for( i = 0 ; 4 > i ; i++ ) {
+   for( i = 0 ; 8 > i ; i++ ) {
       glTexCoord2fv( sprite_tx_fv[i] );
       glVertex2fv( sprite_fv[i] );
    }
-
-   #if 0
-   glTexCoord2f( tex_x, 0.75 );
-   glVertex2f( -1.0, -1.0 );
-
-   glTexCoord2f( tex_x + 0.5, 0.75 );
-   glVertex2f( 1.0, -1.0 );
-
-   glTexCoord2f( tex_x + 0.5, 1.0 );
-   glVertex2f( 1.0, 1.0 );
-
-   glTexCoord2f( tex_x, 1.0 );
-   glVertex2f( -1.0, 1.0 );
-   #endif
 
    glEnd();
 
