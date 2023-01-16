@@ -11,6 +11,8 @@ void demo_init_scene() {
    glEnable( GL_DEPTH_TEST );
    glEnable( GL_CULL_FACE );
    glEnable( GL_BLEND );
+   glEnable( GL_TEXTURE_2D );
+   glEnable( GL_LIGHTING );
    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 }
 
@@ -383,7 +385,6 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
    glEnable( GL_LIGHT0 );
-   glEnable( GL_LIGHTING );
 
    /*
    glPushMatrix();
@@ -433,13 +434,17 @@ void draw_fp_iter( struct DEMO_DATA* data ) {
 
 void draw_bmp_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0;
+   int input = 0,
+      i = 0;
    static float yrot;
+   static float sprite_fv[4][2];
+   static float sprite_tx_fv[4][2];
    static GLuint texture = 0;
    static int init = 0;
    static uint32_t bmp_w = 0;
    static uint32_t bmp_h = 0;
    static int rotate_y = 0;
+   float sprite_rf = 0;
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
    static float tex_x = 0;
@@ -447,8 +452,44 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    if( 0 == init ) {
       demo_load_bmp( "test.bmp", &texture, &bmp_w, &bmp_h );
+
+      sprite_rf = 16 * 1.0 / retroflat_screen_w();
+
+      debug_printf( 3, "%f", sprite_rf );
+
+      /* Setup the sprite vertices. */
+      sprite_fv[SPRITE_LL][SPRITE_X] = 0;
+      sprite_fv[SPRITE_LL][SPRITE_Y] = 0;
+      
+      sprite_fv[SPRITE_LR][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
+      sprite_fv[SPRITE_LR][SPRITE_Y] = 0;
+      
+      sprite_fv[SPRITE_UR][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
+      sprite_fv[SPRITE_UR][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
+      
+      sprite_fv[SPRITE_UL][SPRITE_X] = 0;
+      sprite_fv[SPRITE_UL][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
+   
+      /* Setup the sprite texture selection. */
+      sprite_tx_fv[0][SPRITE_X] = tex_x;
+      sprite_tx_fv[0][SPRITE_Y] = 0.75;
+
+      sprite_tx_fv[1][SPRITE_X] = tex_x + 0.5;
+      sprite_tx_fv[1][SPRITE_Y] = 0.75;
+
+      sprite_tx_fv[2][SPRITE_X] = tex_x + 0.5;
+      sprite_tx_fv[2][SPRITE_Y] = 1.0;
+
+      sprite_tx_fv[3][SPRITE_X] = tex_x;
+      sprite_tx_fv[3][SPRITE_Y] = 1.0;
+
       init = 1;
    }
+
+   sprite_tx_fv[0][SPRITE_X] = tex_x;
+   sprite_tx_fv[1][SPRITE_X] = tex_x + 0.5;
+   sprite_tx_fv[2][SPRITE_X] = tex_x + 0.5;
+   sprite_tx_fv[3][SPRITE_X] = tex_x;
 
    /* Input */
 
@@ -462,6 +503,30 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    case RETROFLAT_KEY_D:
       rotate_y -= 10;
+      break;
+
+   case RETROFLAT_KEY_RIGHT:
+      for( i = 0 ; 4 > i ; i++ ) {
+         sprite_fv[i][SPRITE_X] += 0.01;
+      }
+      break;
+
+   case RETROFLAT_KEY_LEFT:
+      for( i = 0 ; 4 > i ; i++ ) {
+         sprite_fv[i][SPRITE_X] -= 0.01;
+      }
+      break;
+
+   case RETROFLAT_KEY_DOWN:
+      for( i = 0 ; 4 > i ; i++ ) {
+         sprite_fv[i][SPRITE_Y] -= 0.01;
+      }
+      break;
+
+   case RETROFLAT_KEY_UP:
+      for( i = 0 ; 4 > i ; i++ ) {
+         sprite_fv[i][SPRITE_Y] += 0.01;
+      }
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -482,9 +547,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
    glEnable( GL_LIGHT0 );
-   glEnable( GL_LIGHTING );
 
-   glEnable( GL_TEXTURE_2D );
    glBindTexture( GL_TEXTURE_2D, texture );
    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
@@ -493,8 +556,19 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    glBegin( GL_QUADS );
 
-   glColor3f(   1.0,  1.0, 1.0 );
+   glColor3f( 1.0, 1.0, 1.0 );
 
+/*
+   sprite_w = 16 * 1.0 / retroflat_screen_w();
+   sprite_h = 16 * 1.0 / retroflat_screen_h();
+   */
+
+   for( i = 0 ; 4 > i ; i++ ) {
+      glTexCoord2fv( sprite_tx_fv[i] );
+      glVertex2fv( sprite_fv[i] );
+   }
+
+   #if 0
    glTexCoord2f( tex_x, 0.75 );
    glVertex2f( -1.0, -1.0 );
 
@@ -506,10 +580,9 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    glTexCoord2f( tex_x, 1.0 );
    glVertex2f( -1.0, 1.0 );
+   #endif
 
    glEnd();
-
-   /* glDrawPixels( bmp_w, bmp_h, GL_BGR_EXT, GL_UNSIGNED_BYTE, &(bmp_buf[bmp_offset]) ); */
 
    tex_countdown--;
    if( 0 >= tex_countdown ) {
