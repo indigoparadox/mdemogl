@@ -439,7 +439,6 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    static uint32_t bmp_w = 0;
    static uint32_t bmp_h = 0;
    static int rotate_y = 0;
-   float sprite_rf = 0;
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
    static float tex_x = 0;
@@ -447,10 +446,6 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    if( 0 == init ) {
       demo_load_bmp( "test.bmp", &texture, &bmp_w, &bmp_h );
-
-      sprite_rf = 16 * 1.0 / retroflat_screen_w();
-
-      debug_printf( 3, "%f", sprite_rf );
 
       /* Setup the sprite vertices. */
       sprite_fv[SPRITE_LL][SPRITE_X] = 0;
@@ -586,7 +581,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-   glBegin( GL_QUADS );
+   glBegin( GL_TRIANGLES );
 
    glColor3f( 1.0, 1.0, 1.0 );
 
@@ -595,10 +590,50 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    sprite_h = 16 * 1.0 / retroflat_screen_h();
    */
 
+#if 0
    for( i = 0 ; 8 > i ; i++ ) {
       glTexCoord2fv( sprite_tx_fv[i] );
       glVertex2fv( sprite_fv[i] );
    }
+#endif
+
+   glTexCoord2fv( sprite_tx_fv[0] );
+   glVertex2fv( sprite_fv[0] );
+
+   glTexCoord2fv( sprite_tx_fv[1] );
+   glVertex2fv( sprite_fv[1] );
+
+   glTexCoord2fv( sprite_tx_fv[2] );
+   glVertex2fv( sprite_fv[2] );
+
+   glTexCoord2fv( sprite_tx_fv[2] );
+   glVertex2fv( sprite_fv[2] );
+
+   glTexCoord2fv( sprite_tx_fv[3] );
+   glVertex2fv( sprite_fv[3] );
+
+   glTexCoord2fv( sprite_tx_fv[0] );
+   glVertex2fv( sprite_fv[0] );
+
+   /* Back face */
+
+   glTexCoord2fv( sprite_tx_fv[4] );
+   glVertex2fv( sprite_fv[4] );
+
+   glTexCoord2fv( sprite_tx_fv[5] );
+   glVertex2fv( sprite_fv[5] );
+
+   glTexCoord2fv( sprite_tx_fv[6] );
+   glVertex2fv( sprite_fv[6] );
+
+   glTexCoord2fv( sprite_tx_fv[6] );
+   glVertex2fv( sprite_fv[6] );
+
+   glTexCoord2fv( sprite_tx_fv[7] );
+   glVertex2fv( sprite_fv[7] );
+
+   glTexCoord2fv( sprite_tx_fv[4] );
+   glVertex2fv( sprite_fv[4] );
 
    glEnd();
 
