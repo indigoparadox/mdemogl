@@ -14,6 +14,17 @@
 
 #define DEMO_OBJ_NAME_SZ_MAX 255
 
+#define SPRITE_X 0
+#define SPRITE_Y 1
+
+#define SPRITE_LL 0
+#define SPRITE_LR 1
+#define SPRITE_UR 2
+#define SPRITE_UL 3
+
+#define SPRITE_W 64
+#define SPRITE_H 64
+
 #define hash_mat_r( m ) (fmod( m[0] * 0.01f, 1.0f ) * 2)
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
 #define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
