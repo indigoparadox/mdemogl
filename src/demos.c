@@ -432,8 +432,8 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0,
       i = 0;
-   static float sprite_fv[8][2];
-   static float sprite_tx_fv[8][2];
+   /* static float sprite_fv[8][2];
+   static float sprite_tx_fv[8][2]; */
    static GLuint texture = 0;
    static int init = 0;
    static uint32_t bmp_w = 0;
@@ -443,10 +443,20 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
    static float tex_x = 0;
    static int tex_countdown = 0;
+   static struct RETROGLU_SPRITE sprite;
 
    if( 0 == init ) {
       demo_load_bmp( "test.bmp", &texture, &bmp_w, &bmp_h );
 
+      sprite.texture_id = texture;
+      sprite.texture_w = bmp_w;
+      sprite.texture_h = bmp_h;
+
+      retroglu_set_sprite_zoom( &sprite, 64, 64 );
+      retroglu_set_sprite_clip( &sprite, 0, 0, 16, 16 );
+      retroglu_set_sprite_pos( &sprite, 400, 300 );
+
+#if 0
       /* Setup the sprite vertices. */
       sprite_fv[SPRITE_LL][SPRITE_X] = 0;
       sprite_fv[SPRITE_LL][SPRITE_Y] = 0;
@@ -500,10 +510,12 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
       sprite_tx_fv[7][SPRITE_X] = tex_x;
       sprite_tx_fv[7][SPRITE_Y] = 0.75;
+#endif
 
       init = 1;
    }
 
+#if 0
    sprite_tx_fv[0][SPRITE_X] = tex_x;
    sprite_tx_fv[1][SPRITE_X] = tex_x + 0.5;
    sprite_tx_fv[2][SPRITE_X] = tex_x + 0.5;
@@ -513,6 +525,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    sprite_tx_fv[5][SPRITE_X] = tex_x + 0.5;
    sprite_tx_fv[6][SPRITE_X] = tex_x + 0.5;
    sprite_tx_fv[7][SPRITE_X] = tex_x;
+#endif
 
    /* Input */
 
@@ -529,27 +542,35 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
       break;
 
    case RETROFLAT_KEY_RIGHT:
+   /*
       for( i = 0 ; 4 > i ; i++ ) {
          sprite_fv[i][SPRITE_X] += 0.01;
       }
+      */
       break;
 
    case RETROFLAT_KEY_LEFT:
+   /*
       for( i = 0 ; 4 > i ; i++ ) {
          sprite_fv[i][SPRITE_X] -= 0.01;
       }
+      */
       break;
 
    case RETROFLAT_KEY_DOWN:
+   /*
       for( i = 0 ; 4 > i ; i++ ) {
          sprite_fv[i][SPRITE_Y] -= 0.01;
       }
+      */
       break;
 
    case RETROFLAT_KEY_UP:
+   /*
       for( i = 0 ; 4 > i ; i++ ) {
          sprite_fv[i][SPRITE_Y] += 0.01;
       }
+      */
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -575,6 +596,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
    glEnable( GL_LIGHT0 );
 
+/*
    glBindTexture( GL_TEXTURE_2D, texture );
    glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 
@@ -582,13 +604,15 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
    glBegin( GL_TRIANGLES );
-
    glColor3f( 1.0, 1.0, 1.0 );
+*/
 
 /*
    sprite_w = 16 * 1.0 / retroflat_screen_w();
    sprite_h = 16 * 1.0 / retroflat_screen_h();
    */
+
+   retroglu_draw_sprite( &sprite );
 
 #if 0
    for( i = 0 ; 8 > i ; i++ ) {
@@ -597,6 +621,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    }
 #endif
 
+#if 0
    glTexCoord2fv( sprite_tx_fv[0] );
    glVertex2fv( sprite_fv[0] );
 
@@ -634,6 +659,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    glTexCoord2fv( sprite_tx_fv[4] );
    glVertex2fv( sprite_fv[4] );
+#endif
 
    glEnd();
 
