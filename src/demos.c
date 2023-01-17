@@ -122,11 +122,8 @@ void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
    obj_file = NULL;
 }
 
-void demo_load_bmp(
-   const char* filename, GLuint* p_texture_id,
-   uint32_t* p_bmp_w, uint32_t* p_bmp_h
-) {
-   static uint8_t* bmp_buf = NULL;
+void demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite ) {
+   uint8_t* bmp_buf = NULL;
    uint32_t bmp_buf_sz = 0;
    uint32_t bmp_read = 0;
    FILE* bmp_file;
@@ -145,9 +142,7 @@ void demo_load_bmp(
    assert( bmp_read == bmp_buf_sz );
    fclose( bmp_file );
 
-   retroglu_load_tex_bmp(
-      bmp_buf, bmp_buf_sz, p_texture_id,
-      p_bmp_w, p_bmp_h );
+   retroglu_set_sprite_tex( sprite, bmp_buf, bmp_buf_sz );
 
    free( bmp_buf );
 }
@@ -362,6 +357,8 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
 
    retroflat_draw_lock( NULL );
 
+   glPushMatrix();
+
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -384,7 +381,6 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    glEnable( GL_LIGHT0 );
 
    /*
-   glPushMatrix();
    */
 
    retroglu_draw_poly(
@@ -394,7 +390,7 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
       data->faces, data->faces_sz,
       data->materials, data->materials_sz );
 
-   /* glPopMatrix(); */
+   glPopMatrix();
 
    glFlush();
 
@@ -430,87 +426,23 @@ void draw_fp_iter( struct DEMO_DATA* data ) {
 
 void draw_bmp_iter( struct DEMO_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0,
-      i = 0;
+   int input = 0;
    /* static float sprite_fv[8][2];
    static float sprite_tx_fv[8][2]; */
-   static GLuint texture = 0;
    static int init = 0;
-   static uint32_t bmp_w = 0;
-   static uint32_t bmp_h = 0;
-   static int rotate_y = 0;
+   static uint32_t tex_x = 0;
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-   static float tex_x = 0;
    static int tex_countdown = 0;
    static struct RETROGLU_SPRITE sprite;
 
    if( 0 == init ) {
-      demo_load_bmp( "test.bmp", &texture, &bmp_w, &bmp_h );
+      demo_load_sprite( "test.bmp", &sprite );
 
-      sprite.texture_id = texture;
-      sprite.texture_w = bmp_w;
-      sprite.texture_h = bmp_h;
-
-      retroglu_set_sprite_zoom( &sprite, 64, 64 );
-      retroglu_set_sprite_clip( &sprite, 0, 0, 16, 16 );
+      retroglu_set_sprite_clip( &sprite, 0, 48, 0, 32, 16, 16 );
       retroglu_set_sprite_pos( &sprite, 400, 300 );
-
-#if 0
-      /* Setup the sprite vertices. */
-      sprite_fv[SPRITE_LL][SPRITE_X] = 0;
-      sprite_fv[SPRITE_LL][SPRITE_Y] = 0;
-      
-      sprite_fv[SPRITE_LR][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
-      sprite_fv[SPRITE_LR][SPRITE_Y] = 0;
-      
-      sprite_fv[SPRITE_UR][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
-      sprite_fv[SPRITE_UR][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
-      
-      sprite_fv[SPRITE_UL][SPRITE_X] = 0;
-      sprite_fv[SPRITE_UL][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
-
-      /* Back face. */
-
-      sprite_fv[4][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
-      sprite_fv[4][SPRITE_Y] = 0;
-
-      sprite_fv[5][SPRITE_X] = 0;
-      sprite_fv[5][SPRITE_Y] = 0;
-
-      sprite_fv[6][SPRITE_X] = 0;
-      sprite_fv[6][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
-
-      sprite_fv[7][SPRITE_X] = SPRITE_W * 1.0 / retroflat_screen_w();
-      sprite_fv[7][SPRITE_Y] = SPRITE_H * 1.0 / retroflat_screen_h();
-   
-      /* Setup the sprite texture selection. */
-      sprite_tx_fv[0][SPRITE_X] = tex_x;
-      sprite_tx_fv[0][SPRITE_Y] = 0.75;
-
-      sprite_tx_fv[1][SPRITE_X] = tex_x + 0.5;
-      sprite_tx_fv[1][SPRITE_Y] = 0.75;
-
-      sprite_tx_fv[2][SPRITE_X] = tex_x + 0.5;
-      sprite_tx_fv[2][SPRITE_Y] = 1.0;
-
-      sprite_tx_fv[3][SPRITE_X] = tex_x;
-      sprite_tx_fv[3][SPRITE_Y] = 1.0;
-
-      /* Back face. */
-
-      sprite_tx_fv[4][SPRITE_X] = tex_x;
-      sprite_tx_fv[4][SPRITE_Y] = 0.5;
-
-      sprite_tx_fv[5][SPRITE_X] = tex_x + 0.5;
-      sprite_tx_fv[5][SPRITE_Y] = 0.5;
-
-      sprite_tx_fv[6][SPRITE_X] = tex_x + 0.5;
-      sprite_tx_fv[6][SPRITE_Y] = 0.75;
-
-      sprite_tx_fv[7][SPRITE_X] = tex_x;
-      sprite_tx_fv[7][SPRITE_Y] = 0.75;
-#endif
+      sprite.scale_x = 4.0f;
+      sprite.scale_y = 4.0f;
 
       init = 1;
    }
@@ -534,43 +466,39 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    switch( input ) {
    case RETROFLAT_KEY_A:
-      rotate_y += 10;
+      if( 
+         0 == sprite.rotate_y ||
+         180 == sprite.rotate_y ||
+         -180 == sprite.rotate_y
+      ) {
+         sprite.rotate_y += 10;
+      }
       break;
 
    case RETROFLAT_KEY_D:
-      rotate_y -= 10;
+      if(
+         0 == sprite.rotate_y ||
+         180 == sprite.rotate_y ||
+         -180 == sprite.rotate_y
+      ) {
+         sprite.rotate_y -= 10;
+      }
       break;
 
    case RETROFLAT_KEY_RIGHT:
-   /*
-      for( i = 0 ; 4 > i ; i++ ) {
-         sprite_fv[i][SPRITE_X] += 0.01;
-      }
-      */
+      sprite.translate_x += DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_LEFT:
-   /*
-      for( i = 0 ; 4 > i ; i++ ) {
-         sprite_fv[i][SPRITE_X] -= 0.01;
-      }
-      */
+      sprite.translate_x -= DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_DOWN:
-   /*
-      for( i = 0 ; 4 > i ; i++ ) {
-         sprite_fv[i][SPRITE_Y] -= 0.01;
-      }
-      */
+      sprite.translate_y -= DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_UP:
-   /*
-      for( i = 0 ; 4 > i ; i++ ) {
-         sprite_fv[i][SPRITE_Y] += 0.01;
-      }
-      */
+      sprite.translate_y += DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -590,86 +518,36 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    glMatrixMode( GL_MODELVIEW );
    glLoadIdentity();
 
-   glRotatef( rotate_y, 0.0f, 1.0f, 0.0f );
-
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
    glEnable( GL_LIGHT0 );
 
-/*
-   glBindTexture( GL_TEXTURE_2D, texture );
-   glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-
-   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-   glBegin( GL_TRIANGLES );
-   glColor3f( 1.0, 1.0, 1.0 );
-*/
-
-/*
-   sprite_w = 16 * 1.0 / retroflat_screen_w();
-   sprite_h = 16 * 1.0 / retroflat_screen_h();
-   */
-
    retroglu_draw_sprite( &sprite );
-
-#if 0
-   for( i = 0 ; 8 > i ; i++ ) {
-      glTexCoord2fv( sprite_tx_fv[i] );
-      glVertex2fv( sprite_fv[i] );
-   }
-#endif
-
-#if 0
-   glTexCoord2fv( sprite_tx_fv[0] );
-   glVertex2fv( sprite_fv[0] );
-
-   glTexCoord2fv( sprite_tx_fv[1] );
-   glVertex2fv( sprite_fv[1] );
-
-   glTexCoord2fv( sprite_tx_fv[2] );
-   glVertex2fv( sprite_fv[2] );
-
-   glTexCoord2fv( sprite_tx_fv[2] );
-   glVertex2fv( sprite_fv[2] );
-
-   glTexCoord2fv( sprite_tx_fv[3] );
-   glVertex2fv( sprite_fv[3] );
-
-   glTexCoord2fv( sprite_tx_fv[0] );
-   glVertex2fv( sprite_fv[0] );
-
-   /* Back face */
-
-   glTexCoord2fv( sprite_tx_fv[4] );
-   glVertex2fv( sprite_fv[4] );
-
-   glTexCoord2fv( sprite_tx_fv[5] );
-   glVertex2fv( sprite_fv[5] );
-
-   glTexCoord2fv( sprite_tx_fv[6] );
-   glVertex2fv( sprite_fv[6] );
-
-   glTexCoord2fv( sprite_tx_fv[6] );
-   glVertex2fv( sprite_fv[6] );
-
-   glTexCoord2fv( sprite_tx_fv[7] );
-   glVertex2fv( sprite_fv[7] );
-
-   glTexCoord2fv( sprite_tx_fv[4] );
-   glVertex2fv( sprite_fv[4] );
-#endif
 
    glEnd();
 
+   glFlush();
+   retroflat_draw_release( NULL );
+
+   /* Set the walking frame. */
    tex_countdown--;
    if( 0 >= tex_countdown ) {
-      tex_x = (0 == tex_x ? 0.5 : 0);
+      tex_x = (0 == tex_x ? 16 : 0);
+      retroglu_set_sprite_clip( &sprite, tex_x, 48, tex_x, 32, 16, 16 );
       tex_countdown = 30;
    }
 
-   glFlush();
-   retroflat_draw_release( NULL );
+   /* Rotate a little bit with each frame if we're rotating. */
+   if( 0 < sprite.rotate_y && 180 > sprite.rotate_y ) {
+      sprite.rotate_y += DEMO_ROTATE_INC;
+   } else if( 180 < sprite.rotate_y && 360 > sprite.rotate_y ) {
+      sprite.rotate_y += DEMO_ROTATE_INC;
+   } else if( 0 > sprite.rotate_y && -180 < sprite.rotate_y ) {
+      sprite.rotate_y -= DEMO_ROTATE_INC;
+   } else if( -180 > sprite.rotate_y && -360 < sprite.rotate_y ) {
+      sprite.rotate_y -= DEMO_ROTATE_INC;
+   } else if( 360 == sprite.rotate_y || -360 == sprite.rotate_y ) {
+      sprite.rotate_y = 0;
+   }
 }
 
