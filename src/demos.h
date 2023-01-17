@@ -10,6 +10,7 @@
 #define DEMO_MATERIALS_SZ_MAX 1024
 
 #define DEMO_ZOOM_INC 0.1f
+#define DEMO_TRANSLATE_INC 0.1f
 #define DEMO_ROTATE_INC 10
 
 #define DEMO_OBJ_NAME_SZ_MAX 255
@@ -47,9 +48,7 @@ int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
 );
 void demo_dump_obj( const char* filename, struct DEMO_DATA* data );
-void demo_load_bmp(
-   const char* filename, GLuint* p_texture_id,
-   uint32_t* p_bmp_w, uint32_t* p_bmp_h );
+void demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
 void draw_cube_iter( struct DEMO_DATA* data );
 void draw_obj_iter( struct DEMO_DATA* data );
 void draw_fp_iter( struct DEMO_DATA* data );
