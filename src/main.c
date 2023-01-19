@@ -2,7 +2,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define MAIN_C
+#define MAUG_C
+#include <maug.h>
+
 #define RETROFLT_C
 #include <retroflt.h>
 
@@ -12,7 +14,9 @@
 
 retroflat_loop_iter g_loop = NULL;
 
-static int demo_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
+static MERROR_RETVAL demo_cli_cb(
+   const char* arg, struct RETROFLAT_ARGS* args
+) {
    int i = 0;
 
    for( i = 0 ; '\0' != gc_demo_names[i][0] ; i++ ) {
@@ -27,14 +31,18 @@ static int demo_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
    return RETROFLAT_OK;
 }
 
-static int demo_timer_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
+static MERROR_RETVAL demo_timer_cli_cb(
+   const char* arg, struct RETROFLAT_ARGS* args
+) {
    g_timer = 1;
    debug_printf( 3, "timer enabled" );
    return RETROFLAT_OK;
 }
 
-static int demo_obj_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
-   if( 0 != strncmp( RETROFLAT_CLI_SIGIL, arg, RETROFLAT_CLI_SIGIL_SZ ) ) {
+static MERROR_RETVAL demo_obj_cli_cb(
+   const char* arg, struct RETROFLAT_ARGS* args
+) {
+   if( 0 != strncmp( MAUG_CLI_SIGIL, arg, MAUG_CLI_SIGIL_SZ ) ) {
       strncpy( g_demo_obj_name, arg, DEMO_OBJ_NAME_SZ_MAX );
       debug_printf( 3, "demo obj manually selected: %s", g_demo_obj_name );
    }
@@ -42,8 +50,10 @@ static int demo_obj_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
    return RETROFLAT_OK;
 }
 
-static int demo_dump_cli_cb( const char* arg, struct RETROFLAT_ARGS* args ) {
-   if( 0 != strncmp( RETROFLAT_CLI_SIGIL, arg, RETROFLAT_CLI_SIGIL_SZ ) ) {
+static MERROR_RETVAL demo_dump_cli_cb(
+   const char* arg, struct RETROFLAT_ARGS* args
+) {
+   if( 0 != strncmp( MAUG_CLI_SIGIL, arg, MAUG_CLI_SIGIL_SZ ) ) {
       strncpy( g_demo_dump_name, arg, DEMO_OBJ_NAME_SZ_MAX );
       debug_printf( 3, "demo dump manually selected: %s", g_demo_dump_name );
    }
@@ -66,22 +76,26 @@ int main( int argc, char** argv ) {
    args.title = "mdemo";
    args.assets_path = "";
 
-   retroflat_add_arg(
-      RETROFLAT_CLI_SIGIL "t", 0, "show the on-screen timer", 0,
-      demo_timer_cli_cb );
+   maug_add_arg(
+      MAUG_CLI_SIGIL "t", MAUG_CLI_SIGIL_SZ + 1,
+      "show the on-screen timer", 0,
+      (maug_cli_cb)demo_timer_cli_cb, &args );
 
-   retroflat_add_arg(
-      RETROFLAT_CLI_SIGIL "o", 0, "load the specified object", 0,
-      demo_obj_cli_cb );
+   maug_add_arg(
+      MAUG_CLI_SIGIL "o", MAUG_CLI_SIGIL_SZ + 1,
+      "load the specified object", 0,
+      (maug_cli_cb)demo_obj_cli_cb, &args );
 
-   retroflat_add_arg(
-      RETROFLAT_CLI_SIGIL "d", 0, "dump demo object", 0,
-      demo_dump_cli_cb );
+   maug_add_arg(
+      MAUG_CLI_SIGIL "d", MAUG_CLI_SIGIL_SZ + 1,
+      "dump demo object", 0,
+      (maug_cli_cb)demo_dump_cli_cb, &args );
 
    /* Add demos to CLI parser. */
    for( i = 0 ; '\0' != gc_demo_names[i][0] ; i++ ) {
-      retroflat_add_arg(
-         gc_demo_names[i], 0, "display this demo", 0, demo_cli_cb );
+      maug_add_arg(
+         gc_demo_names[i], 0, "display this demo", 0,
+         (maug_cli_cb)demo_cli_cb, &args );
    }
 
    retval = retroflat_init( argc, argv, &args );
