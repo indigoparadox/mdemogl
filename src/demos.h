@@ -13,6 +13,8 @@
 #define DEMO_TRANSLATE_INC 0.1f
 #define DEMO_ROTATE_INC 10
 
+#define DEMO_DEFAULT_OBJ "metalbug.obj"
+
 #define DEMO_OBJ_NAME_SZ_MAX 255
 
 #define SPRITE_X 0
@@ -75,7 +77,7 @@ retroflat_loop_iter gc_demo_loops[] = {
 int g_timer = 0;
 
 char g_demo_dump_name[DEMO_OBJ_NAME_SZ_MAX] = "";
-char g_demo_obj_name[DEMO_OBJ_NAME_SZ_MAX] = "treeHigh.obj";
+char g_demo_obj_name[DEMO_OBJ_NAME_SZ_MAX] = DEMO_DEFAULT_OBJ;
 
 #else
 
