@@ -44,6 +44,17 @@ obj/$(shell uname -s)/%.o: %.c
 	$(MD) $(dir $@)
 	$(CC_GCC) -c -o $@ $< -DRETROFLAT_OS_UNIX $(CFLAGS_GCC)
 
+# WASM
+
+EMCC_FLAGS = -s USE_SDL=1 -s USE_SDL_TTF=1 -s LEGACY_GL_EMULATION=1 -s GL_UNSAFE_OPTS=1
+
+mdemogl.html: $(addprefix obj/wasm/,$(subst .c,.o,$(MDEMO_C_FILES)))
+	emcc -o $@ $^ $(EMCC_FLAGS)
+
+obj/wasm/%.o: %.c
+	$(MD) $(dir $@)
+	emcc -c -o $@ $< -DRETROFLAT_OPENGL -DRETROFLAT_OS_WASM -DRETROFLAT_API_SDL1 -Imaug/src $(EMCC_FLAGS)
+
 # WinNT
 
 mdemglnt.exe: $(addprefix obj/nt/,$(subst .c,.o,$(MDEMO_C_FILES)))
