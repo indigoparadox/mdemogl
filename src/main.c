@@ -79,23 +79,23 @@ int main( int argc, char** argv ) {
    maug_add_arg(
       MAUG_CLI_SIGIL "t", MAUG_CLI_SIGIL_SZ + 1,
       "show the on-screen timer", 0,
-      (maug_cli_cb)demo_timer_cli_cb, &args );
+      (maug_cli_cb)demo_timer_cli_cb, NULL, &args );
 
    maug_add_arg(
       MAUG_CLI_SIGIL "o", MAUG_CLI_SIGIL_SZ + 1,
       "load the specified object", 0,
-      (maug_cli_cb)demo_obj_cli_cb, &args );
+      (maug_cli_cb)demo_obj_cli_cb, NULL, &args );
 
    maug_add_arg(
       MAUG_CLI_SIGIL "d", MAUG_CLI_SIGIL_SZ + 1,
       "dump demo object", 0,
-      (maug_cli_cb)demo_dump_cli_cb, &args );
+      (maug_cli_cb)demo_dump_cli_cb, NULL, &args );
 
    /* Add demos to CLI parser. */
    for( i = 0 ; '\0' != gc_demo_names[i][0] ; i++ ) {
       maug_add_arg(
          gc_demo_names[i], 0, "display this demo", 0,
-         (maug_cli_cb)demo_cli_cb, &args );
+         (maug_cli_cb)demo_cli_cb, NULL, &args );
    }
 
    retval = retroflat_init( argc, argv, &args );
