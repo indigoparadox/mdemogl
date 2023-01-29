@@ -61,7 +61,7 @@ void draw_bmp_iter( struct DEMO_DATA* data );
 const char* gc_demo_names[] = {
    "cube",
    "obj",
-   "fp",
+   /* "fp", */
    "bmp",
    ""
 };
@@ -69,7 +69,7 @@ const char* gc_demo_names[] = {
 retroflat_loop_iter gc_demo_loops[] = {
    (retroflat_loop_iter)draw_cube_iter,
    (retroflat_loop_iter)draw_obj_iter,
-   (retroflat_loop_iter)draw_fp_iter,
+   /* (retroflat_loop_iter)draw_fp_iter, */
    (retroflat_loop_iter)draw_bmp_iter,
    NULL
 };
