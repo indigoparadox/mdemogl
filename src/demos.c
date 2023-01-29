@@ -122,29 +122,23 @@ void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
    obj_file = NULL;
 }
 
-void demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite ) {
-   uint8_t* bmp_buf = NULL;
-   uint32_t bmp_buf_sz = 0;
-   uint32_t bmp_read = 0;
-   FILE* bmp_file;
+MERROR_RETVAL demo_load_sprite(
+   const char* filename, struct RETROGLU_SPRITE* sprite
+) {
+   MERROR_RETVAL retval = 0;
+   uint32_t bmp_w = 0,
+      bmp_h = 0,
+      texture_id = 0;
 
-   /* Open the file and allocate the buffer. */
-   bmp_file = fopen( "test.bmp", "rb" );
-   assert( NULL != bmp_file );
-   fseek( bmp_file, 0, SEEK_END );
-   bmp_buf_sz = ftell( bmp_file );
-   fseek( bmp_file, 0, SEEK_SET );
-   debug_printf( 3, "opened test.bmp, " UPRINTF_U32 " bytes", bmp_buf_sz );
-   assert( NULL == bmp_buf );
-   bmp_buf = calloc( 1, bmp_buf_sz );
-   assert( NULL != bmp_buf );
-   bmp_read = fread( bmp_buf, 1, bmp_buf_sz, bmp_file );
-   assert( bmp_read == bmp_buf_sz );
-   fclose( bmp_file );
+   retval = retroglu_load_tex_bmp( filename, &texture_id, &bmp_w, &bmp_h );
 
-   retroglu_set_sprite_tex( sprite, bmp_buf, bmp_buf_sz );
+   if( MERROR_OK != retval ) {
+      goto cleanup;
+   }
+   retroglu_set_sprite_tex( sprite, texture_id, bmp_w, bmp_h );
 
-   free( bmp_buf );
+cleanup:
+   return retval;
 }
 
 void draw_cube_iter( struct DEMO_DATA* data ) {
@@ -437,7 +431,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    static struct RETROGLU_SPRITE sprite;
 
    if( 0 == init ) {
-      demo_load_sprite( "test.bmp", &sprite );
+      demo_load_sprite( "test", &sprite );
 
       retroglu_set_sprite_clip( &sprite, 0, 48, 0, 32, 16, 16 );
       retroglu_set_sprite_pos( &sprite, 400, 300 );

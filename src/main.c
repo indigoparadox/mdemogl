@@ -74,7 +74,7 @@ int main( int argc, char** argv ) {
    args.screen_w = 800;
    args.screen_h = 600;
    args.title = "mdemo";
-   args.assets_path = "";
+   args.assets_path = "assets";
 
    maug_add_arg(
       MAUG_CLI_SIGIL "t", MAUG_CLI_SIGIL_SZ + 1,
