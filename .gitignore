@@ -3,3 +3,7 @@
 mdemo
 obj
 *.err
+*.sdl
+*.wasm
+*.js
+*.html
