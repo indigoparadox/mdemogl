@@ -50,7 +50,7 @@ int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
 );
 void demo_dump_obj( const char* filename, struct DEMO_DATA* data );
-void demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
+MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
 void draw_cube_iter( struct DEMO_DATA* data );
 void draw_obj_iter( struct DEMO_DATA* data );
 void draw_fp_iter( struct DEMO_DATA* data );
