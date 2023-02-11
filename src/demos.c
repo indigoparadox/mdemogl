@@ -285,8 +285,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    static int rotate_y = 10;
    static int rotate_z = 0;
    static float tx = 0.0f,
-      ty = -0.5f,
-      tz = 0.0f;
+      ty = 0.0f,
+      tz = -5.0f;
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
    /*
@@ -305,8 +305,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          debug_printf( 3, "demo data dumped to %s", g_demo_dump_name );
       }
 
-      glViewport(
-         0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
 
       /* Setup display list. */
       data->obj_list = glGenLists( 1 );
@@ -321,6 +319,18 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          data->materials, data->materials_sz );
       
       glEndList();
+
+      /* Setup projection. */
+      glViewport(
+         0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
+      glMatrixMode( GL_PROJECTION );
+      glLoadIdentity();
+      glFrustum(
+         /* The smaller these are, the closer it lets us get to the camera? */
+         -0.5, 0.5, -0.5, 0.5,
+         /* Near plane can't be zero! */
+         0.5f, 10.0f );
+      glMatrixMode( GL_MODELVIEW );
    }
 
    /* Input */
@@ -378,12 +388,14 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 
    retroflat_draw_lock( NULL );
 
+   /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClearDepth( 1.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+   glScalef( 0.5f, 0.5f, 0.5f );
    glTranslatef( tx, ty, tz );
 
    /* glRotatef( 1, 1.0f, 0.0f, 0.0f ); */
@@ -455,12 +467,22 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
       data->sprite_list = glGenLists( 1 );
 
+
       /* TODO: Generate list for each texture anim frame? */
       glNewList( data->sprite_list, GL_COMPILE );
 
       retroglu_draw_sprite( &(data->sprite) );
 
       glEndList();
+
+      /* Setup projection. */
+
+      glViewport(
+         0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
+      glMatrixMode( GL_PROJECTION );
+      glLoadIdentity();
+      glOrtho( -1.0, 1.0, -1.0, 1.0, -100.0, 100.0 );
+      glMatrixMode( GL_MODELVIEW );
 
       init = 1;
    }
@@ -519,18 +541,18 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-   glMatrixMode( GL_PROJECTION );
-   glLoadIdentity();
-   glMatrixMode( GL_MODELVIEW );
-   glLoadIdentity();
-
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
    glEnable( GL_LIGHT0 );
 
+   /* Create a new matrix to apply transformations for this frame. */
+   glPushMatrix();
+
    retroglu_tsrot_sprite( &(data->sprite) );
 
    glCallList( data->sprite_list );
+
+   glPopMatrix();
 
    glFlush();
    retroflat_draw_release( NULL );
