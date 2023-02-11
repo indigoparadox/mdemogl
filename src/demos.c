@@ -30,10 +30,14 @@ void demo_init_scene( uint8_t flags ) {
    glShadeModel( GL_SMOOTH );
 }
 
-void demo_init_projection( uint8_t demo_proj ) {
+void demo_init_projection( uint8_t demo_proj, float zoom ) {
+   float aspect_ratio = 0;
+
    /* Setup projection. */
    glViewport(
       0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
+
+   aspect_ratio = (float)retroflat_screen_w() / (float)retroflat_screen_h();
 
    /* Switch to projection matrix for setup. */
    glMatrixMode( GL_PROJECTION );
@@ -45,16 +49,19 @@ void demo_init_projection( uint8_t demo_proj ) {
    case DEMO_PROJ_FRUSTUM:
       /* This is really tweaky, and when it breaks, polygons seem to get drawn
          * out of order? Still experimenting/researching. */
+      debug_printf( 1, "aspect ratio: %f", aspect_ratio );
       glFrustum(
          /* The smaller these are, the closer it lets us get to the camera? */
-         -0.5, 0.5, -0.5, 0.5,
+         -1.0f * zoom * aspect_ratio, zoom * aspect_ratio, -1.0f * zoom, zoom,
          /* Near plane can't be zero! */
          0.5f, 10.0f );
       break;
 
    case DEMO_PROJ_ORTHO:
       /* This is much simpler/more forgiving than frustum. */
-      glOrtho( -1.0, 1.0, -1.0, 1.0, -100.0, 100.0 );
+      glOrtho(
+         -1.0f * zoom * aspect_ratio, zoom * aspect_ratio, -1.0f * zoom, zoom,
+         -100.0, 100.0 );
       break;
    }
 
@@ -254,7 +261,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       glEndList();
 
       demo_init_scene( 0 );
-      demo_init_projection( DEMO_PROJ_FRUSTUM );
+      demo_init_projection( DEMO_PROJ_FRUSTUM, 1.0f );
 
       data->rotate_x = 10;
       data->rotate_y = 10;
@@ -295,6 +302,147 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    retroflat_draw_release( NULL );
 
    data->rotate_y += 5;
+}
+
+void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
+   struct RETROFLAT_INPUT input_evt;
+   int input = 0;
+   float ang_xy = 0;
+   float ang_xz = 0;
+   int even_row = 1,
+      even_col = 1;
+
+   if( !data->init ) {
+
+      data->sphere_list = glGenLists( 1 );
+      glNewList( data->sphere_list, GL_COMPILE );
+
+      for(
+         ang_xz = 0 ;
+         2 * RETROFLAT_PI > ang_xz ;
+         ang_xz += DEMO_SPHERE_INC_XZ
+      ) {
+         even_row = even_row ? 0 : 1;
+         for(
+            ang_xy = 0 ;
+            2 * RETROFLAT_PI > ang_xy ;
+            ang_xy += DEMO_SPHERE_INC_XY
+         ) {
+            glBegin( GL_QUADS );
+            even_col = even_col ? 0 : 1;
+
+            /* Checkerboard pattern. */
+            if( even_row ) {
+               if( even_col ) {
+                  glColor3f( 1.0, 1.0, 1.0 );
+               } else {
+                  glColor3f( 1.0, 0.0, 0.0 );
+               }
+            } else {
+               if( even_col ) {
+                  glColor3f( 1.0, 0.0, 0.0 );
+               } else {
+                  glColor3f( 1.0, 1.0, 1.0 );
+               }
+            }
+
+            /* Quad panels at equal intervals around two circles intersecting
+             * on orthogonal planes.
+             */
+            glVertex3f( 
+               sin( ang_xy ) * cos( ang_xz ),
+               cos( ang_xy ),
+               sin( ang_xy ) * sin( ang_xz ) );
+            glVertex3f( 
+               sin( ang_xy + DEMO_SPHERE_INC_XY ) * cos( ang_xz ),
+               cos( ang_xy + DEMO_SPHERE_INC_XY ),
+               sin( ang_xy + DEMO_SPHERE_INC_XY ) * sin( ang_xz ) );
+            glVertex3f( 
+               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
+                  * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
+               cos( ang_xy + DEMO_SPHERE_INC_XY ),
+               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
+                  * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
+            glVertex3f(
+               sin( ang_xy ) * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
+               cos( ang_xy ),
+               sin( ang_xy ) * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
+
+            glEnd();
+         }
+      }
+
+      glEndList();
+
+      demo_init_scene( 0 );
+      demo_init_projection( DEMO_PROJ_ORTHO, 10.0f );
+
+      /* Start spin. */
+      data->rotate_x = 0;
+      data->rotate_y = 10;
+
+      /* Start bounce. */
+      data->translate_x_inc = 0.2f;
+      data->translate_y_inc = 0.2f;
+
+      data->translate_z = -5.0f;
+
+      data->init = 1;
+   }
+
+   /* Input */
+
+   input_evt.allow_repeat = 1;
+   input = retroflat_poll_input( &input_evt );
+
+   switch( input ) {
+   case RETROFLAT_KEY_ESC:
+      retroflat_quit( 0 );
+      break;
+   }
+
+   /* Draw */
+
+   retroflat_draw_lock( NULL );
+
+   glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   glPushMatrix();
+
+   glTranslatef( data->translate_x, data->translate_y, data->translate_z );
+   glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
+   glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
+
+   glCallList( data->sphere_list );
+
+   glPopMatrix();
+
+   glFlush();
+
+   retroflat_draw_release( NULL );
+
+   data->rotate_y += 5;
+
+   /* X bounce. */
+   data->translate_x += data->translate_x_inc;
+   if(
+      9 <= data->translate_x ||
+      -9 >= data->translate_x 
+   ) {
+      data->translate_x_inc *= -1.0f;
+      data->translate_x += data->translate_x_inc;
+   }
+
+   /* Y bounce. */
+   data->translate_y += data->translate_y_inc;
+   if(
+      6 <= data->translate_y ||
+      -6 >= data->translate_y 
+   ) {
+      data->translate_y_inc *= -1.0f;
+      data->translate_y += data->translate_y_inc;
+   }
 }
 
 void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
@@ -340,7 +488,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       glEndList();
 
       demo_init_scene( DEMO_INIT_LIGHTS );
-      demo_init_projection( DEMO_PROJ_FRUSTUM );
+      demo_init_projection( DEMO_PROJ_FRUSTUM, 1.0f );
    }
 
    /* Input */
@@ -482,7 +630,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       /* Setup projection. */
 
       demo_init_scene( 0 );
-      demo_init_projection( DEMO_PROJ_ORTHO );
+      demo_init_projection( DEMO_PROJ_ORTHO, 1.0f );
 
       data->init = 1;
    }
