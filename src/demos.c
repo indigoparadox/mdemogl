@@ -7,12 +7,16 @@
 #define RETROGLU_C
 #include "demos.h"
 
-void demo_init_scene() {
+void demo_init_scene( uint8_t flags ) {
    debug_printf( 3, "initializing..." );
    glEnable( GL_CULL_FACE );
    glEnable( GL_TEXTURE_2D );
-   glEnable( GL_LIGHTING );
    glEnable( GL_NORMALIZE );
+
+   if( DEMO_INIT_LIGHTS == (DEMO_INIT_LIGHTS & flags) ) {
+      glEnable( GL_LIGHTING );
+      glEnable( GL_LIGHT0 );
+   }
 
    glEnable( GL_BLEND );
    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -24,6 +28,38 @@ void demo_init_scene() {
    glDepthRange( 0.0f, 1.0f );
    
    glShadeModel( GL_SMOOTH );
+}
+
+void demo_init_projection( uint8_t demo_proj ) {
+   /* Setup projection. */
+   glViewport(
+      0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
+
+   /* Switch to projection matrix for setup. */
+   glMatrixMode( GL_PROJECTION );
+
+   /* Zero everything out. */
+   glLoadIdentity();
+
+   switch( demo_proj ) {
+   case DEMO_PROJ_FRUSTUM:
+      /* This is really tweaky, and when it breaks, polygons seem to get drawn
+         * out of order? Still experimenting/researching. */
+      glFrustum(
+         /* The smaller these are, the closer it lets us get to the camera? */
+         -0.5, 0.5, -0.5, 0.5,
+         /* Near plane can't be zero! */
+         0.5f, 10.0f );
+      break;
+
+   case DEMO_PROJ_ORTHO:
+      /* This is much simpler/more forgiving than frustum. */
+      glOrtho( -1.0, 1.0, -1.0, 1.0, -100.0, 100.0 );
+      break;
+   }
+
+   /* Revert to model matrix for later instructions (out of this scope). */
+   glMatrixMode( GL_MODELVIEW );
 }
 
 int demo_load_obj(
@@ -154,8 +190,79 @@ cleanup:
 void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
-   static int rotate_x = 10;
-   static int rotate_y = 10;
+   float translate_z = -5.0f;
+   const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
+   const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+   if( !data->init ) {
+
+      data->cube_list = glGenLists( 1 );
+      glNewList( data->cube_list, GL_COMPILE );
+
+      /* White side - BACK */
+      glBegin( GL_POLYGON );
+      glColor3f(   1.0,  1.0, 1.0 );
+      glVertex3f(  0.5, -0.5, 0.5 );
+      glVertex3f(  0.5,  0.5, 0.5 );
+      glVertex3f( -0.5,  0.5, 0.5 );
+      glVertex3f( -0.5, -0.5, 0.5 );
+      glEnd();
+      
+      /* Purple side - RIGHT */
+      glBegin( GL_POLYGON );
+      glColor3f(  1.0,  0.0,  1.0 );
+      glVertex3f( 0.5, -0.5, -0.5 );
+      glVertex3f( 0.5,  0.5, -0.5 );
+      glVertex3f( 0.5,  0.5,  0.5 );
+      glVertex3f( 0.5, -0.5,  0.5 );
+      glEnd();
+      
+      /* Green side - LEFT */
+      glBegin( GL_POLYGON );
+      glColor3f(   0.0,  1.0,  0.0 );
+      glVertex3f( -0.5, -0.5,  0.5 );
+      glVertex3f( -0.5,  0.5,  0.5 );
+      glVertex3f( -0.5,  0.5, -0.5 );
+      glVertex3f( -0.5, -0.5, -0.5 );
+      glEnd();
+
+      /* Yellow side - FRONT */
+      glBegin( GL_POLYGON );
+      glColor3f(   1.0,  1.0, 0.0 );
+      glVertex3f( -0.5, -0.5, -0.5 );
+      glVertex3f( -0.5,  0.5, -0.5 );
+      glVertex3f(  0.5,  0.5, -0.5 );
+      glVertex3f(  0.5, -0.5, -0.5 );
+      glEnd();
+      
+      /* Blue side - TOP */
+      glBegin( GL_POLYGON );
+      glColor3f(   0.0,  0.0,  1.0 );
+      glVertex3f(  0.5,  0.5,  0.5 );
+      glVertex3f(  0.5,  0.5, -0.5 );
+      glVertex3f( -0.5,  0.5, -0.5 );
+      glVertex3f( -0.5,  0.5,  0.5 );
+      glEnd();
+      
+      /* Red side - BOTTOM */
+      glBegin( GL_POLYGON );
+      glColor3f(   1.0,  0.0,  0.0 );
+      glVertex3f(  0.5, -0.5, -0.5 );
+      glVertex3f(  0.5, -0.5,  0.5 );
+      glVertex3f( -0.5, -0.5,  0.5 );
+      glVertex3f( -0.5, -0.5, -0.5 );
+      glEnd();
+
+      glEndList();
+
+      demo_init_scene( 0 );
+      demo_init_projection( DEMO_PROJ_FRUSTUM );
+
+      data->rotate_x = 10;
+      data->rotate_y = 10;
+
+      data->init = 1;
+   }
 
    /* Input */
 
@@ -175,105 +282,24 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-   glLoadIdentity();
-   glRotatef( rotate_x, 1.0f, 0.0f, 0.0f );
-   glRotatef( rotate_y, 0.0f, 1.0f, 0.0f );
+   glPushMatrix();
 
-   /* White side - BACK */
-   glBegin( GL_POLYGON );
-   glColor3f(   1.0,  1.0, 1.0 );
-   glVertex3f(  0.5, -0.5, 0.5 );
-   glVertex3f(  0.5,  0.5, 0.5 );
-   glVertex3f( -0.5,  0.5, 0.5 );
-   glVertex3f( -0.5, -0.5, 0.5 );
-   glEnd();
-   
-   /* Purple side - RIGHT */
-   glBegin( GL_POLYGON );
-   glColor3f(  1.0,  0.0,  1.0 );
-   glVertex3f( 0.5, -0.5, -0.5 );
-   glVertex3f( 0.5,  0.5, -0.5 );
-   glVertex3f( 0.5,  0.5,  0.5 );
-   glVertex3f( 0.5, -0.5,  0.5 );
-   glEnd();
-   
-   /* Green side - LEFT */
-   glBegin( GL_POLYGON );
-   glColor3f(   0.0,  1.0,  0.0 );
-   glVertex3f( -0.5, -0.5,  0.5 );
-   glVertex3f( -0.5,  0.5,  0.5 );
-   glVertex3f( -0.5,  0.5, -0.5 );
-   glVertex3f( -0.5, -0.5, -0.5 );
-   glEnd();
-   
-   /* Blue side - TOP */
-   glBegin( GL_POLYGON );
-   glColor3f(   0.0,  0.0,  1.0 );
-   glVertex3f(  0.5,  0.5,  0.5 );
-   glVertex3f(  0.5,  0.5, -0.5 );
-   glVertex3f( -0.5,  0.5, -0.5 );
-   glVertex3f( -0.5,  0.5,  0.5 );
-   glEnd();
-   
-   /* Red side - BOTTOM */
-   glBegin( GL_POLYGON );
-   glColor3f(   1.0,  0.0,  0.0 );
-   glVertex3f(  0.5, -0.5, -0.5 );
-   glVertex3f(  0.5, -0.5,  0.5 );
-   glVertex3f( -0.5, -0.5,  0.5 );
-   glVertex3f( -0.5, -0.5, -0.5 );
+   glTranslatef( 0.0f, 0.0f, translate_z );
+   glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
+   glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
 
-   /* White side - BACK */
-   glBegin( GL_POLYGON );
-   glColor3f(   1.0,  1.0, 1.0 );
-   glVertex3f(  0.5, -0.5, 0.5 );
-   glVertex3f(  0.5,  0.5, 0.5 );
-   glVertex3f( -0.5,  0.5, 0.5 );
-   glVertex3f( -0.5, -0.5, 0.5 );
-   glEnd();
-   
-   /* Purple side - RIGHT */
-   glBegin( GL_POLYGON );
-   glColor3f(  1.0,  0.0,  1.0 );
-   glVertex3f( 0.5, -0.5, -0.5 );
-   glVertex3f( 0.5,  0.5, -0.5 );
-   glVertex3f( 0.5,  0.5,  0.5 );
-   glVertex3f( 0.5, -0.5,  0.5 );
-   glEnd();
-   
-   /* Green side - LEFT */
-   glBegin( GL_POLYGON );
-   glColor3f(   0.0,  1.0,  0.0 );
-   glVertex3f( -0.5, -0.5,  0.5 );
-   glVertex3f( -0.5,  0.5,  0.5 );
-   glVertex3f( -0.5,  0.5, -0.5 );
-   glVertex3f( -0.5, -0.5, -0.5 );
-   glEnd();
-   
-   /* Blue side - TOP */
-   glBegin( GL_POLYGON );
-   glColor3f(   0.0,  0.0,  1.0 );
-   glVertex3f(  0.5,  0.5,  0.5 );
-   glVertex3f(  0.5,  0.5, -0.5 );
-   glVertex3f( -0.5,  0.5, -0.5 );
-   glVertex3f( -0.5,  0.5,  0.5 );
-   glEnd();
-   
-   /* Red side - BOTTOM */
-   glBegin( GL_POLYGON );
-   glColor3f(   1.0,  0.0,  0.0 );
-   glVertex3f(  0.5, -0.5, -0.5 );
-   glVertex3f(  0.5, -0.5,  0.5 );
-   glVertex3f( -0.5, -0.5,  0.5 );
-   glVertex3f( -0.5, -0.5, -0.5 );
+   glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
+   glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
 
-   glEnd();
+   glCallList( data->cube_list );
+
+   glPopMatrix();
 
    glFlush();
 
    retroflat_draw_release( NULL );
 
-   rotate_y += 5;
+   data->rotate_y += 5;
 }
 
 void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
@@ -305,10 +331,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          debug_printf( 3, "demo data dumped to %s", g_demo_dump_name );
       }
 
-
       /* Setup display list. */
       data->obj_list = glGenLists( 1 );
-
       glNewList( data->obj_list, GL_COMPILE );
 
       retroglu_draw_poly(
@@ -320,17 +344,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       
       glEndList();
 
-      /* Setup projection. */
-      glViewport(
-         0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
-      glMatrixMode( GL_PROJECTION );
-      glLoadIdentity();
-      glFrustum(
-         /* The smaller these are, the closer it lets us get to the camera? */
-         -0.5, 0.5, -0.5, 0.5,
-         /* Near plane can't be zero! */
-         0.5f, 10.0f );
-      glMatrixMode( GL_MODELVIEW );
+      demo_init_scene( DEMO_INIT_LIGHTS );
+      demo_init_projection( DEMO_PROJ_FRUSTUM );
    }
 
    /* Input */
@@ -392,7 +407,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    glPushMatrix();
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-   glClearDepth( 1.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
    glScalef( 0.5f, 0.5f, 0.5f );
@@ -407,7 +421,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    */
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
-   glEnable( GL_LIGHT0 );
 
    glCallList( data->obj_list );
 
@@ -465,10 +478,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       data->sprite.scale_x = 4.0f;
       data->sprite.scale_y = 4.0f;
 
-      data->sprite_list = glGenLists( 1 );
-
-
       /* TODO: Generate list for each texture anim frame? */
+      data->sprite_list = glGenLists( 1 );
       glNewList( data->sprite_list, GL_COMPILE );
 
       retroglu_draw_sprite( &(data->sprite) );
@@ -477,12 +488,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
       /* Setup projection. */
 
-      glViewport(
-         0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
-      glMatrixMode( GL_PROJECTION );
-      glLoadIdentity();
-      glOrtho( -1.0, 1.0, -1.0, 1.0, -100.0, 100.0 );
-      glMatrixMode( GL_MODELVIEW );
+      demo_init_scene( 0 );
+      demo_init_projection( DEMO_PROJ_ORTHO );
 
       init = 1;
    }
@@ -543,7 +550,6 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
-   glEnable( GL_LIGHT0 );
 
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();

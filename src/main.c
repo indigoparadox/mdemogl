@@ -114,7 +114,6 @@ int main( int argc, char** argv ) {
 
    /* === Main Loop === */
 
-   demo_init_scene();
    retroflat_loop( (retroflat_loop_iter)g_loop, g_data );
 
 cleanup:
