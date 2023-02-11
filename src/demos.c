@@ -18,7 +18,8 @@ void demo_init_scene() {
 }
 
 int demo_load_obj(
-   const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
+   const char* filename, struct RETROGLU_PARSER* parser,
+   struct DEMO_OBJ_DATA* data
 ) {
    FILE* obj_file = NULL;
    uint32_t i = 0; /* Index in file buffer, so long. */
@@ -77,7 +78,7 @@ int demo_load_obj(
    return RETROFLAT_OK;
 }
 
-void demo_dump_obj( const char* filename, struct DEMO_DATA* data ) {
+void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
    FILE* obj_file = NULL;
    uint32_t i = 0, /* Index in file buffer, so long. */
       j = 0;
@@ -141,7 +142,7 @@ cleanup:
    return retval;
 }
 
-void draw_cube_iter( struct DEMO_DATA* data ) {
+void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
    static int rotate_x = 10;
@@ -266,7 +267,7 @@ void draw_cube_iter( struct DEMO_DATA* data ) {
    rotate_y += 5;
 }
 
-void draw_obj_iter( struct DEMO_DATA* data ) {
+void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
    /*
@@ -297,6 +298,20 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
 
       glViewport(
          0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
+
+      /* Setup display list. */
+      data->obj_list = glGenLists( 1 );
+
+      glNewList( data->obj_list, GL_COMPILE );
+
+      retroglu_draw_poly(
+         data->vertices, data->vertices_sz,
+         data->vnormals, data->vnormals_sz,
+         data->vtextures, data->vtextures_sz,
+         data->faces, data->faces_sz,
+         data->materials, data->materials_sz );
+      
+      glEndList();
    }
 
    /* Input */
@@ -359,11 +374,6 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-   glMatrixMode( GL_PROJECTION );
-   glLoadIdentity();
-   glMatrixMode( GL_MODELVIEW );
-   glLoadIdentity();
-
    glTranslatef( tx, ty, tz );
 
    /* glRotatef( 1, 1.0f, 0.0f, 0.0f ); */
@@ -377,15 +387,7 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
    glEnable( GL_LIGHT0 );
 
-   /*
-   */
-
-   retroglu_draw_poly(
-      data->vertices, data->vertices_sz,
-      data->vnormals, data->vnormals_sz,
-      data->vtextures, data->vtextures_sz,
-      data->faces, data->faces_sz,
-      data->materials, data->materials_sz );
+   glCallList( data->obj_list );
 
    glPopMatrix();
 
@@ -397,7 +399,7 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
 
 }
 
-void draw_fp_iter( struct DEMO_DATA* data ) {
+void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
 
@@ -421,7 +423,7 @@ void draw_fp_iter( struct DEMO_DATA* data ) {
    retroflat_draw_release( NULL );
 }
 
-void draw_bmp_iter( struct DEMO_DATA* data ) {
+void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
    /* static float sprite_fv[8][2];
@@ -431,32 +433,27 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
    static int tex_countdown = 0;
-   static struct RETROGLU_SPRITE sprite;
-   static struct RETROGLU_TILE grass;
 
    if( 0 == init ) {
-      demo_load_sprite( "test", &sprite );
+      demo_load_sprite( "test", &(data->sprite) );
 
       retroglu_set_sprite_clip(
-         &sprite, 0, 48, 0, 32, 16, 16, RETROGLU_FLAGS_INIT_VERTICES );
-      retroglu_set_sprite_pos( &sprite, 400, 300 );
-      sprite.scale_x = 4.0f;
-      sprite.scale_y = 4.0f;
+         &(data->sprite), 0, 48, 0, 32, 16, 16, RETROGLU_FLAGS_INIT_VERTICES );
+      retroglu_set_sprite_pos( &(data->sprite), 400, 300 );
+      data->sprite.scale_x = 4.0f;
+      data->sprite.scale_y = 4.0f;
+
+      data->sprite_list = glGenLists( 1 );
+
+      /* TODO: Generate list for each texture anim frame? */
+      glNewList( data->sprite_list, GL_COMPILE );
+
+      retroglu_draw_sprite( &(data->sprite) );
+
+      glEndList();
 
       init = 1;
    }
-
-#if 0
-   sprite_tx_fv[0][SPRITE_X] = tex_x;
-   sprite_tx_fv[1][SPRITE_X] = tex_x + 0.5;
-   sprite_tx_fv[2][SPRITE_X] = tex_x + 0.5;
-   sprite_tx_fv[3][SPRITE_X] = tex_x;
-
-   sprite_tx_fv[4][SPRITE_X] = tex_x;
-   sprite_tx_fv[5][SPRITE_X] = tex_x + 0.5;
-   sprite_tx_fv[6][SPRITE_X] = tex_x + 0.5;
-   sprite_tx_fv[7][SPRITE_X] = tex_x;
-#endif
 
    /* Input */
 
@@ -466,38 +463,38 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    switch( input ) {
    case RETROFLAT_KEY_A:
       if( 
-         0 == sprite.rotate_y ||
-         180 == sprite.rotate_y ||
-         -180 == sprite.rotate_y
+         0 == data->sprite.rotate_y ||
+         180 == data->sprite.rotate_y ||
+         -180 == data->sprite.rotate_y
       ) {
-         sprite.rotate_y += 10;
+         data->sprite.rotate_y += 10;
       }
       break;
 
    case RETROFLAT_KEY_D:
       if(
-         0 == sprite.rotate_y ||
-         180 == sprite.rotate_y ||
-         -180 == sprite.rotate_y
+         0 == data->sprite.rotate_y ||
+         180 == data->sprite.rotate_y ||
+         -180 == data->sprite.rotate_y
       ) {
-         sprite.rotate_y -= 10;
+         data->sprite.rotate_y -= 10;
       }
       break;
 
    case RETROFLAT_KEY_RIGHT:
-      sprite.translate_x += DEMO_TRANSLATE_INC;
+      data->sprite.translate_x += DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_LEFT:
-      sprite.translate_x -= DEMO_TRANSLATE_INC;
+      data->sprite.translate_x -= DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_DOWN:
-      sprite.translate_y -= DEMO_TRANSLATE_INC;
+      data->sprite.translate_y -= DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_UP:
-      sprite.translate_y += DEMO_TRANSLATE_INC;
+      data->sprite.translate_y += DEMO_TRANSLATE_INC;
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -521,7 +518,9 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
    glEnable( GL_LIGHT0 );
 
-   retroglu_draw_sprite( &sprite );
+   retroglu_tsrot_sprite( &(data->sprite) );
+
+   glCallList( data->sprite_list );
 
    glFlush();
    retroflat_draw_release( NULL );
@@ -530,21 +529,22 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    tex_countdown--;
    if( 0 >= tex_countdown ) {
       tex_x = (0 == tex_x ? 16 : 0);
-      retroglu_set_sprite_clip( &sprite, tex_x, 48, tex_x, 32, 16, 16, 0 );
+      retroglu_set_sprite_clip(
+         &(data->sprite), tex_x, 48, tex_x, 32, 16, 16, 0 );
       tex_countdown = 30;
    }
 
    /* Rotate a little bit with each frame if we're rotating. */
-   if( 0 < sprite.rotate_y && 180 > sprite.rotate_y ) {
-      sprite.rotate_y += DEMO_ROTATE_INC;
-   } else if( 180 < sprite.rotate_y && 360 > sprite.rotate_y ) {
-      sprite.rotate_y += DEMO_ROTATE_INC;
-   } else if( 0 > sprite.rotate_y && -180 < sprite.rotate_y ) {
-      sprite.rotate_y -= DEMO_ROTATE_INC;
-   } else if( -180 > sprite.rotate_y && -360 < sprite.rotate_y ) {
-      sprite.rotate_y -= DEMO_ROTATE_INC;
-   } else if( 360 == sprite.rotate_y || -360 == sprite.rotate_y ) {
-      sprite.rotate_y = 0;
+   if( 0 < data->sprite.rotate_y && 180 > data->sprite.rotate_y ) {
+      data->sprite.rotate_y += DEMO_ROTATE_INC;
+   } else if( 180 < data->sprite.rotate_y && 360 > data->sprite.rotate_y ) {
+      data->sprite.rotate_y += DEMO_ROTATE_INC;
+   } else if( 0 > data->sprite.rotate_y && -180 < data->sprite.rotate_y ) {
+      data->sprite.rotate_y -= DEMO_ROTATE_INC;
+   } else if( -180 > data->sprite.rotate_y && -360 < data->sprite.rotate_y ) {
+      data->sprite.rotate_y -= DEMO_ROTATE_INC;
+   } else if( 360 == data->sprite.rotate_y || -360 == data->sprite.rotate_y ) {
+      data->sprite.rotate_y = 0;
    }
 }
 
