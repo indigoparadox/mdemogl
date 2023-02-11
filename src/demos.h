@@ -59,9 +59,12 @@ struct DEMO_OBJ_DATA {
 };
 
 struct DEMO_SPRITE_DATA {
+   int init;
    struct RETROGLU_SPRITE sprite;
    struct RETROGLU_TILE grass;
-   GLint sprite_list;
+   GLint sprite_list[2];
+   int tex_countdown;
+   int tex_frame_idx;
 };
 
 struct DEMO_FP_DATA {
