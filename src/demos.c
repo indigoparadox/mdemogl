@@ -191,8 +191,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
    float translate_z = -5.0f;
-   const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
-   const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
    if( !data->init ) {
 
@@ -287,9 +285,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    glTranslatef( 0.0f, 0.0f, translate_z );
    glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
    glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
-
-   glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
-   glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
 
    glCallList( data->cube_list );
 
@@ -453,7 +448,6 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    retroflat_draw_lock( NULL );
 
-
    glFlush();
    retroflat_draw_release( NULL );
 }
@@ -461,15 +455,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
-   /* static float sprite_fv[8][2];
-   static float sprite_tx_fv[8][2]; */
-   static int init = 0;
-   static uint32_t tex_x = 0;
-   const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
-   const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-   static int tex_countdown = 0;
 
-   if( 0 == init ) {
+   if( 0 == data->init ) {
       demo_load_sprite( "test", &(data->sprite) );
 
       retroglu_set_sprite_clip(
@@ -478,12 +465,18 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       data->sprite.scale_x = 4.0f;
       data->sprite.scale_y = 4.0f;
 
-      /* TODO: Generate list for each texture anim frame? */
-      data->sprite_list = glGenLists( 1 );
-      glNewList( data->sprite_list, GL_COMPILE );
-
+      /* Generate texture frame 1 list. */
+      data->sprite_list[0] = glGenLists( 1 );
+      glNewList( data->sprite_list[0], GL_COMPILE );
       retroglu_draw_sprite( &(data->sprite) );
+      glEndList();
 
+      /* Generate texture frame 2 list. */
+      data->sprite_list[1] = glGenLists( 1 );
+      retroglu_set_sprite_clip(
+         &(data->sprite), 16, 48, 16, 32, 16, 16, 0 );
+      glNewList( data->sprite_list[1], GL_COMPILE );
+      retroglu_draw_sprite( &(data->sprite) );
       glEndList();
 
       /* Setup projection. */
@@ -491,7 +484,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       demo_init_scene( 0 );
       demo_init_projection( DEMO_PROJ_ORTHO );
 
-      init = 1;
+      data->init = 1;
    }
 
    /* Input */
@@ -548,15 +541,12 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-   glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
-   glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
-
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
 
    retroglu_tsrot_sprite( &(data->sprite) );
 
-   glCallList( data->sprite_list );
+   glCallList( data->sprite_list[data->tex_frame_idx] );
 
    glPopMatrix();
 
@@ -564,12 +554,10 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    retroflat_draw_release( NULL );
 
    /* Set the walking frame. */
-   tex_countdown--;
-   if( 0 >= tex_countdown ) {
-      tex_x = (0 == tex_x ? 16 : 0);
-      retroglu_set_sprite_clip(
-         &(data->sprite), tex_x, 48, tex_x, 32, 16, 16, 0 );
-      tex_countdown = 30;
+   data->tex_countdown--;
+   if( 0 >= data->tex_countdown ) {
+      data->tex_frame_idx = (0 == data->tex_frame_idx ? 1 : 0);
+      data->tex_countdown = 30;
    }
 
    /* Rotate a little bit with each frame if we're rotating. */
