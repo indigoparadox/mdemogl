@@ -7,68 +7,6 @@
 #define RETROGLU_C
 #include "demos.h"
 
-void demo_init_scene( uint8_t flags ) {
-   debug_printf( 3, "initializing..." );
-   glEnable( GL_CULL_FACE );
-   glEnable( GL_TEXTURE_2D );
-   glEnable( GL_NORMALIZE );
-
-   if( DEMO_INIT_LIGHTS == (DEMO_INIT_LIGHTS & flags) ) {
-      glEnable( GL_LIGHTING );
-      glEnable( GL_LIGHT0 );
-   }
-
-   glEnable( GL_BLEND );
-   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-   /* Setup depth buffer so triangles in back are hidden. */
-   glEnable( GL_DEPTH_TEST );
-   glDepthMask( GL_TRUE );
-   glDepthFunc( GL_LESS );
-   glDepthRange( 0.0f, 1.0f );
-   
-   glShadeModel( GL_SMOOTH );
-}
-
-void demo_init_projection( uint8_t demo_proj, float zoom ) {
-   float aspect_ratio = 0;
-
-   /* Setup projection. */
-   glViewport(
-      0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
-
-   aspect_ratio = (float)retroflat_screen_w() / (float)retroflat_screen_h();
-
-   /* Switch to projection matrix for setup. */
-   glMatrixMode( GL_PROJECTION );
-
-   /* Zero everything out. */
-   glLoadIdentity();
-
-   switch( demo_proj ) {
-   case DEMO_PROJ_FRUSTUM:
-      /* This is really tweaky, and when it breaks, polygons seem to get drawn
-         * out of order? Still experimenting/researching. */
-      debug_printf( 1, "aspect ratio: %f", aspect_ratio );
-      glFrustum(
-         /* The smaller these are, the closer it lets us get to the camera? */
-         -1.0f * zoom * aspect_ratio, zoom * aspect_ratio, -1.0f * zoom, zoom,
-         /* Near plane can't be zero! */
-         0.5f, 10.0f );
-      break;
-
-   case DEMO_PROJ_ORTHO:
-      /* This is much simpler/more forgiving than frustum. */
-      glOrtho(
-         -1.0f * zoom * aspect_ratio, zoom * aspect_ratio, -1.0f * zoom, zoom,
-         -100.0, 100.0 );
-      break;
-   }
-
-   /* Revert to model matrix for later instructions (out of this scope). */
-   glMatrixMode( GL_MODELVIEW );
-}
-
 int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser,
    struct DEMO_OBJ_DATA* data
@@ -198,6 +136,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
    float translate_z = -5.0f;
+   struct RETROGLU_PROJ_ARGS args;
 
    if( !data->init ) {
 
@@ -260,8 +199,10 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
       glEndList();
 
-      demo_init_scene( 0 );
-      demo_init_projection( DEMO_PROJ_FRUSTUM, 1.0f );
+      retroglu_init_scene( 0 );
+      args.proj = RETROGLU_PROJ_FRUSTUM;
+      args.rzoom = 1.0f;
+      retroglu_init_projection( &args );
 
       data->rotate_x = 10;
       data->rotate_y = 10;
@@ -311,6 +252,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    float ang_xz = 0;
    int even_row = 1,
       even_col = 1;
+   struct RETROGLU_PROJ_ARGS args;
 
    if( !data->init ) {
 
@@ -374,8 +316,10 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
       glEndList();
 
-      demo_init_scene( 0 );
-      demo_init_projection( DEMO_PROJ_ORTHO, 10.0f );
+      retroglu_init_scene( 0 );
+      args.proj = RETROGLU_PROJ_ORTHO;
+      args.rzoom = 10.0f;
+      retroglu_init_projection( &args );
 
       /* Start spin. */
       data->rotate_x = 0;
@@ -461,6 +405,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    /*
    const float l_position[] = {0.0f, 0.0f, 2.0f, 1.0f};
    */
+   struct RETROGLU_PROJ_ARGS args;
 
    if( 0 == data->vertices_sz ) {
       demo_load_obj( g_demo_obj_name, NULL, data );
@@ -487,8 +432,10 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       
       glEndList();
 
-      demo_init_scene( DEMO_INIT_LIGHTS );
-      demo_init_projection( DEMO_PROJ_FRUSTUM, 1.0f );
+      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
+      args.proj = RETROGLU_PROJ_FRUSTUM;
+      args.rzoom = 1.0f;
+      retroglu_init_projection( &args );
    }
 
    /* Input */
@@ -603,6 +550,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
+   struct RETROGLU_PROJ_ARGS args;
 
    if( 0 == data->init ) {
       demo_load_sprite( "test", &(data->sprite) );
@@ -629,8 +577,10 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
       /* Setup projection. */
 
-      demo_init_scene( 0 );
-      demo_init_projection( DEMO_PROJ_ORTHO, 1.0f );
+      retroglu_init_scene( 0 );
+      args.proj = RETROGLU_PROJ_ORTHO;
+      args.rzoom = 1.0f;
+      retroglu_init_projection( &args );
 
       data->init = 1;
    }
@@ -691,6 +641,9 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
+
+   /* Scale sprite down to manageable size insite this matrix. */
+   glScalef( 0.01f, 0.01f, 0.01f );
 
    retroglu_tsrot_sprite( &(data->sprite) );
 
