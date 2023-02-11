@@ -13,6 +13,7 @@
 #include "demos.h"
 
 retroflat_loop_iter g_loop = NULL;
+void* g_data = NULL;
 
 static MERROR_RETVAL demo_cli_cb(
    const char* arg, struct RETROFLAT_ARGS* args
@@ -22,6 +23,7 @@ static MERROR_RETVAL demo_cli_cb(
    for( i = 0 ; '\0' != gc_demo_names[i][0] ; i++ ) {
       if( 0 == strncmp( gc_demo_names[i], arg, strlen( gc_demo_names[i] ) ) ) {
          g_loop = gc_demo_loops[i];
+         g_data = calloc( 1, gc_demo_data_sz[i] );
          debug_printf(
             3, "demo loop manually selected: %s", gc_demo_names[i] );
          break;
@@ -65,7 +67,6 @@ int main( int argc, char** argv ) {
    struct RETROFLAT_ARGS args;
    int i = 0,
       j = 0;
-   struct DEMO_DATA data;
 
    /* === Setup === */
 
@@ -108,18 +109,19 @@ int main( int argc, char** argv ) {
       g_loop = gc_demo_loops[j];
       debug_printf( 3, "auto-selecting demo loop (%d of %d): %s",
          j, i, gc_demo_names[j] );
+      g_data = calloc( 1, gc_demo_data_sz[j] );
    }
-
-   memset( &data, '\0', sizeof( struct DEMO_DATA ) );
 
    /* === Main Loop === */
 
    demo_init_scene();
-   retroflat_loop( (retroflat_loop_iter)g_loop, &data );
+   retroflat_loop( (retroflat_loop_iter)g_loop, g_data );
 
 cleanup:
 
    retroflat_shutdown( retval );
+
+   free( g_data );
 
    return retval;
 }

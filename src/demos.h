@@ -32,7 +32,11 @@
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
 #define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
 
-struct DEMO_DATA {
+struct DEMO_CUBE_DATA {
+
+};
+
+struct DEMO_OBJ_DATA {
    struct RETROGLU_VERTEX vertices[DEMO_VERTICES_SZ_MAX];
    int vertices_sz;
    struct RETROGLU_VERTEX vnormals[DEMO_VERTICES_SZ_MAX];
@@ -43,35 +47,59 @@ struct DEMO_DATA {
    int faces_sz;
    struct RETROGLU_MATERIAL materials[DEMO_MATERIALS_SZ_MAX];
    int materials_sz;
+   GLint obj_list;
+};
+
+struct DEMO_SPRITE_DATA {
+   struct RETROGLU_SPRITE sprite;
+   struct RETROGLU_TILE grass;
+   GLint sprite_list;
+};
+
+struct DEMO_FP_DATA {
+
 };
 
 void demo_init_scene();
 int demo_load_obj(
-   const char* filename, struct RETROGLU_PARSER* parser, struct DEMO_DATA* data
+   const char* filename, struct RETROGLU_PARSER* parser,
+   struct DEMO_OBJ_DATA* data
 );
-void demo_dump_obj( const char* filename, struct DEMO_DATA* data );
+void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data );
 MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
-void draw_cube_iter( struct DEMO_DATA* data );
-void draw_obj_iter( struct DEMO_DATA* data );
-void draw_fp_iter( struct DEMO_DATA* data );
-void draw_bmp_iter( struct DEMO_DATA* data );
+
+#define DEMOS_LIST( f ) \
+   f( cube, struct DEMO_CUBE_DATA ) \
+   f( obj, struct DEMO_OBJ_DATA ) \
+   f( sprite, struct DEMO_SPRITE_DATA )
+
+#define DEMOS_LIST_PROTOS( name, data_struct ) \
+   void draw_ ## name ## _iter( data_struct* data );
+
+DEMOS_LIST( DEMOS_LIST_PROTOS )
 
 #ifdef DEMOS_C
 
+#define DEMOS_LIST_NAMES( name, data_struct ) #name,
+
 const char* gc_demo_names[] = {
-   "cube",
-   "obj",
-   /* "fp", */
-   "bmp",
+   DEMOS_LIST( DEMOS_LIST_NAMES )
    ""
 };
 
+#define DEMOS_LIST_LOOPS( name, data_struct ) \
+   (retroflat_loop_iter)draw_ ## name ## _iter,
+
 retroflat_loop_iter gc_demo_loops[] = {
-   (retroflat_loop_iter)draw_cube_iter,
-   (retroflat_loop_iter)draw_obj_iter,
-   /* (retroflat_loop_iter)draw_fp_iter, */
-   (retroflat_loop_iter)draw_bmp_iter,
+   DEMOS_LIST( DEMOS_LIST_LOOPS )
    NULL
+};
+
+#define DEMOS_LIST_DATA_SZ( name, data_struct ) sizeof( data_struct ),
+
+size_t gc_demo_data_sz[] = {
+   DEMOS_LIST( DEMOS_LIST_DATA_SZ )
+   0
 };
 
 int g_timer = 0;
@@ -86,6 +114,7 @@ extern retroflat_loop_iter gc_demo_loops[];
 extern int g_timer;
 extern char g_demo_dump_name[];
 extern char g_demo_obj_name[];
+extern size_t gc_demo_data_sz[];
 
 #endif /* DEMOS_C */
 
