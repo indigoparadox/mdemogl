@@ -17,6 +17,9 @@
 
 #define DEMO_OBJ_NAME_SZ_MAX 255
 
+#define DEMO_SPHERE_INC_XY (RETROFLAT_PI / 20)
+#define DEMO_SPHERE_INC_XZ (RETROFLAT_PI / 20)
+
 #define SPRITE_X 0
 #define SPRITE_Y 1
 
@@ -42,6 +45,18 @@ struct DEMO_CUBE_DATA {
    GLint cube_list;
    int rotate_x;
    int rotate_y;
+};
+
+struct DEMO_SPHERE_DATA {
+   int init;
+   GLint sphere_list;
+   int rotate_x;
+   int rotate_y;
+   float translate_x;
+   float translate_x_inc;
+   float translate_y;
+   float translate_y_inc;
+   float translate_z;
 };
 
 struct DEMO_OBJ_DATA {
@@ -72,7 +87,7 @@ struct DEMO_FP_DATA {
 };
 
 void demo_init_scene( uint8_t flags );
-void demo_init_projection( uint8_t demo_proj );
+void demo_init_projection( uint8_t demo_proj, float zoom );
 int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser,
    struct DEMO_OBJ_DATA* data
@@ -82,6 +97,7 @@ MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sp
 
 #define DEMOS_LIST( f ) \
    f( cube, struct DEMO_CUBE_DATA ) \
+   f( sphere, struct DEMO_SPHERE_DATA ) \
    f( obj, struct DEMO_OBJ_DATA ) \
    f( sprite, struct DEMO_SPRITE_DATA )
 
