@@ -575,6 +575,9 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       retroglu_draw_sprite( &(data->sprite) );
       glEndList();
 
+      data->sprite.scale_x = 0.05f;
+      data->sprite.scale_y = 0.05f;
+
       /* Setup projection. */
 
       retroglu_init_scene( 0 );
@@ -643,8 +646,6 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    glPushMatrix();
 
    /* Scale sprite down to manageable size insite this matrix. */
-   glScalef( 0.01f, 0.01f, 0.01f );
-
    retroglu_tsrot_sprite( &(data->sprite) );
 
    glCallList( data->sprite_list[data->tex_frame_idx] );
