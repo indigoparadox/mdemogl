@@ -294,6 +294,9 @@ void draw_obj_iter( struct DEMO_DATA* data ) {
          demo_dump_obj( g_demo_dump_name, data );
          debug_printf( 3, "demo data dumped to %s", g_demo_dump_name );
       }
+
+      glViewport(
+         0, 0, (GLint)retroflat_screen_w(), (GLint)retroflat_screen_h() );
    }
 
    /* Input */
@@ -429,11 +432,13 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
    static int tex_countdown = 0;
    static struct RETROGLU_SPRITE sprite;
+   static struct RETROGLU_TILE grass;
 
    if( 0 == init ) {
       demo_load_sprite( "test", &sprite );
 
-      retroglu_set_sprite_clip( &sprite, 0, 48, 0, 32, 16, 16 );
+      retroglu_set_sprite_clip(
+         &sprite, 0, 48, 0, 32, 16, 16, RETROGLU_FLAGS_INIT_VERTICES );
       retroglu_set_sprite_pos( &sprite, 400, 300 );
       sprite.scale_x = 4.0f;
       sprite.scale_y = 4.0f;
@@ -518,8 +523,6 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
 
    retroglu_draw_sprite( &sprite );
 
-   glEnd();
-
    glFlush();
    retroflat_draw_release( NULL );
 
@@ -527,7 +530,7 @@ void draw_bmp_iter( struct DEMO_DATA* data ) {
    tex_countdown--;
    if( 0 >= tex_countdown ) {
       tex_x = (0 == tex_x ? 16 : 0);
-      retroglu_set_sprite_clip( &sprite, tex_x, 48, tex_x, 32, 16, 16 );
+      retroglu_set_sprite_clip( &sprite, tex_x, 48, tex_x, 32, 16, 16, 0 );
       tex_countdown = 30;
    }
 
