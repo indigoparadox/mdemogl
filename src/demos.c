@@ -8,13 +8,22 @@
 #include "demos.h"
 
 void demo_init_scene() {
-   glEnable( GL_DEPTH_TEST );
+   debug_printf( 3, "initializing..." );
    glEnable( GL_CULL_FACE );
-   glEnable( GL_BLEND );
    glEnable( GL_TEXTURE_2D );
    glEnable( GL_LIGHTING );
    glEnable( GL_NORMALIZE );
+
+   glEnable( GL_BLEND );
    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+   /* Setup depth buffer so triangles in back are hidden. */
+   glEnable( GL_DEPTH_TEST );
+   glDepthMask( GL_TRUE );
+   glDepthFunc( GL_LESS );
+   glDepthRange( 0.0f, 1.0f );
+   
+   glShadeModel( GL_SMOOTH );
 }
 
 int demo_load_obj(
@@ -372,6 +381,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    glPushMatrix();
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+   glClearDepth( 1.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
    glTranslatef( tx, ty, tz );
