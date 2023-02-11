@@ -28,12 +28,20 @@
 #define SPRITE_W 64
 #define SPRITE_H 64
 
+#define DEMO_PROJ_ORTHO 0
+#define DEMO_PROJ_FRUSTUM 1
+
+#define DEMO_INIT_LIGHTS 1
+
 #define hash_mat_r( m ) (fmod( m[0] * 0.01f, 1.0f ) * 2)
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
 #define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
 
 struct DEMO_CUBE_DATA {
-
+   int init;
+   GLint cube_list;
+   int rotate_x;
+   int rotate_y;
 };
 
 struct DEMO_OBJ_DATA {
@@ -60,7 +68,8 @@ struct DEMO_FP_DATA {
 
 };
 
-void demo_init_scene();
+void demo_init_scene( uint8_t flags );
+void demo_init_projection( uint8_t demo_proj );
 int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser,
    struct DEMO_OBJ_DATA* data
