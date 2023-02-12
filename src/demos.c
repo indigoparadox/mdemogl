@@ -259,6 +259,10 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->sphere_list = glGenLists( 1 );
       glNewList( data->sphere_list, GL_COMPILE );
 
+      /* Generate a sphere using the cos() as X and sin() as Y of angles at 
+       * DEMO_SPHERE_INC_XY and DEMO_SPHERE_INC_XZ increments around the
+       * origin (0, 0).
+       */
       for(
          ang_xz = 0 ;
          2 * RETROFLAT_PI > ang_xz ;
@@ -291,6 +295,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
             /* Quad panels at equal intervals around two circles intersecting
              * on orthogonal planes.
              */
+            /* TODO: Break into triangles. */
             glVertex3f( 
                sin( ang_xy ) * cos( ang_xz ),
                cos( ang_xy ),
@@ -553,8 +558,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    struct RETROGLU_PROJ_ARGS args;
 
    if( 0 == data->init ) {
+      /* Load sprite. */
       demo_load_sprite( "test", &(data->sprite) );
-
       retroglu_set_sprite_clip(
          &(data->sprite), 0, 48, 0, 32, 16, 16, RETROGLU_FLAGS_INIT_VERTICES );
       retroglu_set_sprite_pos( &(data->sprite), 400, 300 );
@@ -574,6 +579,9 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       glNewList( data->sprite_list[1], GL_COMPILE );
       retroglu_draw_sprite( &(data->sprite) );
       glEndList();
+
+      /* Load tiles. */
+      /* XXX */
 
       data->sprite.scale_x = 0.05f;
       data->sprite.scale_y = 0.05f;

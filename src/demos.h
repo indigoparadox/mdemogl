@@ -31,6 +31,10 @@
 #define SPRITE_W 64
 #define SPRITE_H 64
 
+#define DEMO_MAP_TILES_SZ_MAX 10
+#define DEMO_MAP_W 40
+#define DEMO_MAP_H 40
+
 #define hash_mat_r( m ) (fmod( m[0] * 0.01f, 1.0f ) * 2)
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
 #define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
@@ -71,7 +75,8 @@ struct DEMO_OBJ_DATA {
 struct DEMO_SPRITE_DATA {
    int init;
    struct RETROGLU_SPRITE sprite;
-   struct RETROGLU_TILE grass;
+   struct RETROGLU_TILE tiles[DEMO_MAP_TILES_SZ_MAX];
+   uint8_t map[DEMO_MAP_H][DEMO_MAP_W];
    GLint sprite_list[2];
    int tex_countdown;
    int tex_frame_idx;
