@@ -212,6 +212,8 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 0.5f;
+      args.near_plane = 0.5f;
+      args.far_plane = 10.0f;
       retroglu_init_projection( &args );
 
       glEnable( GL_LIGHT0 );
@@ -412,6 +414,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_ORTHO;
       args.rzoom = 10.0f;
+      args.near_plane = -100.0f;
+      args.far_plane = 100.0f;
       retroglu_init_projection( &args );
 
       glEnable( GL_LIGHT0 );
@@ -567,6 +571,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 1.0f;
+      args.near_plane = 0.5f;
+      args.far_plane = 10.0f;
       retroglu_init_projection( &args );
 
       glEnable( GL_LIGHT0 );
@@ -720,6 +726,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_ORTHO;
       args.rzoom = 1.0f;
+      args.near_plane = -100.0f;
+      args.far_plane = 100.0f;
       retroglu_init_projection( &args );
 
       data->init = 1;
@@ -818,20 +826,25 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    int input = 0;
    float x = 0,
       y = 0,
-      z = 0,
       x_next = 0,
       y_next = 0;
-   static int rotate_x = 0;
+   static int rotate_x = 85;
    static int rotate_y = 0;
    static float peak_offset = 0;
    struct RETROGLU_PROJ_ARGS args;
+   const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
    if( 0 == data->init ) {
 
-      retroglu_init_scene( 0 );
+      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 10.0f;
+      args.near_plane = 0.5f;
+      args.far_plane = 100.0f;
       retroglu_init_projection( &args );
+
+      glEnable( GL_LIGHT0 );
+      glEnable( GL_COLOR_MATERIAL );
 
       data->init = 1;
    }
@@ -842,14 +855,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
-   case RETROFLAT_KEY_RIGHT:
-      rotate_y += 10;
-      break;
-
-   case RETROFLAT_KEY_UP:
-      rotate_x += 10;
-      break;
-
    case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
@@ -862,26 +867,31 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+   glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
+
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
 
    glScalef( 0.4f, 0.4f, 0.4f );
 
+   glTranslatef( 0, -4.0f, -2.0f );
    glRotatef( rotate_x, 1.0f, 0, 0 );
    glRotatef( rotate_y, 0, 1.0f, 0 );
 
-   for( x = -10.0f ; 10.0f > x ; x += 0.1f ) {
+   for( x = -20.0f ; 20.0f > x ; x += 0.1f ) {
       x_next = x + 0.1f;
-      y = sin( x + peak_offset );
-      y_next = sin( x_next + peak_offset );
+      y = (sin( x + peak_offset ) * 0.10) + 1.0f;
+      y_next = (sin( x_next + peak_offset ) * 0.10) + 1.0f;
+
+      assert( 0 <= y );
 
       glBegin( GL_QUADS );
       glNormal3f( 0,           y,      0 );
       glColor3f( 0, 0.75, 0.75 );
-      glVertex3f( x,           y, -10.0f ); /* Far Left */
-      glVertex3f( x,           y,  10.0f ); /* Near Left */
-      glVertex3f( x_next, y_next,  10.0f ); /* Near Right */
-      glVertex3f( x_next, y_next, -10.0f ); /* Far Right */
+      glVertex3f( x,           y, -15.0f ); /* Far Left */
+      glVertex3f( x,           y,  5.0f ); /* Near Left */
+      glVertex3f( x_next, y_next,  5.0f ); /* Near Right */
+      glVertex3f( x_next, y_next, -15.0f ); /* Far Right */
       glEnd();
    }
 
