@@ -85,7 +85,7 @@ struct DEMO_SPRITE_DATA {
 };
 
 struct DEMO_FP_DATA {
-
+   int init;
 };
 
 void demo_init_scene( uint8_t flags );
