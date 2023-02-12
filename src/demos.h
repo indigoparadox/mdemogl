@@ -20,6 +20,11 @@
 #define DEMO_SPHERE_INC_XY (RETROFLAT_PI / 10)
 #define DEMO_SPHERE_INC_XZ (RETROFLAT_PI / 10)
 
+#define DEMO_WATER_AMP_MOD 0.1f
+#define DEMO_WATER_X_ITER 0.1f
+#define DEMO_WATER_RING_R_ITER 0.2f
+#define DEMO_WATER_RING_A_ITER 0.2f
+
 #define SPRITE_X 0
 #define SPRITE_Y 1
 
@@ -91,6 +96,7 @@ struct DEMO_FP_DATA {
 
 struct DEMO_WATER_DATA {
    int init;
+   int pattern;
 };
 
 void demo_init_scene( uint8_t flags );
