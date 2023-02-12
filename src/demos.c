@@ -265,6 +265,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    float ang_xz = 0;
    int even_col = 1;
    struct RETROGLU_PROJ_ARGS args;
+   const float color_gray[] = { 0.75f, 0.75f, 0.75f };
 
    if( !data->init ) {
 
@@ -349,6 +350,56 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
       glEndList();
 
+      data->skybox_list = glGenLists( 1 );
+      glNewList( data->skybox_list, GL_COMPILE );
+
+         /* Back Face */
+         glBegin( GL_QUADS );
+         glColor3fv( color_gray ); /* Gray */
+         glVertex3f(  1.0f,  1.0f, -10.0f ); /* Top Right */
+         glVertex3f( -1.0f,  1.0f, -10.0f ); /* Top Left */
+         glVertex3f( -1.0f, -1.0f, -10.0f ); /* Bottom Left */
+         glVertex3f(  1.0f, -1.0f, -10.0f ); /* Bottom Right */
+         glEnd();
+
+         /* Bottom Face */
+         glBegin( GL_QUADS );
+         glColor3f( 1.0, 1.0, 1.0 ); /* White */
+         glVertex3f(  1.0f, -1.0f, -10.0f );
+         glVertex3f( -1.0f, -1.0f, -10.0f );
+         glVertex3f( -2.0f, -2.0f,  10.0f );
+         glVertex3f(  2.0f, -2.0f,  10.0f );
+         glEnd();
+
+         /* Right Face */
+         glBegin( GL_QUADS );
+         glColor3f( 1.0, 1.0, 1.0 ); /* White */
+         glVertex3f(  2.0f,  2.0f,  10.0f );
+         glVertex3f(  1.0f,  1.0f, -10.0f );
+         glVertex3f(  1.0f, -1.0f, -10.0f );
+         glVertex3f(  2.0f, -2.0f,  10.0f );
+         glEnd();
+
+         /* Top Face */
+         glBegin( GL_QUADS );
+         glColor3fv( color_gray ); /* Gray */
+         glVertex3f(  2.0f,  2.0f,  10.0f );
+         glVertex3f( -2.0f,  2.0f,  10.0f );
+         glVertex3f( -1.0f,  1.0f, -10.0f );
+         glVertex3f(  1.0f,  1.0f, -10.0f );
+         glEnd();
+
+         /* Left Face */
+         glBegin( GL_QUADS );
+         glColor3fv( color_gray ); /* Gray */
+         glVertex3f( -1.0f,  1.0f, -10.0f );
+         glVertex3f( -2.0f,  2.0f,  10.0f );
+         glVertex3f( -2.0f, -2.0f,  10.0f );
+         glVertex3f( -1.0f, -1.0f, -10.0f );
+         glEnd();
+
+      glEndList();
+
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_ORTHO;
       args.rzoom = 10.0f;
@@ -411,6 +462,16 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   glPushMatrix();
+
+   glScalef( 8.0f, 6.0f, 1.0f );
+
+   glCallList( data->skybox_list );
+
+   glPopMatrix();
+
+   /* Draw sphere from display list. */
 
    glPushMatrix();
 

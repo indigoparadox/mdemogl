@@ -49,6 +49,7 @@ struct DEMO_CUBE_DATA {
 struct DEMO_SPHERE_DATA {
    int init;
    GLint sphere_list;
+   GLint skybox_list;
    int rotate_x;
    int rotate_x_inc;
    int rotate_y;
