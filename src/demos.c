@@ -143,8 +143,13 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       data->cube_list = glGenLists( 1 );
       glNewList( data->cube_list, GL_COMPILE );
 
+      /* Note that the normals begin in the middle of the face and line
+       * up with the face with the most similar vertexes.
+       */
+
       /* White side - BACK */
       glBegin( GL_POLYGON );
+      glNormal3f(  0, 0, 1.0f );
       glColor3f(   1.0,  1.0, 1.0 );
       glVertex3f(  0.5, -0.5, 0.5 );
       glVertex3f(  0.5,  0.5, 0.5 );
@@ -154,6 +159,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       
       /* Purple side - RIGHT */
       glBegin( GL_POLYGON );
+      glNormal3f(  1.0f, 0, 0 );
       glColor3f(  1.0,  0.0,  1.0 );
       glVertex3f( 0.5, -0.5, -0.5 );
       glVertex3f( 0.5,  0.5, -0.5 );
@@ -163,6 +169,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       
       /* Green side - LEFT */
       glBegin( GL_POLYGON );
+      glNormal3f(  -1.0f, 0, 0 );
       glColor3f(   0.0,  1.0,  0.0 );
       glVertex3f( -0.5, -0.5,  0.5 );
       glVertex3f( -0.5,  0.5,  0.5 );
@@ -172,6 +179,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
       /* Yellow side - FRONT */
       glBegin( GL_POLYGON );
+      glNormal3f(  0, 0, -1.0f );
       glColor3f(   1.0,  1.0, 0.0 );
       glVertex3f( -0.5, -0.5, -0.5 );
       glVertex3f( -0.5,  0.5, -0.5 );
@@ -181,6 +189,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       
       /* Blue side - TOP */
       glBegin( GL_POLYGON );
+      glNormal3f(  0, 1.0f, 0 );
       glColor3f(   0.0,  0.0,  1.0 );
       glVertex3f(  0.5,  0.5,  0.5 );
       glVertex3f(  0.5,  0.5, -0.5 );
@@ -190,6 +199,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       
       /* Red side - BOTTOM */
       glBegin( GL_POLYGON );
+      glNormal3f(  0, -1.0f, 0 );
       glColor3f(   1.0,  0.0,  0.0 );
       glVertex3f(  0.5, -0.5, -0.5 );
       glVertex3f(  0.5, -0.5,  0.5 );
@@ -199,10 +209,13 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
       glEndList();
 
-      retroglu_init_scene( 0 );
+      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_FRUSTUM;
-      args.rzoom = 1.0f;
+      args.rzoom = 0.5f;
       retroglu_init_projection( &args );
+
+      glEnable( GL_LIGHT0 );
+      glEnable( GL_COLOR_MATERIAL );
 
       data->rotate_x = 10;
       data->rotate_y = 10;
@@ -282,6 +295,16 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
                glColor3f( 1.0, 1.0, 1.0 );
             }
 
+            /* Setup a normal for each face (2 triangles). */
+            /* We're just copying the first vertex here... that should make
+             * each face reflect in its own direction, which is what we want
+             * for this demo.
+             */
+            glNormal3f( 
+               sin( ang_xy ) * cos( ang_xz ),
+               cos( ang_xy ),
+               sin( ang_xy ) * sin( ang_xz ) );
+
             /* Quad panels at equal intervals around two circles intersecting
              * on orthogonal planes.
              */
@@ -326,10 +349,13 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
       glEndList();
 
-      retroglu_init_scene( 0 );
+      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_ORTHO;
       args.rzoom = 10.0f;
       retroglu_init_projection( &args );
+
+      glEnable( GL_LIGHT0 );
+      glEnable( GL_COLOR_MATERIAL );
 
       /* Start spin. */
       data->rotate_y_inc = 5;
@@ -470,6 +496,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 1.0f;
       retroglu_init_projection( &args );
+
+      glEnable( GL_LIGHT0 );
    }
 
    /* Input */
