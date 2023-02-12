@@ -265,7 +265,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    float ang_xz = 0;
    int even_col = 1;
    struct RETROGLU_PROJ_ARGS args;
-   const float color_gray[] = { 0.75f, 0.75f, 0.75f };
+   const float color_white[] = { 1.0f, 1.0f, 1.0f };
+   const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
    if( !data->init ) {
 
@@ -353,9 +354,17 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->skybox_list = glGenLists( 1 );
       glNewList( data->skybox_list, GL_COMPILE );
 
+         glColor3fv( color_white );
+
+         /* Create a skybox. Note the normals, crucial for making the sides
+          * show up properly in lighting.
+          * This is a frustum shape to enhance its "3D" appearance in ortho
+          * rendering.
+          */
+
          /* Back Face */
          glBegin( GL_QUADS );
-         glColor3fv( color_gray ); /* Gray */
+         glNormal3f(  0, 0, 1.0f );
          glVertex3f(  1.0f,  1.0f, -10.0f ); /* Top Right */
          glVertex3f( -1.0f,  1.0f, -10.0f ); /* Top Left */
          glVertex3f( -1.0f, -1.0f, -10.0f ); /* Bottom Left */
@@ -364,7 +373,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
          /* Bottom Face */
          glBegin( GL_QUADS );
-         glColor3f( 1.0, 1.0, 1.0 ); /* White */
+         glNormal3f(  0, 1.0f, 0 );
          glVertex3f(  1.0f, -1.0f, -10.0f );
          glVertex3f( -1.0f, -1.0f, -10.0f );
          glVertex3f( -2.0f, -2.0f,  10.0f );
@@ -373,7 +382,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
          /* Right Face */
          glBegin( GL_QUADS );
-         glColor3f( 1.0, 1.0, 1.0 ); /* White */
+         glNormal3f(  -1.0f, 0, 0 );
          glVertex3f(  2.0f,  2.0f,  10.0f );
          glVertex3f(  1.0f,  1.0f, -10.0f );
          glVertex3f(  1.0f, -1.0f, -10.0f );
@@ -382,7 +391,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
          /* Top Face */
          glBegin( GL_QUADS );
-         glColor3fv( color_gray ); /* Gray */
+         glNormal3f(  0, -1.0f, 0 );
          glVertex3f(  2.0f,  2.0f,  10.0f );
          glVertex3f( -2.0f,  2.0f,  10.0f );
          glVertex3f( -1.0f,  1.0f, -10.0f );
@@ -391,7 +400,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
          /* Left Face */
          glBegin( GL_QUADS );
-         glColor3fv( color_gray ); /* Gray */
+         glNormal3f(  1.0f, 0, 0 );
          glVertex3f( -1.0f,  1.0f, -10.0f );
          glVertex3f( -2.0f,  2.0f,  10.0f );
          glVertex3f( -2.0f, -2.0f,  10.0f );
@@ -462,6 +471,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
 
    glPushMatrix();
 
