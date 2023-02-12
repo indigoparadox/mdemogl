@@ -17,8 +17,8 @@
 
 #define DEMO_OBJ_NAME_SZ_MAX 255
 
-#define DEMO_SPHERE_INC_XY (RETROFLAT_PI / 20)
-#define DEMO_SPHERE_INC_XZ (RETROFLAT_PI / 20)
+#define DEMO_SPHERE_INC_XY (RETROFLAT_PI / 10)
+#define DEMO_SPHERE_INC_XZ (RETROFLAT_PI / 10)
 
 #define SPRITE_X 0
 #define SPRITE_Y 1
@@ -50,7 +50,9 @@ struct DEMO_SPHERE_DATA {
    int init;
    GLint sphere_list;
    int rotate_x;
+   int rotate_x_inc;
    int rotate_y;
+   int rotate_y_inc;
    float translate_x;
    float translate_x_inc;
    float translate_y;

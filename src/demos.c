@@ -250,8 +250,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    int input = 0;
    float ang_xy = 0;
    float ang_xz = 0;
-   int even_row = 1,
-      even_col = 1;
+   int even_col = 1;
    struct RETROGLU_PROJ_ARGS args;
 
    if( !data->init ) {
@@ -264,38 +263,32 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
        * origin (0, 0).
        */
       for(
-         ang_xz = 0 ;
-         2 * RETROFLAT_PI > ang_xz ;
-         ang_xz += DEMO_SPHERE_INC_XZ
+         ang_xz = 2 * RETROFLAT_PI ;
+         0 <= ang_xz ;
+         ang_xz -= DEMO_SPHERE_INC_XZ
       ) {
-         even_row = even_row ? 0 : 1;
          for(
             ang_xy = 0 ;
             2 * RETROFLAT_PI > ang_xy ;
             ang_xy += DEMO_SPHERE_INC_XY
          ) {
-            glBegin( GL_QUADS );
+            glBegin( GL_TRIANGLES );
             even_col = even_col ? 0 : 1;
 
             /* Checkerboard pattern. */
-            if( even_row ) {
-               if( even_col ) {
-                  glColor3f( 1.0, 1.0, 1.0 );
-               } else {
-                  glColor3f( 1.0, 0.0, 0.0 );
-               }
+            if( even_col ) {
+               glColor3f( 1.0, 0.0, 0.0 );
             } else {
-               if( even_col ) {
-                  glColor3f( 1.0, 0.0, 0.0 );
-               } else {
-                  glColor3f( 1.0, 1.0, 1.0 );
-               }
+               glColor3f( 1.0, 1.0, 1.0 );
             }
 
             /* Quad panels at equal intervals around two circles intersecting
              * on orthogonal planes.
              */
-            /* TODO: Break into triangles. */
+
+            /* Each checkerboard square is 2 triangles: */
+
+            /* Triangle 1 */
             glVertex3f( 
                sin( ang_xy ) * cos( ang_xz ),
                cos( ang_xy ),
@@ -310,10 +303,22 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
                cos( ang_xy + DEMO_SPHERE_INC_XY ),
                sin( ang_xy + DEMO_SPHERE_INC_XY ) 
                   * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
+
+            /* Triangle 2 */
+            glVertex3f( 
+               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
+                  * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
+               cos( ang_xy + DEMO_SPHERE_INC_XY ),
+               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
+                  * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
             glVertex3f(
                sin( ang_xy ) * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
                cos( ang_xy ),
                sin( ang_xy ) * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
+            glVertex3f( 
+               sin( ang_xy ) * cos( ang_xz ),
+               cos( ang_xy ),
+               sin( ang_xy ) * sin( ang_xz ) );
 
             glEnd();
          }
@@ -327,8 +332,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       retroglu_init_projection( &args );
 
       /* Start spin. */
-      data->rotate_x = 0;
-      data->rotate_y = 10;
+      data->rotate_y_inc = 5;
 
       /* Start bounce. */
       data->translate_x_inc = 0.2f;
@@ -345,6 +349,31 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
+   case RETROFLAT_KEY_RIGHT:
+      data->rotate_y += 10;
+      debug_printf( 1, "rotate_y: %d", data->rotate_y );
+      break;
+
+   case RETROFLAT_KEY_LEFT:
+      data->rotate_y -= 10;
+      debug_printf( 1, "rotate_y: %d", data->rotate_y );
+      break;
+
+   case RETROFLAT_KEY_UP:
+      data->rotate_x += 10;
+      debug_printf( 1, "rotate_x: %d", data->rotate_x );
+      break;
+
+   case RETROFLAT_KEY_DOWN:
+      data->rotate_x -= 10;
+      debug_printf( 1, "rotate_x: %d", data->rotate_x );
+      break;
+
+   case RETROFLAT_KEY_P:
+      data->translate_x_inc = 0;
+      data->translate_y_inc = 0;
+      break;
+
    case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
@@ -371,7 +400,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    retroflat_draw_release( NULL );
 
-   data->rotate_y += 5;
+   data->rotate_y += data->rotate_y_inc;
 
    /* X bounce. */
    data->translate_x += data->translate_x_inc;
