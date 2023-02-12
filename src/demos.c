@@ -827,7 +827,13 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    float x = 0,
       y = 0,
       x_next = 0,
-      y_next = 0;
+      y_next = 0,
+      z = 0,
+      z_next = 0,
+      ang = 0,
+      r = 0,
+      r_next = 0,
+      ang_next = 0;
    static int rotate_x = 85;
    static int rotate_y = 0;
    static float peak_offset = 0;
@@ -847,6 +853,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       glEnable( GL_COLOR_MATERIAL );
 
       data->init = 1;
+      data->pattern = 0;
    }
 
    /* Input */
@@ -872,27 +879,59 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
 
-   glScalef( 0.4f, 0.4f, 0.4f );
-
-   glTranslatef( 0, -4.0f, -2.0f );
    glRotatef( rotate_x, 1.0f, 0, 0 );
    glRotatef( rotate_y, 0, 1.0f, 0 );
 
-   for( x = -20.0f ; 20.0f > x ; x += 0.1f ) {
-      x_next = x + 0.1f;
-      y = (sin( x + peak_offset ) * 0.10) + 1.0f;
-      y_next = (sin( x_next + peak_offset ) * 0.10) + 1.0f;
+   if( 0 == data->pattern ) {
+      
+      glTranslatef( 0, -4.0f, -2.0f );
 
-      assert( 0 <= y );
+      /* Flat rectangle of even waves based on sine. */
+      for( x = -20.0f ; 20.0f > x ; x += DEMO_WATER_X_ITER ) {
+         x_next = x + DEMO_WATER_X_ITER;
+         y = (sin( x + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
+         y_next = (sin( x_next + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
 
-      glBegin( GL_QUADS );
-      glNormal3f( 0,           y,      0 );
-      glColor3f( 0, 0.75, 0.75 );
-      glVertex3f( x,           y, -15.0f ); /* Far Left */
-      glVertex3f( x,           y,  5.0f ); /* Near Left */
-      glVertex3f( x_next, y_next,  5.0f ); /* Near Right */
-      glVertex3f( x_next, y_next, -15.0f ); /* Far Right */
-      glEnd();
+         assert( 0 <= y );
+
+         glBegin( GL_QUADS );
+         glNormal3f( 0,           y,      0 );
+         glColor3f( 0, 0.75, 0.75 );
+         glVertex3f( x,           y, -15.0f ); /* Far Left */
+         glVertex3f( x,           y,  5.0f ); /* Near Left */
+         glVertex3f( x_next, y_next,  5.0f ); /* Near Right */
+         glVertex3f( x_next, y_next, -15.0f ); /* Far Right */
+         glEnd();
+      }
+
+   } else {
+
+      glTranslatef( 0, -4.0f, -4.0f );
+
+      for( ang = 0 ; 2 * RETROFLAT_PI > ang ; ang += DEMO_WATER_RING_A_ITER ) {
+         ang_next = ang + DEMO_WATER_RING_A_ITER;
+         for( r = 0 ; 10.0f > r ; r += DEMO_WATER_RING_R_ITER ) {
+            r_next = r + DEMO_WATER_RING_R_ITER;
+            x = cos( ang ) * r;
+            x_next = cos( ang_next ) * r_next;
+            y = (sin( r + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
+            y_next = (sin( r_next + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
+            z = sin( ang ) * r;
+            z_next = sin( ang_next ) * r_next;
+
+            glBegin( GL_QUADS );
+
+            glNormal3f( 0, y, 0 );
+            glColor3f( 0, 0.75, 0.75 );
+
+            glVertex3f( x,       y,       z_next );
+            glVertex3f( x,       y,       z );
+            glVertex3f( x_next,       y_next,       z );
+            glVertex3f( x_next,       y_next,       z_next );
+
+            glEnd();
+         }
+      }
    }
 
    glPopMatrix();
