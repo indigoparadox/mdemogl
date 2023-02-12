@@ -89,6 +89,10 @@ struct DEMO_FP_DATA {
    int init;
 };
 
+struct DEMO_WATER_DATA {
+   int init;
+};
+
 void demo_init_scene( uint8_t flags );
 void demo_init_projection( uint8_t demo_proj, float zoom );
 int demo_load_obj(
@@ -102,7 +106,8 @@ MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sp
    f( cube, struct DEMO_CUBE_DATA ) \
    f( sphere, struct DEMO_SPHERE_DATA ) \
    f( obj, struct DEMO_OBJ_DATA ) \
-   f( sprite, struct DEMO_SPRITE_DATA )
+   f( sprite, struct DEMO_SPRITE_DATA ) \
+   f( water, struct DEMO_WATER_DATA )
 
 #define DEMOS_LIST_PROTOS( name, data_struct ) \
    void draw_ ## name ## _iter( data_struct* data );
