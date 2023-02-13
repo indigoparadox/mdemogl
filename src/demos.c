@@ -828,37 +828,41 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       y = 0,
       x_next = 0,
       y_next = 0,
-      z = 0,
-      z_next = 0,
       ang = 0,
-      r = 0,
-      r_next = 0,
+      radi = 0,
+      radi_next = 0,
       ang_next = 0;
-   static float translate_x = 0;
-   static float translate_y = -4.0f;
-   static float translate_z = -4.0f;
    /* static int rotate_x = 85; */
-   static int rotate_x = 0;
-   static int rotate_y = 0;
-   static float peak_offset = 0;
    struct RETROGLU_PROJ_ARGS args;
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
    if( 0 == data->init ) {
 
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
-      /* args.proj = RETROGLU_PROJ_FRUSTUM; */
-      args.proj = RETROGLU_PROJ_ORTHO;
-      args.rzoom = 10.0f;
-      args.near_plane = 0.5f;
+      args.proj = RETROGLU_PROJ_FRUSTUM;
+      args.rzoom = 1.0f;
+      /* args.near_plane = 0.5f; */
+      args.near_plane = 1.0f;
       args.far_plane = 100.0f;
       retroglu_init_projection( &args );
 
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
 
-      data->init = 1;
+      /* TODO: Add CLI option to select pattern. */
       data->pattern = 1;
+      data->freq_mod = 7.0f;
+      data->amp_mod = 0.1f;
+      if( 1 == data->pattern ) {
+         data->translate_y = -2.0f;
+         data->translate_z = -4.0f;
+      } else {
+         data->translate_y = -4.0f;
+         data->translate_z = -4.0f;
+         data->rotate_x = 85;
+      }
+
+      data->init = 1;
    }
 
    /* Input */
@@ -868,23 +872,33 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    switch( input ) {
    case RETROFLAT_KEY_UP:
-      translate_y += 0.1f;
-      debug_printf( 1, "tz: %f", translate_z );
+      data->translate_y += 0.1f;
+      debug_printf( 3, "ty: %f", data->translate_y );
       break;
 
    case RETROFLAT_KEY_DOWN:
-      translate_y -= 0.1f;
-      debug_printf( 1, "tz: %f", translate_z );
+      data->translate_y -= 0.1f;
+      debug_printf( 3, "ty: %f", data->translate_y );
       break;
 
    case RETROFLAT_KEY_PGUP:
-      rotate_x += 5;
-      debug_printf( 1, "rx: %d", rotate_x );
+      data->rotate_x += 5;
+      debug_printf( 3, "rx: %d", data->rotate_x );
       break;
 
    case RETROFLAT_KEY_PGDN:
-      rotate_x -= 5;
-      debug_printf( 1, "rx: %d", rotate_x );
+      data->rotate_x -= 5;
+      debug_printf( 3, "rx: %d", data->rotate_x );
+      break;
+
+   case RETROFLAT_KEY_R:
+      data->freq_mod += 0.5f;
+      debug_printf( 3, "freq_mod: %f", data->freq_mod );
+      break;
+
+   case RETROFLAT_KEY_F:
+      data->freq_mod -= 0.5f;
+      debug_printf( 3, "freq_mod: %f", data->freq_mod );
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -904,18 +918,17 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
 
-   glRotatef( rotate_x, 1.0f, 0, 0 );
-   glRotatef( rotate_y, 0, 1.0f, 0 );
+   glRotatef( data->rotate_x, 1.0f, 0, 0 );
+   glRotatef( data->rotate_y, 0, 1.0f, 0 );
+   glTranslatef( data->translate_x, data->translate_y, data->translate_z );
 
    if( 0 == data->pattern ) {
       
-      glTranslatef( 0, -4.0f, -2.0f );
-
       /* Flat rectangle of even waves based on sine. */
       for( x = -20.0f ; 20.0f > x ; x += DEMO_WATER_X_ITER ) {
          x_next = x + DEMO_WATER_X_ITER;
-         y = (sin( x + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
-         y_next = (sin( x_next + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
+         y = (sin( x + data->peak_offset ) * data->amp_mod) + 1.0f;
+         y_next = (sin( x_next + data->peak_offset ) * data->amp_mod) + 1.0f;
 
          assert( 0 <= y );
 
@@ -931,65 +944,61 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    } else {
 
-      glTranslatef( translate_x, translate_y, translate_z );
-
       for( ang = 0 ; 2 * RETROFLAT_PI > ang ; ang += DEMO_WATER_RING_A_ITER ) {
          ang_next = ang + DEMO_WATER_RING_A_ITER;
-            r_next = 1.0f;
+         for(
+            radi = 0 ;
+            DEMO_WATER_RING_RADIUS > radi ;
+            radi += DEMO_WATER_RING_R_ITER
+         ) {
+            radi_next = radi + DEMO_WATER_RING_R_ITER;
 
-            x = cos( ang );
-            x_next = cos( ang_next );
-            z = sin( ang );
-            z_next = sin( ang_next );
-            /*
-            y = (sin( r + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
-            y_next = (sin( r_next + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
-            */
-            y = 1.0f;
-            y_next = y;
+            y = (sin( (radi + data->peak_offset)
+               /* Modulate wave frequency. */
+               * data->freq_mod) 
+               /* Modulate wave height. */
+               * data->amp_mod) 
+               /* Keep it above zero. */
+               + 1.0f;
+            y_next =
+               (sin( (radi_next + data->peak_offset)
+               /* Modulate wave frequency. */
+               * data->freq_mod) 
+               /* Modulate wave height. */
+               * data->amp_mod) 
+               /* Keep it above 0. */
+               + 1.0f;
 
             glBegin( GL_QUADS );
 
-            glNormal3f( 0, y, 0 );
+            /* Water color and lighting. */
+            glNormal3f( cos( ang ), y, 0 );
             glColor3f( 0, 0.75, 0.75 );
 
-            debug_printf( 1, "ang: %f" );
-           
-               glVertex3f(
-                  cos( ang ) * 10.0f,
-                  sin( ang ) * 10.0f,
-                  y       );
-               glVertex3f(
-                  cos( ang + 0.2f ) * 10.0f,
-                  sin( ang + 0.2f ) * 10.0f,
-                  y_next       );
-               glVertex3f(
-                  cos( ang + 0.2f ),
-                  sin( ang + 0.2f ),
-                  y_next       );
-               glVertex3f(
-                  cos( ang ),
-                  sin( ang ),
-                  y       );
-
-            #if 0
-            if(
-               (0.5f * RETROFLAT_PI > ang && 0 <= ang) ||
-               (1.5f * RETROFLAT_PI > ang && RETROFLAT_PI <= ang)
-            ) {
-               glVertex3f( x,            y,       z_next );
-               glVertex3f( x,            y,       z );
-               glVertex3f( x_next,  y_next,       z );
-               glVertex3f( x_next,  y_next,       z_next );
-            } else {
-               glVertex3f( x_next,  y_next,       z_next );
-               glVertex3f( x_next,  y_next,       z );
-               glVertex3f( x,            y,       z );
-               glVertex3f( x,            y,       z_next );
-            }
-            #endif
+            /* Water poly. Concentric rings of rects. */
+            glVertex3f(
+               cos( ang ) * radi,
+               y,       
+               sin( ang ) * radi
+               );
+            glVertex3f(
+               cos( ang_next ) * radi,
+               y,
+               sin( ang_next ) * radi
+               );
+            glVertex3f(
+               cos( ang_next ) * radi_next,
+               y_next,
+               sin( ang_next ) * radi_next
+               );
+            glVertex3f(
+               cos( ang ) * radi_next,
+               y_next,
+               sin( ang ) * radi_next
+               );
 
             glEnd();
+         }
       }
    }
 
@@ -998,6 +1007,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    glFlush();
    retroflat_draw_release( NULL );
 
-   peak_offset += 0.1f;
+   data->peak_offset -= 0.1f;
 }
 
