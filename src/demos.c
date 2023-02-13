@@ -935,12 +935,12 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
       for( ang = 0 ; 2 * RETROFLAT_PI > ang ; ang += DEMO_WATER_RING_A_ITER ) {
          ang_next = ang + DEMO_WATER_RING_A_ITER;
-         for( r = 0 ; 10.0f > r ; r += DEMO_WATER_RING_R_ITER ) {
-            r_next = r + DEMO_WATER_RING_R_ITER;
-            x = cos( ang ) * r;
-            x_next = cos( ang_next ) * r_next;
-            z = sin( ang ) * r;
-            z_next = sin( ang_next ) * r_next;
+            r_next = 1.0f;
+
+            x = cos( ang );
+            x_next = cos( ang_next );
+            z = sin( ang );
+            z_next = sin( ang_next );
             /*
             y = (sin( r + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
             y_next = (sin( r_next + peak_offset ) * DEMO_WATER_AMP_MOD) + 1.0f;
@@ -954,11 +954,23 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
             glColor3f( 0, 0.75, 0.75 );
 
             debug_printf( 1, "ang: %f" );
-
-               glVertex3f( x_next,  z_next, y_next       );
-               glVertex3f( x_next,  z     , y_next       );
-               glVertex3f( x,       z     ,      y       );
-               glVertex3f( x,       z_next,      y       );
+           
+               glVertex3f(
+                  cos( ang ) * 10.0f,
+                  sin( ang ) * 10.0f,
+                  y       );
+               glVertex3f(
+                  cos( ang + 0.2f ) * 10.0f,
+                  sin( ang + 0.2f ) * 10.0f,
+                  y_next       );
+               glVertex3f(
+                  cos( ang + 0.2f ),
+                  sin( ang + 0.2f ),
+                  y_next       );
+               glVertex3f(
+                  cos( ang ),
+                  sin( ang ),
+                  y       );
 
             #if 0
             if(
@@ -978,7 +990,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
             #endif
 
             glEnd();
-         }
       }
    }
 
