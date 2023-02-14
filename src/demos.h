@@ -94,6 +94,10 @@ struct DEMO_SPRITE_DATA {
 
 struct DEMO_FP_DATA {
    int init;
+   float translate_x;
+   float translate_y;
+   float translate_z;
+   float rotate_y;
 };
 
 struct DEMO_WATER_DATA {
@@ -124,6 +128,7 @@ MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sp
    f( cube, struct DEMO_CUBE_DATA ) \
    f( sphere, struct DEMO_SPHERE_DATA ) \
    f( obj, struct DEMO_OBJ_DATA ) \
+   f( fp, struct DEMO_FP_DATA ) \
    f( sprite, struct DEMO_SPRITE_DATA ) \
    f( water, struct DEMO_WATER_DATA )
 
