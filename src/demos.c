@@ -692,10 +692,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
    struct RETROGLU_PROJ_ARGS args;
-   float x = 0,
-      y = 0,
-      x_next = 0,
-      y_next = 0;
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
    if( 0 == data->init ) {
@@ -728,9 +724,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
          glEndList();
       } else {
-         data->translate_y = -4.0f;
+         data->translate_y = -8.0f;
          data->translate_z = -4.0f;
-         data->rotate_x = 85;
+         data->rotate_x = 20;
       }
 
       data->init = 1;
@@ -760,6 +756,16 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    case RETROFLAT_KEY_PGDN:
       data->rotate_x -= 5;
       debug_printf( 3, "rx: %d", data->rotate_x );
+      break;
+
+   case RETROFLAT_KEY_S:
+      data->translate_z += 0.1f;
+      debug_printf( 3, "tz: %f", data->translate_z );
+      break;
+
+   case RETROFLAT_KEY_W:
+      data->translate_z -= 0.1f;
+      debug_printf( 3, "tz: %f", data->translate_z );
       break;
 
    case RETROFLAT_KEY_R:
@@ -794,24 +800,11 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    glTranslatef( data->translate_x, data->translate_y, data->translate_z );
 
    if( 0 == data->pattern ) {
-      
-      /* Flat rectangle of even waves based on sine. */
-      for( x = -20.0f ; 20.0f > x ; x += DEMO_WATER_X_ITER ) {
-         x_next = x + DEMO_WATER_X_ITER;
-         y = (sin( x + data->peak_offset ) * data->amp_mod) + 1.0f;
-         y_next = (sin( x_next + data->peak_offset ) * data->amp_mod) + 1.0f;
 
-         assert( 0 <= y );
-
-         glBegin( GL_QUADS );
-         glNormal3f( 0,           y,      0 );
-         glColor3f( 0, 0.75, 0.75 );
-         glVertex3f( x,           y, -15.0f ); /* Far Left */
-         glVertex3f( x,           y,  5.0f ); /* Near Left */
-         glVertex3f( x_next, y_next,  5.0f ); /* Near Right */
-         glVertex3f( x_next, y_next, -15.0f ); /* Far Right */
-         glEnd();
-      }
+      poly_water_sheet(
+         RETROGLU_COLOR_CYAN, DEMO_WATER_SHEET_WIDTH, DEMO_WATER_SHEET_DEPTH,
+         DEMO_WATER_SHEET_X_ITER,
+         data->freq_mod, data->amp_mod, data->peak_offset );
 
    } else {
 
