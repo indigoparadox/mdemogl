@@ -75,6 +75,44 @@ void poly_cube(
    glEnd();
 }
 
+void poly_well(
+   const float color[], const float radius, const float ang_iter
+) {
+   float
+      x = 0,
+      x_next = 0,
+      z = 0,
+      z_next = 0,
+      ang = 0;
+
+   for( ang = 0 ; 2 * RETROFLAT_PI > ang ; ang += ang_iter ) {
+      x = radius * cos( ang );
+      x_next = radius * cos( ang + ang_iter );
+      z = radius * sin( ang );
+      z_next = radius * sin( ang + ang_iter );
+
+      /* Inner Wall */
+      glBegin( GL_QUADS );
+      glColor3fv( color );
+      glNormal3f( x * -1.0f,  0, z * -1.0f );
+      glVertex3f( x_next,  2.0f, z_next );
+      glVertex3f( x,       2.0f, z );
+      glVertex3f( x,          0, z );
+      glVertex3f( x_next,     0, z_next );
+      glEnd();
+
+      /* Upper Lip */
+      glBegin( GL_QUADS );
+      glColor3fv( color );
+      glNormal3f( x * -1.0f,  1, z * -1.0f );
+      glVertex3f( x_next * 1.5f, 2.0f, z_next * 1.5f );
+      glVertex3f( x * 1.5f,      2.0f, z * 1.5f );
+      glVertex3f( x,             2.0f, z );
+      glVertex3f( x_next,        2.0f, z_next );
+      glEnd();
+   }
+}
+
 void poly_water_ring(
    const float color[], const float radius, const float radius_iter,
    const float ang_iter, float freq_mod, float amp_mod, float peak_offset
