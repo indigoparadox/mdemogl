@@ -969,13 +969,13 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
                /* Keep it above 0. */
                + 1.0f;
 
-            glBegin( GL_QUADS );
-
             /* Water color and lighting. */
             glNormal3f( cos( ang ), y, 0 );
             glColor3f( 0, 0.75, 0.75 );
 
-            /* Water poly. Concentric rings of rects. */
+            /* Water poly. Concentric rings of dual triangles. */
+            /* Triangle 1 */
+            glBegin( GL_TRIANGLES );
             glVertex3f(
                cos( ang ) * radi,
                y,       
@@ -991,12 +991,25 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
                y_next,
                sin( ang_next ) * radi_next
                );
+            glEnd();
+
+            /* Triangle 2 */
+            glBegin( GL_TRIANGLES );
+            glVertex3f(
+               cos( ang_next ) * radi_next,
+               y_next,
+               sin( ang_next ) * radi_next
+               );
             glVertex3f(
                cos( ang ) * radi_next,
                y_next,
                sin( ang ) * radi_next
                );
-
+            glVertex3f(
+               cos( ang ) * radi,
+               y,       
+               sin( ang ) * radi
+               );
             glEnd();
          }
       }
