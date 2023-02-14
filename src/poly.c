@@ -12,66 +12,82 @@ void poly_cube(
       * up with the face with the most similar vertexes.
       */
 
-   /* TODO: Break into triangles. */
-
    /* BACK */
-   glBegin( GL_POLYGON );
+   glBegin( GL_TRIANGLES );
    glNormal3f(  0, 0, 1.0f );
    glColor3fv( color_bk );
    glVertex3f(  0.5, -0.5, 0.5 );
    glVertex3f(  0.5,  0.5, 0.5 );
    glVertex3f( -0.5,  0.5, 0.5 );
+
+   glVertex3f( -0.5,  0.5, 0.5 );
    glVertex3f( -0.5, -0.5, 0.5 );
+   glVertex3f(  0.5, -0.5, 0.5 );
    glEnd();
    
    /* RIGHT */
-   glBegin( GL_POLYGON );
+   glBegin( GL_TRIANGLES );
+   glNormal3f(  1.0f,     0,     0 );
    glColor3fv( color_rt );
-   glColor3f(  1.0,  0.0,  1.0 );
-   glVertex3f( 0.5, -0.5, -0.5 );
-   glVertex3f( 0.5,  0.5, -0.5 );
-   glVertex3f( 0.5,  0.5,  0.5 );
-   glVertex3f( 0.5, -0.5,  0.5 );
+   glVertex3f(  0.5f, -0.5f, -0.5f );
+   glVertex3f(  0.5f,  0.5f, -0.5f );
+   glVertex3f(  0.5f,  0.5f,  0.5f );
+
+   glVertex3f(  0.5f,  0.5f,  0.5f );
+   glVertex3f(  0.5f, -0.5f,  0.5f );
+   glVertex3f(  0.5f, -0.5f, -0.5f );
    glEnd();
    
    /* LEFT */
-   glBegin( GL_POLYGON );
-   glNormal3f(  -1.0f, 0, 0 );
+   glBegin( GL_TRIANGLES );
+   glNormal3f( -1.0f,     0,    0 );
    glColor3fv( color_lt );
-   glVertex3f( -0.5, -0.5,  0.5 );
-   glVertex3f( -0.5,  0.5,  0.5 );
-   glVertex3f( -0.5,  0.5, -0.5 );
-   glVertex3f( -0.5, -0.5, -0.5 );
+   glVertex3f( -0.5f, -0.5f,  0.5f );
+   glVertex3f( -0.5f,  0.5f,  0.5f );
+   glVertex3f( -0.5f,  0.5f, -0.5f );
+
+   glVertex3f( -0.5f,  0.5f, -0.5f );
+   glVertex3f( -0.5f, -0.5f, -0.5f );
+   glVertex3f( -0.5f, -0.5f,  0.5f );
    glEnd();
 
    /* FRONT */
-   glBegin( GL_POLYGON );
-   glNormal3f(  0, 0, -1.0f );
+   glBegin( GL_TRIANGLES );
+   glNormal3f(     0,     0, -1.0f );
    glColor3fv( color_ft );
-   glVertex3f( -0.5, -0.5, -0.5 );
-   glVertex3f( -0.5,  0.5, -0.5 );
-   glVertex3f(  0.5,  0.5, -0.5 );
-   glVertex3f(  0.5, -0.5, -0.5 );
+   glVertex3f( -0.5f, -0.5f, -0.5f );
+   glVertex3f( -0.5f,  0.5f, -0.5f );
+   glVertex3f(  0.5f,  0.5f, -0.5f );
+
+   glVertex3f(  0.5f,  0.5f, -0.5f );
+   glVertex3f(  0.5f, -0.5f, -0.5f );
+   glVertex3f( -0.5f, -0.5f, -0.5f );
    glEnd();
    
    /* TOP */
-   glBegin( GL_POLYGON );
-   glNormal3f(  0, 1.0f, 0 );
+   glBegin( GL_TRIANGLES );
+   glNormal3f(     0,  1.0f,     0 );
    glColor3fv( color_tp );
-   glVertex3f(  0.5,  0.5,  0.5 );
-   glVertex3f(  0.5,  0.5, -0.5 );
-   glVertex3f( -0.5,  0.5, -0.5 );
-   glVertex3f( -0.5,  0.5,  0.5 );
+   glVertex3f(  0.5f,  0.5f,  0.5f );
+   glVertex3f(  0.5f,  0.5f, -0.5f );
+   glVertex3f( -0.5f,  0.5f, -0.5f );
+
+   glVertex3f( -0.5f,  0.5f, -0.5f );
+   glVertex3f( -0.5f,  0.5f,  0.5f );
+   glVertex3f(  0.5f,  0.5f,  0.5f );
    glEnd();
    
    /* BOTTOM */
-   glBegin( GL_POLYGON );
-   glNormal3f(  0, -1.0f, 0 );
+   glBegin( GL_TRIANGLES );
+   glNormal3f(     0, -1.0f,     0 );
    glColor3fv( color_bt );
-   glVertex3f(  0.5, -0.5, -0.5 );
-   glVertex3f(  0.5, -0.5,  0.5 );
-   glVertex3f( -0.5, -0.5,  0.5 );
-   glVertex3f( -0.5, -0.5, -0.5 );
+   glVertex3f(  0.5f, -0.5f, -0.5f );
+   glVertex3f(  0.5f, -0.5f,  0.5f );
+   glVertex3f( -0.5f, -0.5f,  0.5f );
+
+   glVertex3f( -0.5f, -0.5f,  0.5f );
+   glVertex3f( -0.5f, -0.5f, -0.5f );
+   glVertex3f(  0.5f, -0.5f, -0.5f );
    glEnd();
 }
 
