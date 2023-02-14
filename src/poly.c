@@ -193,6 +193,35 @@ void poly_water_ring(
    }
 }
 
+void poly_water_sheet(
+   const float color[],
+   const float width, const float depth, const float x_iter,
+   float freq_mod, float amp_mod, float peak_offset
+) {
+   float x = 0,  
+      x_next = 0,
+      y = 0,
+      y_next = 0;
+
+   /* Flat rectangle of even waves based on sine. */
+   for( x = 0 - (width / 2) ; width / 2 > x ; x += x_iter ) {
+      x_next = x + x_iter;
+      y = (sin( x + peak_offset ) * amp_mod) + 1.0f;
+      y_next = (sin( x_next + peak_offset ) * amp_mod) + 1.0f;
+
+      assert( 0 <= y );
+
+      glBegin( GL_QUADS );
+      glNormal3f( 0.75f,           y / 4,      0 );
+      glColor3fv( color );
+      glVertex3f( x,           y, 0 - (depth / 2) ); /* Far Left */
+      glVertex3f( x,           y,  depth / 2 ); /* Near Left */
+      glVertex3f( x_next, y_next,  depth / 2 ); /* Near Right */
+      glVertex3f( x_next, y_next, 0 - (depth / 2) ); /* Far Right */
+      glEnd();
+   }
+}
+
 void poly_sphere_checker( const float color1[], const float color2[] ) {
    float ang_xy = 0;
    float ang_xz = 0;
