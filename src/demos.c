@@ -533,6 +533,32 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
+   static GLint cube_list = 0;
+   struct RETROGLU_PROJ_ARGS args;
+
+   if( !data->init ) {
+
+      retroglu_init_scene( 0 );
+      args.proj = RETROGLU_PROJ_FRUSTUM;
+      args.rzoom = 0.5f;
+      args.near_plane = 0.5f;
+      args.far_plane = 10.0f;
+      retroglu_init_projection( &args );
+
+      cube_list = glGenLists( 1 );
+
+      glNewList( cube_list, GL_COMPILE );
+
+      poly_cube(
+         RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
+         RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
+
+      glEndList();
+
+      data->translate_z = -5.0f;
+
+      data->init = 1;
+   }
 
    /* Input */
 
@@ -540,6 +566,40 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
+   case RETROFLAT_KEY_W:
+      data->translate_z +=
+         cos( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      data->translate_x -=
+         sin( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      debug_printf( 3, "tx: %f, tz: %f", data->translate_x, data->translate_z );
+      break;
+
+   case RETROFLAT_KEY_S:
+      data->translate_z -=
+         cos( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      data->translate_x +=
+         sin( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      debug_printf( 3, "tx: %f, tz: %f", data->translate_x, data->translate_z );
+      break;
+
+   case RETROFLAT_KEY_A:
+      if( 5 > data->rotate_y ) {
+         data->rotate_y = 355.0f;
+      } else {
+         data->rotate_y -= 5.0f;
+      }
+      debug_printf( 3, "ry: %f", data->rotate_y );
+      break;
+
+   case RETROFLAT_KEY_D:
+      if( 355 <= data->rotate_y ) {
+         data->rotate_y = 0;
+      } else {
+         data->rotate_y += 5.0f;
+      }
+      debug_printf( 3, "ry: %f", data->rotate_y );
+      break;
+
    case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
@@ -548,6 +608,25 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    /* Draw */
 
    retroflat_draw_lock( NULL );
+
+   glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   /* Create a new matrix to apply transformations for this frame. */
+   glPushMatrix();
+   
+   /* Translate/rotate the whole scene. */
+   glRotatef( data->rotate_y, 0, 1.0f, 0 );
+   glTranslatef( data->translate_x, data->translate_y, data->translate_z );
+
+   /* Place first cube. */
+   glCallList( cube_list );
+
+   /* Place second cube next to first. */
+   glTranslatef( 3.0f, 0, 0 );
+   glCallList( cube_list );
+
+   glPopMatrix();
 
    glFlush();
    retroflat_draw_release( NULL );
