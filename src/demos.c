@@ -229,6 +229,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
           * rendering.
           */
 
+         /* TODO: Break into triangles. */
+
          /* Back Face */
          glBegin( GL_QUADS );
          glNormal3f(  0, 0, 1.0f );
@@ -714,8 +716,17 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       data->freq_mod = 7.0f;
       data->amp_mod = 0.1f;
       if( 1 == data->pattern ) {
-         data->translate_y = -2.0f;
+         data->translate_y = -4.0f;
          data->translate_z = -4.0f;
+
+         /* Setup well list. */
+         data->well_list = glGenLists( 1 );
+         glNewList( data->well_list, GL_COMPILE );
+
+         poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS,
+            DEMO_WATER_RING_A_ITER );
+
+         glEndList();
       } else {
          data->translate_y = -4.0f;
          data->translate_z = -4.0f;
@@ -803,6 +814,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       }
 
    } else {
+
+      /* Only the well gets drawn from a list since it's static. */
+      glCallList( data->well_list );
 
       poly_water_ring(
          RETROGLU_COLOR_CYAN, DEMO_WATER_RING_RADIUS, DEMO_WATER_RING_R_ITER,
