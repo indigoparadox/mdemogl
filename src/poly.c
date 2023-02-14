@@ -108,23 +108,29 @@ void poly_well(
       z_next = radius * sin( ang + ang_iter );
 
       /* Inner Wall */
-      glBegin( GL_QUADS );
+      glBegin( GL_TRIANGLES );
       glColor3fv( color );
       glNormal3f( x * -1.0f,  0, z * -1.0f );
       glVertex3f( x_next,  2.0f, z_next );
       glVertex3f( x,       2.0f, z );
       glVertex3f( x,          0, z );
+
+      glVertex3f( x,          0, z );
       glVertex3f( x_next,     0, z_next );
+      glVertex3f( x_next,  2.0f, z_next );
       glEnd();
 
       /* Upper Lip */
-      glBegin( GL_QUADS );
+      glBegin( GL_TRIANGLES );
       glColor3fv( color );
       glNormal3f( x * -1.0f,  1, z * -1.0f );
       glVertex3f( x_next * 1.5f, 2.0f, z_next * 1.5f );
       glVertex3f( x * 1.5f,      2.0f, z * 1.5f );
       glVertex3f( x,             2.0f, z );
+
+      glVertex3f( x,             2.0f, z );
       glVertex3f( x_next,        2.0f, z_next );
+      glVertex3f( x_next * 1.5f, 2.0f, z_next * 1.5f );
       glEnd();
    }
 }
@@ -227,13 +233,16 @@ void poly_water_sheet(
 
       assert( 0 <= y );
 
-      glBegin( GL_QUADS );
+      glBegin( GL_TRIANGLES );
       glNormal3f( 0.75f,           y / 4,      0 );
       glColor3fv( color );
       glVertex3f( x,           y, 0 - (depth / 2) ); /* Far Left */
       glVertex3f( x,           y,  depth / 2 ); /* Near Left */
       glVertex3f( x_next, y_next,  depth / 2 ); /* Near Right */
+
+      glVertex3f( x_next, y_next,  depth / 2 ); /* Near Right */
       glVertex3f( x_next, y_next, 0 - (depth / 2) ); /* Far Right */
+      glVertex3f( x,           y, 0 - (depth / 2) ); /* Far Left */
       glEnd();
    }
 }
