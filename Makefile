@@ -2,7 +2,7 @@
 # vim: ft=make noexpandtab
 
 OPENGL := 1
-C_FILES := src/main.c src/demos.c
+C_FILES := src/main.c src/demos.c src/poly.c
 
 include maug/Makefile.inc
 

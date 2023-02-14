@@ -7,6 +7,8 @@
 #define RETROGLU_C
 #include "demos.h"
 
+#include "poly.h"
+
 int demo_load_obj(
    const char* filename, struct RETROGLU_PARSER* parser,
    struct DEMO_OBJ_DATA* data
@@ -143,69 +145,9 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       data->cube_list = glGenLists( 1 );
       glNewList( data->cube_list, GL_COMPILE );
 
-      /* Note that the normals begin in the middle of the face and line
-       * up with the face with the most similar vertexes.
-       */
-
-      /* White side - BACK */
-      glBegin( GL_POLYGON );
-      glNormal3f(  0, 0, 1.0f );
-      glColor3f(   1.0,  1.0, 1.0 );
-      glVertex3f(  0.5, -0.5, 0.5 );
-      glVertex3f(  0.5,  0.5, 0.5 );
-      glVertex3f( -0.5,  0.5, 0.5 );
-      glVertex3f( -0.5, -0.5, 0.5 );
-      glEnd();
-      
-      /* Purple side - RIGHT */
-      glBegin( GL_POLYGON );
-      glNormal3f(  1.0f, 0, 0 );
-      glColor3f(  1.0,  0.0,  1.0 );
-      glVertex3f( 0.5, -0.5, -0.5 );
-      glVertex3f( 0.5,  0.5, -0.5 );
-      glVertex3f( 0.5,  0.5,  0.5 );
-      glVertex3f( 0.5, -0.5,  0.5 );
-      glEnd();
-      
-      /* Green side - LEFT */
-      glBegin( GL_POLYGON );
-      glNormal3f(  -1.0f, 0, 0 );
-      glColor3f(   0.0,  1.0,  0.0 );
-      glVertex3f( -0.5, -0.5,  0.5 );
-      glVertex3f( -0.5,  0.5,  0.5 );
-      glVertex3f( -0.5,  0.5, -0.5 );
-      glVertex3f( -0.5, -0.5, -0.5 );
-      glEnd();
-
-      /* Yellow side - FRONT */
-      glBegin( GL_POLYGON );
-      glNormal3f(  0, 0, -1.0f );
-      glColor3f(   1.0,  1.0, 0.0 );
-      glVertex3f( -0.5, -0.5, -0.5 );
-      glVertex3f( -0.5,  0.5, -0.5 );
-      glVertex3f(  0.5,  0.5, -0.5 );
-      glVertex3f(  0.5, -0.5, -0.5 );
-      glEnd();
-      
-      /* Blue side - TOP */
-      glBegin( GL_POLYGON );
-      glNormal3f(  0, 1.0f, 0 );
-      glColor3f(   0.0,  0.0,  1.0 );
-      glVertex3f(  0.5,  0.5,  0.5 );
-      glVertex3f(  0.5,  0.5, -0.5 );
-      glVertex3f( -0.5,  0.5, -0.5 );
-      glVertex3f( -0.5,  0.5,  0.5 );
-      glEnd();
-      
-      /* Red side - BOTTOM */
-      glBegin( GL_POLYGON );
-      glNormal3f(  0, -1.0f, 0 );
-      glColor3f(   1.0,  0.0,  0.0 );
-      glVertex3f(  0.5, -0.5, -0.5 );
-      glVertex3f(  0.5, -0.5,  0.5 );
-      glVertex3f( -0.5, -0.5,  0.5 );
-      glVertex3f( -0.5, -0.5, -0.5 );
-      glEnd();
+      poly_cube(
+         RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
+         RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
 
       glEndList();
 
@@ -263,9 +205,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
-   float ang_xy = 0;
-   float ang_xz = 0;
-   int even_col = 1;
    struct RETROGLU_PROJ_ARGS args;
    const float color_white[] = { 1.0f, 1.0f, 1.0f };
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
@@ -275,81 +214,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->sphere_list = glGenLists( 1 );
       glNewList( data->sphere_list, GL_COMPILE );
 
-      /* Generate a sphere using the cos() as X and sin() as Y of angles at 
-       * DEMO_SPHERE_INC_XY and DEMO_SPHERE_INC_XZ increments around the
-       * origin (0, 0).
-       */
-      for(
-         ang_xz = 2 * RETROFLAT_PI ;
-         0 <= ang_xz ;
-         ang_xz -= DEMO_SPHERE_INC_XZ
-      ) {
-         for(
-            ang_xy = 0 ;
-            2 * RETROFLAT_PI > ang_xy ;
-            ang_xy += DEMO_SPHERE_INC_XY
-         ) {
-            glBegin( GL_TRIANGLES );
-            even_col = even_col ? 0 : 1;
-
-            /* Checkerboard pattern. */
-            if( even_col ) {
-               glColor3f( 1.0, 0.0, 0.0 );
-            } else {
-               glColor3f( 1.0, 1.0, 1.0 );
-            }
-
-            /* Setup a normal for each face (2 triangles). */
-            /* We're just copying the first vertex here... that should make
-             * each face reflect in its own direction, which is what we want
-             * for this demo.
-             */
-            glNormal3f( 
-               sin( ang_xy ) * cos( ang_xz ),
-               cos( ang_xy ),
-               sin( ang_xy ) * sin( ang_xz ) );
-
-            /* Quad panels at equal intervals around two circles intersecting
-             * on orthogonal planes.
-             */
-
-            /* Each checkerboard square is 2 triangles: */
-
-            /* Triangle 1 */
-            glVertex3f( 
-               sin( ang_xy ) * cos( ang_xz ),
-               cos( ang_xy ),
-               sin( ang_xy ) * sin( ang_xz ) );
-            glVertex3f( 
-               sin( ang_xy + DEMO_SPHERE_INC_XY ) * cos( ang_xz ),
-               cos( ang_xy + DEMO_SPHERE_INC_XY ),
-               sin( ang_xy + DEMO_SPHERE_INC_XY ) * sin( ang_xz ) );
-            glVertex3f( 
-               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-                  * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
-               cos( ang_xy + DEMO_SPHERE_INC_XY ),
-               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-                  * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
-
-            /* Triangle 2 */
-            glVertex3f( 
-               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-                  * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
-               cos( ang_xy + DEMO_SPHERE_INC_XY ),
-               sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-                  * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
-            glVertex3f(
-               sin( ang_xy ) * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
-               cos( ang_xy ),
-               sin( ang_xy ) * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
-            glVertex3f( 
-               sin( ang_xy ) * cos( ang_xz ),
-               cos( ang_xy ),
-               sin( ang_xy ) * sin( ang_xz ) );
-
-            glEnd();
-         }
-      }
+      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE );
 
       glEndList();
 
@@ -824,16 +689,11 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
+   struct RETROGLU_PROJ_ARGS args;
    float x = 0,
       y = 0,
       x_next = 0,
-      y_next = 0,
-      ang = 0,
-      radi = 0,
-      radi_next = 0,
-      ang_next = 0;
-   /* static int rotate_x = 85; */
-   struct RETROGLU_PROJ_ARGS args;
+      y_next = 0;
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
    if( 0 == data->init ) {
@@ -944,75 +804,11 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    } else {
 
-      for( ang = 0 ; 2 * RETROFLAT_PI > ang ; ang += DEMO_WATER_RING_A_ITER ) {
-         ang_next = ang + DEMO_WATER_RING_A_ITER;
-         for(
-            radi = 0 ;
-            DEMO_WATER_RING_RADIUS > radi ;
-            radi += DEMO_WATER_RING_R_ITER
-         ) {
-            radi_next = radi + DEMO_WATER_RING_R_ITER;
+      poly_water_ring(
+         RETROGLU_COLOR_CYAN, DEMO_WATER_RING_RADIUS, DEMO_WATER_RING_R_ITER,
+         DEMO_WATER_RING_A_ITER, data->freq_mod, data->amp_mod,
+         data->peak_offset );
 
-            y = (sin( (radi + data->peak_offset)
-               /* Modulate wave frequency. */
-               * data->freq_mod) 
-               /* Modulate wave height. */
-               * data->amp_mod) 
-               /* Keep it above zero. */
-               + 1.0f;
-            y_next =
-               (sin( (radi_next + data->peak_offset)
-               /* Modulate wave frequency. */
-               * data->freq_mod) 
-               /* Modulate wave height. */
-               * data->amp_mod) 
-               /* Keep it above 0. */
-               + 1.0f;
-
-            /* Water color and lighting. */
-            glNormal3f( cos( ang ), y, 0 );
-            glColor3f( 0, 0.75, 0.75 );
-
-            /* Water poly. Concentric rings of dual triangles. */
-            /* Triangle 1 */
-            glBegin( GL_TRIANGLES );
-            glVertex3f(
-               cos( ang ) * radi,
-               y,       
-               sin( ang ) * radi
-               );
-            glVertex3f(
-               cos( ang_next ) * radi,
-               y,
-               sin( ang_next ) * radi
-               );
-            glVertex3f(
-               cos( ang_next ) * radi_next,
-               y_next,
-               sin( ang_next ) * radi_next
-               );
-            glEnd();
-
-            /* Triangle 2 */
-            glBegin( GL_TRIANGLES );
-            glVertex3f(
-               cos( ang_next ) * radi_next,
-               y_next,
-               sin( ang_next ) * radi_next
-               );
-            glVertex3f(
-               cos( ang ) * radi_next,
-               y_next,
-               sin( ang ) * radi_next
-               );
-            glVertex3f(
-               cos( ang ) * radi,
-               y,       
-               sin( ang ) * radi
-               );
-            glEnd();
-         }
-      }
    }
 
    glPopMatrix();
