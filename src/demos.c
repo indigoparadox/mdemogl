@@ -206,7 +206,6 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
    struct RETROGLU_PROJ_ARGS args;
-   const float color_white[] = { 1.0f, 1.0f, 1.0f };
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
    if( !data->init ) {
@@ -221,7 +220,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->skybox_list = glGenLists( 1 );
       glNewList( data->skybox_list, GL_COMPILE );
 
-         glColor3fv( color_white );
+         glColor3fv( RETROGLU_COLOR_WHITE );
 
          /* Create a skybox. Note the normals, crucial for making the sides
           * show up properly in lighting.
@@ -707,6 +706,30 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
 
+      /* Setup the skybox (such as it is). */
+      data->skybox_list = glGenLists( 1 );
+      glNewList( data->skybox_list, GL_COMPILE );
+
+      glBegin( GL_QUADS );
+      glColor3fv( RETROGLU_COLOR_GREEN );
+      glNormal3f( 0, 1, 0 );
+      glVertex3f( -200.0f, 0, -100.0f );
+      glVertex3f( -200.0f, 0, 100.0f );
+      glVertex3f( 200.0f, 0, 100.0f );
+      glVertex3f( 200.0f, 0, -100.0f );
+      glEnd();
+
+      glBegin( GL_QUADS );
+      glColor3fv( RETROGLU_COLOR_BLUE );
+      glNormal3f( 0, 0, 1 );
+      glVertex3f( 200.0f, 0, -50.0f );
+      glVertex3f( 200.0f, 200.0f, -50.0f );
+      glVertex3f( -200.0f, 200.0f, -50.0f );
+      glVertex3f( -200.0f, 0, -50.0f );
+      glEnd();
+
+      glEndList();
+
       /* TODO: Add CLI option to select pattern. */
       data->pattern = 1;
       data->freq_mod = 7.0f;
@@ -798,6 +821,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    glRotatef( data->rotate_x, 1.0f, 0, 0 );
    glRotatef( data->rotate_y, 0, 1.0f, 0 );
    glTranslatef( data->translate_x, data->translate_y, data->translate_z );
+
+   /* Use the same skybox for either mode. */
+   glCallList( data->skybox_list );
 
    if( 0 == data->pattern ) {
 

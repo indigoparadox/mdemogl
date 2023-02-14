@@ -108,6 +108,7 @@ struct DEMO_WATER_DATA {
    int rotate_y;
    float peak_offset;
    GLint well_list;
+   GLint skybox_list;
 };
 
 void demo_init_scene( uint8_t flags );
