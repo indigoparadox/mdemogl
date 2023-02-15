@@ -533,6 +533,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROGLU_PROJ_ARGS args;
    int x = 0,
       z = 0;
+   float z_diff = 0,
+      x_diff = 0;
 
    if( !data->init ) {
 
@@ -547,7 +549,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       /* Setup map tiles: */
       /* TODO: Do this in a way that handles animated tiles. */
 
-      /* Floor 1 */
+      /* Floor 0 */
       g_demo_fp_tiles[0] = glGenLists( 1 );
       glNewList( g_demo_fp_tiles[0], GL_COMPILE );
       glBegin( GL_QUADS );
@@ -579,8 +581,14 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEnd();
       glEndList();
 
+      g_demo_fp_tiles[3] = glGenLists( 1 );
+      glNewList( g_demo_fp_tiles[3], GL_COMPILE );
+      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE );
+      glEndList();
+
       data->translate_y = 0;
-      data->translate_x = 0;
+      data->translate_x = (DEMO_FP_MAP_W / 2) - 1;
+      data->translate_z = (DEMO_FP_MAP_H / 2) - 1;
 
       data->init = 1;
    }
@@ -591,11 +599,22 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    switch( input ) {
    case RETROFLAT_KEY_W:
-      data->translate_z +=
-         cos( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
-      data->translate_x -=
-         sin( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      z_diff = cos( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      x_diff = sin( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      if( 
+         0 > ceil( data->translate_z + z_diff ) ||
+         0 > ceil( data->translate_x - x_diff ) ||
+         DEMO_FP_MAP_H <= ceil( data->translate_z + z_diff )  ||
+         DEMO_FP_MAP_W <= ceil( data->translate_x - x_diff ) 
+      ) {
+         break;
+      }
+      data->translate_z += z_diff;
+      data->translate_x -= x_diff;
       debug_printf( 3, "tx: %f, tz: %f", data->translate_x, data->translate_z );
+      debug_printf( 3, "map x: %d, y: %d",
+         DEMO_FP_MAP_W - (int)(ceil( data->translate_x )),
+         DEMO_FP_MAP_H - (int)(ceil( data->translate_z )) - 1 );
       break;
 
    case RETROFLAT_KEY_S:
@@ -646,12 +665,13 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    glTranslatef( data->translate_x, data->translate_y, data->translate_z );
 
    /* Draw the map tiles around us. */
+   glTranslatef( 1.0f, 0, 1.0f );
    glTranslatef(
-      0.5f * ((float)DEMO_FP_MAP_W), 0, -0.5f * ((float)DEMO_FP_MAP_H) );
+      -1.0f * ((float)DEMO_FP_MAP_W), 0, -1.0f * ((float)DEMO_FP_MAP_H) );
    for( z = 0 ; DEMO_FP_MAP_H > z ; z++ ) {
-      glTranslatef( -8.0f, 0, 1.0f );
-      for( x = 0 ; DEMO_FP_MAP_W > x ; x++ ) {
-         glTranslatef( 1.0f, 0, 0 );
+      glTranslatef( (float)(DEMO_FP_MAP_W), 0, 1.0f );
+      for( x = DEMO_FP_MAP_W - 1 ; 0 <= x ; x-- ) {
+         glTranslatef( -1.0f, 0, 0 );
          glCallList( g_demo_fp_tiles[g_demo_fp_map[(z * DEMO_FP_MAP_W) + x]] );
       }
    }
