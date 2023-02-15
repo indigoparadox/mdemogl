@@ -247,7 +247,9 @@ void poly_water_sheet(
    }
 }
 
-void poly_sphere_checker( const float color1[], const float color2[] ) {
+void poly_sphere_checker(
+   const float color1[], const float color2[], const float radius
+) {
    float ang_xy = 0;
    float ang_xz = 0;
    int even_col = 1;
@@ -294,35 +296,35 @@ void poly_sphere_checker( const float color1[], const float color2[] ) {
 
          /* Triangle 1 */
          glVertex3f( 
-            sin( ang_xy ) * cos( ang_xz ),
-            cos( ang_xy ),
-            sin( ang_xy ) * sin( ang_xz ) );
+            sin( ang_xy ) * cos( ang_xz ) * radius,
+            cos( ang_xy ) * radius,
+            sin( ang_xy ) * sin( ang_xz ) * radius );
          glVertex3f( 
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) * cos( ang_xz ),
-            cos( ang_xy + DEMO_SPHERE_INC_XY ),
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) * sin( ang_xz ) );
+            sin( ang_xy + DEMO_SPHERE_INC_XY ) * cos( ang_xz ) * radius,
+            cos( ang_xy + DEMO_SPHERE_INC_XY ) * radius,
+            sin( ang_xy + DEMO_SPHERE_INC_XY ) * sin( ang_xz ) * radius );
          glVertex3f( 
             sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
-            cos( ang_xy + DEMO_SPHERE_INC_XY ),
+               * cos( ang_xz + DEMO_SPHERE_INC_XZ ) * radius,
+            cos( ang_xy + DEMO_SPHERE_INC_XY ) * radius,
             sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
+               * sin( ang_xz + DEMO_SPHERE_INC_XZ ) * radius );
 
          /* Triangle 2 */
          glVertex3f( 
             sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
-            cos( ang_xy + DEMO_SPHERE_INC_XY ),
+               * cos( ang_xz + DEMO_SPHERE_INC_XZ ) * radius,
+            cos( ang_xy + DEMO_SPHERE_INC_XY ) * radius,
             sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
+               * sin( ang_xz + DEMO_SPHERE_INC_XZ ) * radius );
          glVertex3f(
-            sin( ang_xy ) * cos( ang_xz + DEMO_SPHERE_INC_XZ ),
-            cos( ang_xy ),
-            sin( ang_xy ) * sin( ang_xz + DEMO_SPHERE_INC_XZ ) );
+            sin( ang_xy ) * cos( ang_xz + DEMO_SPHERE_INC_XZ ) * radius,
+            cos( ang_xy ) * radius,
+            sin( ang_xy ) * sin( ang_xz + DEMO_SPHERE_INC_XZ ) * radius );
          glVertex3f( 
-            sin( ang_xy ) * cos( ang_xz ),
-            cos( ang_xy ),
-            sin( ang_xy ) * sin( ang_xz ) );
+            sin( ang_xy ) * cos( ang_xz ) * radius,
+            cos( ang_xy ) * radius,
+            sin( ang_xy ) * sin( ang_xz ) * radius );
 
          glEnd();
       }
