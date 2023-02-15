@@ -169,7 +169,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
    /* Input */
 
-   input_evt.allow_repeat = 1;
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
@@ -301,7 +300,6 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    /* Input */
 
-   input_evt.allow_repeat = 1;
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
@@ -446,7 +444,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 
    /* Input */
 
-   input_evt.allow_repeat = 1;
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
@@ -533,36 +530,63 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
-   static GLint cube_list = 0;
    struct RETROGLU_PROJ_ARGS args;
+   int x = 0,
+      z = 0;
 
    if( !data->init ) {
 
+      /* Init scene. */
       retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_FRUSTUM;
-      args.rzoom = 0.5f;
+      args.rzoom = 0.3f;
       args.near_plane = 0.5f;
-      args.far_plane = 10.0f;
+      args.far_plane = 100.0f;
       retroglu_init_projection( &args );
 
-      cube_list = glGenLists( 1 );
+      /* Setup map tiles: */
+      /* TODO: Do this in a way that handles animated tiles. */
 
-      glNewList( cube_list, GL_COMPILE );
+      /* Floor 1 */
+      g_demo_fp_tiles[0] = glGenLists( 1 );
+      glNewList( g_demo_fp_tiles[0], GL_COMPILE );
+      glBegin( GL_QUADS );
+      glColor3fv( RETROGLU_COLOR_DARKGREEN );
+      glVertex3f( -0.5f, -0.5f, -0.5f );
+      glVertex3f( -0.5f, -0.5f,  0.5f );
+      glVertex3f(  0.5f, -0.5f,  0.5f );
+      glVertex3f(  0.5f, -0.5f, -0.5f );
+      glEnd();
+      glEndList();
 
+      /* Wall 1 */
+      g_demo_fp_tiles[1] = glGenLists( 1 );
+      glNewList( g_demo_fp_tiles[1], GL_COMPILE );
       poly_cube(
          RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
          RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
-
       glEndList();
 
-      data->translate_z = -5.0f;
+      /* Floor 2 */
+      g_demo_fp_tiles[2] = glGenLists( 1 );
+      glNewList( g_demo_fp_tiles[2], GL_COMPILE );
+      glBegin( GL_QUADS );
+      glColor3fv( RETROGLU_COLOR_DARKBLUE );
+      glVertex3f( -0.5f, -0.5f, -0.5f );
+      glVertex3f( -0.5f, -0.5f,  0.5f );
+      glVertex3f(  0.5f, -0.5f,  0.5f );
+      glVertex3f(  0.5f, -0.5f, -0.5f );
+      glEnd();
+      glEndList();
+
+      data->translate_y = 0;
+      data->translate_x = 0;
 
       data->init = 1;
    }
 
    /* Input */
 
-   input_evt.allow_repeat = 1;
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
@@ -612,19 +636,25 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+   glLoadIdentity();
+
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
-   
+
    /* Translate/rotate the whole scene. */
    glRotatef( data->rotate_y, 0, 1.0f, 0 );
    glTranslatef( data->translate_x, data->translate_y, data->translate_z );
 
-   /* Place first cube. */
-   glCallList( cube_list );
-
-   /* Place second cube next to first. */
-   glTranslatef( 3.0f, 0, 0 );
-   glCallList( cube_list );
+   /* Draw the map tiles around us. */
+   glTranslatef(
+      0.5f * ((float)DEMO_FP_MAP_W), 0, -0.5f * ((float)DEMO_FP_MAP_H) );
+   for( z = 0 ; DEMO_FP_MAP_H > z ; z++ ) {
+      glTranslatef( -8.0f, 0, 1.0f );
+      for( x = 0 ; DEMO_FP_MAP_W > x ; x++ ) {
+         glTranslatef( 1.0f, 0, 0 );
+         glCallList( g_demo_fp_tiles[g_demo_fp_map[(z * DEMO_FP_MAP_W) + x]] );
+      }
+   }
 
    glPopMatrix();
 
@@ -680,7 +710,6 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
    /* Input */
 
-   input_evt.allow_repeat = 1;
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
@@ -836,7 +865,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    /* Input */
 
-   input_evt.allow_repeat = 1;
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {

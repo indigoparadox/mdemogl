@@ -27,6 +27,10 @@
 #define DEMO_WATER_RING_A_ITER 0.2f
 #define DEMO_WATER_RING_RADIUS 3.0f
 
+#define DEMO_FP_MAP_W 8
+#define DEMO_FP_MAP_H 8
+#define DEMO_FP_TILES_SZ_MAX 200
+
 #define SPRITE_X 0
 #define SPRITE_Y 1
 
@@ -138,6 +142,19 @@ MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sp
 DEMOS_LIST( DEMOS_LIST_PROTOS )
 
 #ifdef DEMOS_C
+
+GLint g_demo_fp_tiles[DEMO_FP_TILES_SZ_MAX];
+
+uint8_t g_demo_fp_map[DEMO_FP_MAP_H * DEMO_FP_MAP_W] = {
+   1, 1, 1, 1, 1, 1, 1, 1,
+   1, 0, 2, 0, 2, 0, 2, 1,
+   1, 2, 0, 2, 0, 2, 0, 1,
+   1, 0, 2, 0, 2, 0, 2, 1,
+   1, 2, 0, 2, 0, 2, 0, 1,
+   1, 0, 2, 0, 2, 0, 2, 1,
+   1, 2, 0, 2, 0, 2, 0, 1,
+   1, 1, 1, 1, 1, 1, 1, 1,
+};
 
 #define DEMOS_LIST_NAMES( name, data_struct ) #name,
 
