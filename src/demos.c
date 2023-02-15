@@ -560,19 +560,22 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glBegin( GL_QUADS );
       glColor3fv( RETROGLU_COLOR_DARKGREEN );
       glNormal3f( 0, 1.0f, 0 );
-      glVertex3f( -0.5f, -0.5f, -0.5f );
-      glVertex3f( -0.5f, -0.5f,  0.5f );
-      glVertex3f(  0.5f, -0.5f,  0.5f );
-      glVertex3f(  0.5f, -0.5f, -0.5f );
+      glVertex3f( -0.5f, 0, -0.5f );
+      glVertex3f( -0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0, -0.5f );
       glEnd();
       glEndList();
 
       /* Wall 1 */
       g_demo_fp_tiles[1] = glGenLists( 1 );
       glNewList( g_demo_fp_tiles[1], GL_COMPILE );
+      /* Compensate for the cube being Y-centered on zero. */
+      glTranslatef( 0, 0.5f, 0 );
       poly_cube(
          RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
          RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
+      glTranslatef( 0, -0.5f, 0 );
       glEndList();
 
       /* Floor 2 */
@@ -581,24 +584,42 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glBegin( GL_QUADS );
       glColor3fv( RETROGLU_COLOR_DARKBLUE );
       glNormal3f( 0, 1.0f, 0 );
-      glVertex3f( -0.5f, -0.5f, -0.5f );
-      glVertex3f( -0.5f, -0.5f,  0.5f );
-      glVertex3f(  0.5f, -0.5f,  0.5f );
-      glVertex3f(  0.5f, -0.5f, -0.5f );
+      glVertex3f( -0.5f, 0, -0.5f );
+      glVertex3f( -0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0, -0.5f );
       glEnd();
       glEndList();
 
+      /* Sphere */
       g_demo_fp_tiles[3] = glGenLists( 1 );
       glNewList( g_demo_fp_tiles[3], GL_COMPILE );
+      /* Compensate for the sphere being Y-centered on zero. */
+      glTranslatef( 0, 0.5f, 0 );
       poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 0.5f );
+      glTranslatef( 0, -0.5f, 0 );
+      glEndList();
+
+      /* Well */
+      g_demo_fp_tiles[4] = glGenLists( 1 );
+      glNewList( g_demo_fp_tiles[4], GL_COMPILE );
+      glBegin( GL_QUADS );
+      glColor3fv( RETROGLU_COLOR_GRAY );
+      glNormal3f( 0, 1.0f, 0 );
+      glVertex3f( -0.5f, 0, -0.5f );
+      glVertex3f( -0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0, -0.5f );
+      glEnd();
+      poly_well( RETROGLU_COLOR_GRAY, 0.5f, 0.4f, 0.25f, 0.1f );
       glEndList();
 
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
 
-      data->translate_y = 0;
-      data->translate_x = (DEMO_FP_MAP_W / 2) - 1;
-      data->translate_z = (DEMO_FP_MAP_H / 2) - 1;
+      data->translate_y = -0.5f;
+      data->translate_x = (DEMO_FP_MAP_W / 2) - 2;
+      data->translate_z = (DEMO_FP_MAP_H / 2) - 2;
 
       data->init = 1;
    }
@@ -882,8 +903,8 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          data->well_list = glGenLists( 1 );
          glNewList( data->well_list, GL_COMPILE );
 
-         poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS,
-            DEMO_WATER_RING_A_ITER );
+         poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS + 0.75f,
+            DEMO_WATER_RING_RADIUS, 2.0f, DEMO_WATER_RING_A_ITER );
 
          glEndList();
       } else {
