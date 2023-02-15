@@ -96,8 +96,19 @@ struct DEMO_SPRITE_DATA {
    int tex_frame_idx;
 };
 
+struct DEMO_FP_DATA;
+
+typedef void (*demo_fp_poly_cb)( struct DEMO_FP_DATA* );
+
+struct DEMO_FP_TILE {
+   demo_fp_poly_cb anim;
+   GLint list;
+};
+
 struct DEMO_FP_DATA {
    int init;
+   struct DEMO_FP_TILE tiles[DEMO_FP_TILES_SZ_MAX];
+   float water_peak_offset;
    float translate_x;
    float translate_y;
    float translate_z;
@@ -142,8 +153,6 @@ MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sp
 DEMOS_LIST( DEMOS_LIST_PROTOS )
 
 #ifdef DEMOS_C
-
-GLint g_demo_fp_tiles[DEMO_FP_TILES_SZ_MAX];
 
 uint8_t g_demo_fp_map[DEMO_FP_MAP_H * DEMO_FP_MAP_W] = {
    1, 1, 1, 1, 1, 1, 1, 1,

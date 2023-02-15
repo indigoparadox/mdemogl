@@ -160,7 +160,8 @@ void poly_well(
 }
 
 void poly_water_ring(
-   const float color[], const float radius, const float radius_iter,
+   const float color[], const float height,
+   const float radius, const float radius_iter,
    const float ang_iter, float freq_mod, float amp_mod, float peak_offset
 ) {
    float y = 0,
@@ -183,7 +184,7 @@ void poly_water_ring(
             /* Modulate wave height. */
             * amp_mod) 
             /* Keep it above zero. */
-            + 1.0f;
+            + height;
          y_next =
             (sin( (radi_next + peak_offset)
             /* Modulate wave frequency. */
@@ -191,7 +192,7 @@ void poly_water_ring(
             /* Modulate wave height. */
             * amp_mod) 
             /* Keep it above 0. */
-            + 1.0f;
+            + height;
 
          /* Water color and lighting. */
          glNormal3f( cos( ang ), y, 0 );
