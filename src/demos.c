@@ -212,7 +212,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->sphere_list = glGenLists( 1 );
       glNewList( data->sphere_list, GL_COMPILE );
 
-      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE );
+      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 1.0f );
 
       glEndList();
 
@@ -535,11 +535,16 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       z = 0;
    float z_diff = 0,
       x_diff = 0;
+   const float light_pos[] = {
+      ((float)DEMO_FP_MAP_W / 2),
+      6.0,
+      ((float)DEMO_FP_MAP_H / 2),
+      0 };
 
    if( !data->init ) {
 
       /* Init scene. */
-      retroglu_init_scene( 0 );
+      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 0.3f;
       args.near_plane = 0.5f;
@@ -554,6 +559,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glNewList( g_demo_fp_tiles[0], GL_COMPILE );
       glBegin( GL_QUADS );
       glColor3fv( RETROGLU_COLOR_DARKGREEN );
+      glNormal3f( 0, 1.0f, 0 );
       glVertex3f( -0.5f, -0.5f, -0.5f );
       glVertex3f( -0.5f, -0.5f,  0.5f );
       glVertex3f(  0.5f, -0.5f,  0.5f );
@@ -574,6 +580,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glNewList( g_demo_fp_tiles[2], GL_COMPILE );
       glBegin( GL_QUADS );
       glColor3fv( RETROGLU_COLOR_DARKBLUE );
+      glNormal3f( 0, 1.0f, 0 );
       glVertex3f( -0.5f, -0.5f, -0.5f );
       glVertex3f( -0.5f, -0.5f,  0.5f );
       glVertex3f(  0.5f, -0.5f,  0.5f );
@@ -583,8 +590,11 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
       g_demo_fp_tiles[3] = glGenLists( 1 );
       glNewList( g_demo_fp_tiles[3], GL_COMPILE );
-      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE );
+      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 0.5f );
       glEndList();
+
+      glEnable( GL_LIGHT0 );
+      glEnable( GL_COLOR_MATERIAL );
 
       data->translate_y = 0;
       data->translate_x = (DEMO_FP_MAP_W / 2) - 1;
@@ -675,6 +685,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
          glCallList( g_demo_fp_tiles[g_demo_fp_map[(z * DEMO_FP_MAP_W) + x]] );
       }
    }
+
+   glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
 
    glPopMatrix();
 

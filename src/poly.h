@@ -14,7 +14,8 @@ void poly_water_sheet(
    const float color[],
    const float width, const float depth, const float x_iter,
    float freq_mod, float amp_mod, float peak_offset );
-void poly_sphere_checker( const float color1[], const float color2[] );
+void poly_sphere_checker(
+   const float color1[], const float color2[], const float radius );
 
 #endif /* !POLY_H */
 
