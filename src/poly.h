@@ -9,7 +9,8 @@ void poly_well(
    const float color[], const float radius_outer, const float radius_inner,
    const float height, const float ang_iter );
 void poly_water_ring(
-   const float color[], const float radius, const float radius_iter,
+   const float color[], const float height,
+   const float radius, const float radius_iter,
    const float ang_iter, float freq_mod, float amp_mod, float peak_offset );
 void poly_water_sheet(
    const float color[],

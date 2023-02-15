@@ -527,6 +527,29 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 
 }
 
+void demo_fp_poly_well( struct DEMO_FP_DATA* data ) {
+   const float ang_iter = 0.2f;
+
+   /* Draw floor under well. */
+   glBegin( GL_QUADS );
+   glColor3fv( RETROGLU_COLOR_GRAY );
+   glNormal3f( 0, 1.0f, 0 );
+   glVertex3f( -0.5f, 0, -0.5f );
+   glVertex3f( -0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0, -0.5f );
+   glEnd();
+
+   /* Draw well. */
+   poly_well( RETROGLU_COLOR_GRAY, 0.5f, 0.4f, 0.25f, ang_iter );
+
+   /* Draw water. */
+   poly_water_ring(
+      RETROGLU_COLOR_CYAN, 0.15f, 0.4f, 0.05f,
+      ang_iter, 20.0f, 0.01f,
+      data->water_peak_offset );
+}
+
 void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
@@ -555,8 +578,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       /* TODO: Do this in a way that handles animated tiles. */
 
       /* Floor 0 */
-      g_demo_fp_tiles[0] = glGenLists( 1 );
-      glNewList( g_demo_fp_tiles[0], GL_COMPILE );
+      data->tiles[0].list = glGenLists( 1 );
+      glNewList( data->tiles[0].list, GL_COMPILE );
       glBegin( GL_QUADS );
       glColor3fv( RETROGLU_COLOR_DARKGREEN );
       glNormal3f( 0, 1.0f, 0 );
@@ -568,8 +591,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEndList();
 
       /* Wall 1 */
-      g_demo_fp_tiles[1] = glGenLists( 1 );
-      glNewList( g_demo_fp_tiles[1], GL_COMPILE );
+      data->tiles[1].list = glGenLists( 1 );
+      glNewList( data->tiles[1].list, GL_COMPILE );
       /* Compensate for the cube being Y-centered on zero. */
       glTranslatef( 0, 0.5f, 0 );
       poly_cube(
@@ -579,8 +602,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEndList();
 
       /* Floor 2 */
-      g_demo_fp_tiles[2] = glGenLists( 1 );
-      glNewList( g_demo_fp_tiles[2], GL_COMPILE );
+      data->tiles[2].list = glGenLists( 1 );
+      glNewList( data->tiles[2].list, GL_COMPILE );
       glBegin( GL_QUADS );
       glColor3fv( RETROGLU_COLOR_DARKBLUE );
       glNormal3f( 0, 1.0f, 0 );
@@ -592,8 +615,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEndList();
 
       /* Sphere */
-      g_demo_fp_tiles[3] = glGenLists( 1 );
-      glNewList( g_demo_fp_tiles[3], GL_COMPILE );
+      data->tiles[3].list = glGenLists( 1 );
+      glNewList( data->tiles[3].list, GL_COMPILE );
       /* Compensate for the sphere being Y-centered on zero. */
       glTranslatef( 0, 0.5f, 0 );
       poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 0.5f );
@@ -601,18 +624,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEndList();
 
       /* Well */
-      g_demo_fp_tiles[4] = glGenLists( 1 );
-      glNewList( g_demo_fp_tiles[4], GL_COMPILE );
-      glBegin( GL_QUADS );
-      glColor3fv( RETROGLU_COLOR_GRAY );
-      glNormal3f( 0, 1.0f, 0 );
-      glVertex3f( -0.5f, 0, -0.5f );
-      glVertex3f( -0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0, -0.5f );
-      glEnd();
-      poly_well( RETROGLU_COLOR_GRAY, 0.5f, 0.4f, 0.25f, 0.1f );
-      glEndList();
+      data->tiles[4].anim = demo_fp_poly_well;
 
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
@@ -703,7 +715,14 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glTranslatef( (float)(DEMO_FP_MAP_W), 0, 1.0f );
       for( x = DEMO_FP_MAP_W - 1 ; 0 <= x ; x-- ) {
          glTranslatef( -1.0f, 0, 0 );
-         glCallList( g_demo_fp_tiles[g_demo_fp_map[(z * DEMO_FP_MAP_W) + x]] );
+         if(
+            NULL == data->tiles[g_demo_fp_map[(z * DEMO_FP_MAP_W) + x]].anim
+         ) {
+            glCallList(
+               data->tiles[g_demo_fp_map[(z * DEMO_FP_MAP_W) + x]].list );
+         } else {
+            data->tiles[g_demo_fp_map[(z * DEMO_FP_MAP_W) + x]].anim( data );
+         }
       }
    }
 
@@ -713,6 +732,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    glFlush();
    retroflat_draw_release( NULL );
+
+   data->water_peak_offset -= 0.01f;
 }
 
 void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
@@ -998,7 +1019,8 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       glCallList( data->well_list );
 
       poly_water_ring(
-         RETROGLU_COLOR_CYAN, DEMO_WATER_RING_RADIUS, DEMO_WATER_RING_R_ITER,
+         RETROGLU_COLOR_CYAN, 1.0f,
+         DEMO_WATER_RING_RADIUS, DEMO_WATER_RING_R_ITER,
          DEMO_WATER_RING_A_ITER, data->freq_mod, data->amp_mod,
          data->peak_offset );
 
