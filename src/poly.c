@@ -92,46 +92,70 @@ void poly_cube(
 }
 
 void poly_well(
-   const float color[], const float radius, const float ang_iter
+   const float color[], const float radius_outer, const float radius_inner,
+   const float height, const float ang_iter
 ) {
    float
       x = 0,
       x_next = 0,
       z = 0,
       z_next = 0,
-      ang = 0;
+      ang = 0,
+      x_outer = 0,
+      x_next_outer = 0,
+      z_outer = 0,
+      z_next_outer = 0;
 
    for( ang = 0 ; 2 * RETROFLAT_PI > ang ; ang += ang_iter ) {
-      x = radius * cos( ang );
-      x_next = radius * cos( ang + ang_iter );
-      z = radius * sin( ang );
-      z_next = radius * sin( ang + ang_iter );
+      x = radius_inner * cos( ang );
+      x_next = radius_inner * cos( ang + ang_iter );
+      z = radius_inner * sin( ang );
+      z_next = radius_inner * sin( ang + ang_iter );
+      x_outer = radius_outer * cos( ang );
+      x_next_outer = radius_outer * cos( ang + ang_iter );
+      z_outer = radius_outer * sin( ang );
+      z_next_outer = radius_outer * sin( ang + ang_iter );
 
       /* Inner Wall */
       glBegin( GL_TRIANGLES );
       glColor3fv( color );
       glNormal3f( x * -1.0f,  0, z * -1.0f );
-      glVertex3f( x_next,  2.0f, z_next );
-      glVertex3f( x,       2.0f, z );
+      glVertex3f( x_next,  height, z_next );
+      glVertex3f( x,       height, z );
       glVertex3f( x,          0, z );
 
       glVertex3f( x,          0, z );
       glVertex3f( x_next,     0, z_next );
-      glVertex3f( x_next,  2.0f, z_next );
+      glVertex3f( x_next,  height, z_next );
       glEnd();
 
       /* Upper Lip */
       glBegin( GL_TRIANGLES );
       glColor3fv( color );
       glNormal3f( x * -1.0f,  1, z * -1.0f );
-      glVertex3f( x_next * 1.5f, 2.0f, z_next * 1.5f );
-      glVertex3f( x * 1.5f,      2.0f, z * 1.5f );
-      glVertex3f( x,             2.0f, z );
+      glVertex3f( x_next_outer, height, z_next_outer );
+      glVertex3f( x_outer,      height, z_outer );
+      glVertex3f( x,             height, z );
 
-      glVertex3f( x,             2.0f, z );
-      glVertex3f( x_next,        2.0f, z_next );
-      glVertex3f( x_next * 1.5f, 2.0f, z_next * 1.5f );
+      glVertex3f( x,             height, z );
+      glVertex3f( x_next,        height, z_next );
+      glVertex3f( x_next_outer, height, z_next_outer );
       glEnd();
+
+      /* Outer Wall */
+      glBegin( GL_TRIANGLES );
+      glColor3fv( color );
+      glNormal3f( x * -1.0f,  0, z * -1.0f );
+      glVertex3f( x_outer,          0, z_outer );
+      glVertex3f( x_outer,       height, z_outer );
+      glVertex3f( x_next_outer,  height, z_next_outer );
+
+      glVertex3f( x_next_outer,  height, z_next_outer );
+      glVertex3f( x_next_outer,     0, z_next_outer );
+      glVertex3f( x_outer,          0, z_outer );
+      glEnd();
+
+
    }
 }
 
