@@ -546,7 +546,7 @@ void demo_fp_poly_well( struct DEMO_FP_DATA* data ) {
    /* Draw water. */
    poly_water_ring(
       RETROGLU_COLOR_CYAN, 0.15f, 0.4f, 0.05f,
-      ang_iter, 20.0f, 0.01f,
+      ang_iter, 0.3f, 20.0f, 0.01f,
       data->water_peak_offset );
 }
 
@@ -559,9 +559,9 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    float z_diff = 0,
       x_diff = 0;
    const float light_pos[] = {
-      ((float)DEMO_FP_MAP_W / 2),
-      6.0,
-      ((float)DEMO_FP_MAP_H / 2),
+      0,
+      0.5,
+      0,
       0 };
 
    if( !data->init ) {
@@ -1021,7 +1021,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       poly_water_ring(
          RETROGLU_COLOR_CYAN, 1.0f,
          DEMO_WATER_RING_RADIUS, DEMO_WATER_RING_R_ITER,
-         DEMO_WATER_RING_A_ITER, data->freq_mod, data->amp_mod,
+         DEMO_WATER_RING_A_ITER, 0.3f, data->freq_mod, data->amp_mod,
          data->peak_offset );
 
    }

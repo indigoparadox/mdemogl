@@ -162,7 +162,8 @@ void poly_well(
 void poly_water_ring(
    const float color[], const float height,
    const float radius, const float radius_iter,
-   const float ang_iter, float freq_mod, float amp_mod, float peak_offset
+   const float ang_iter, const float normal_mod,
+   float freq_mod, float amp_mod, float peak_offset
 ) {
    float y = 0,
       y_next = 0,
@@ -195,7 +196,10 @@ void poly_water_ring(
             + height;
 
          /* Water color and lighting. */
-         glNormal3f( cos( ang ), y, 0 );
+         glNormal3f(
+            cos( ang ) * normal_mod,
+            y,
+            sin( ang ) * normal_mod );
          glColor3fv( color );
 
          /* Water poly. Concentric rings of dual triangles. */
