@@ -175,8 +175,7 @@ void poly_water_ring(
    /* static int rotate_x = 85; */
    for( ang = 0 ; 2 * RETROFLAT_PI > ang ; ang += ang_iter ) {
       ang_next = ang + ang_iter;
-      for( radi = 0 ; radius > radi ; radi += radius_iter
-      ) {
+      for( radi = 0 ; radius > radi ; radi += radius_iter ) {
          radi_next = radi + radius_iter;
 
          y = (sin( (radi + peak_offset)

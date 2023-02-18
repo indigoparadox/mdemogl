@@ -156,7 +156,7 @@ DEMOS_LIST( DEMOS_LIST_PROTOS )
 
 uint8_t g_demo_fp_map[DEMO_FP_MAP_H * DEMO_FP_MAP_W] = {
    1, 1, 1, 1, 1, 1, 1, 1,
-   1, 3, 2, 0, 2, 0, 3, 1,
+   1, 3, 2, 5, 5, 0, 3, 1,
    1, 2, 0, 2, 0, 2, 0, 1,
    1, 0, 2, 0, 4, 0, 2, 1,
    1, 2, 0, 2, 0, 2, 0, 1,
