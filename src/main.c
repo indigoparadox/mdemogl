@@ -62,6 +62,13 @@ static MERROR_RETVAL demo_dump_cli_cb(
    return RETROFLAT_OK;
 }
 
+static MERROR_RETVAL demo_wire_cli_cb(
+   const char* arg, struct RETROFLAT_ARGS* args
+) {
+   g_demo_flags |= DEMO_FLAG_WIRE;
+   return RETROFLAT_OK;
+}
+
 int main( int argc, char** argv ) {
    int retval = 0;
    struct RETROFLAT_ARGS args;
@@ -92,6 +99,11 @@ int main( int argc, char** argv ) {
       MAUG_CLI_SIGIL "d", MAUG_CLI_SIGIL_SZ + 1,
       "dump demo object", 0,
       (maug_cli_cb)demo_dump_cli_cb, NULL, &args );
+
+   maug_add_arg(
+      MAUG_CLI_SIGIL "w", MAUG_CLI_SIGIL_SZ + 1,
+      "view in wireframe mode", 0,
+      (maug_cli_cb)demo_wire_cli_cb, NULL, &args );
 
    /* Add demos to CLI parser. */
    for( i = 0 ; '\0' != gc_demo_names[i][0] ; i++ ) {
