@@ -550,6 +550,72 @@ void demo_fp_poly_well( struct DEMO_FP_DATA* data ) {
       data->water_peak_offset );
 }
 
+#define DEMO_RING_HR 0.3f
+#define DEMO_RING_BR 0.1f
+#define DEMO_RING_BA_INC 0.4f
+#define DEMO_RING_HA_INC 0.4f
+
+void demo_fp_poly_ring( struct DEMO_FP_DATA* data ) {
+   float 
+      x_hole = 0,
+      y_hole = 0,
+      x_hole_next = 0,
+      y_hole_next = 0,
+      y_bar = 0,
+      z_bar = 0,
+      y_bar_next = 0,
+      z_bar_next = 0,
+      ang_hole = 0,
+      ang_bar = 0;
+
+   glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+   for(
+      ang_hole = 0 ; 2 * RETROFLAT_PI > ang_hole ; ang_hole += DEMO_RING_HA_INC
+   ) {
+      for(
+         ang_bar = RETROFLAT_PI ; 2 * RETROFLAT_PI > ang_bar ; ang_bar += DEMO_RING_BA_INC
+      ) {
+
+         x_hole = cos( ang_hole ) * DEMO_RING_HR;
+         y_hole = sin( ang_hole ) * DEMO_RING_HR + 0.5f;
+         x_hole_next = cos( ang_hole + DEMO_RING_HA_INC ) * DEMO_RING_HR;
+         y_hole_next = sin( ang_hole + DEMO_RING_HA_INC ) * DEMO_RING_HR + 0.5f;
+
+         z_bar = cos( ang_bar ) * DEMO_RING_BR;
+         y_bar = sin( ang_bar ) * DEMO_RING_BR;
+         z_bar_next = cos( ang_bar + DEMO_RING_BA_INC ) * DEMO_RING_BR;
+         y_bar_next = sin( ang_bar + DEMO_RING_BA_INC ) * DEMO_RING_BR;
+
+         glBegin( GL_QUADS );
+         glColor3fv( RETROGLU_COLOR_YELLOW );
+         glNormal3f( x_hole, y_hole + y_bar, z_bar );
+
+         glVertex3f( x_hole, y_hole + y_bar, z_bar );
+         glVertex3f( x_hole_next, y_hole_next + y_bar, z_bar );
+         glVertex3f( x_hole_next, y_hole_next + y_bar_next, z_bar_next );
+         glVertex3f( x_hole, y_hole + y_bar_next, z_bar_next );
+
+         glVertex3f( x_hole, y_hole + y_bar_next, z_bar_next );
+         glVertex3f( x_hole_next, y_hole_next + y_bar_next, z_bar_next );
+         glVertex3f( x_hole_next, y_hole_next + y_bar, z_bar );
+         glVertex3f( x_hole, y_hole + y_bar, z_bar );
+
+#if 0
+         glVertex3f(
+            x_hole + z_bar, y_hole + y_bar, z_bar );
+         glVertex3f(
+            x_hole_next + z_bar, y_hole_next + y_bar, z_bar );
+         glVertex3f(
+            x_hole_next + z_bar_next, y_hole_next + y_bar_next, z_bar_next );
+         glVertex3f(
+            x_hole + z_bar_next, y_hole + y_bar_next, z_bar_next );
+#endif
+
+         glEnd();
+      }
+   }
+}
+
 void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
@@ -625,6 +691,9 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
       /* Well */
       data->tiles[4].anim = demo_fp_poly_well;
+
+      /* Ring */
+      data->tiles[5].anim = demo_fp_poly_ring;
 
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
