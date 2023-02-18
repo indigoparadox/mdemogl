@@ -5,6 +5,8 @@
 #include <retroflt.h>
 #include <retroglu.h>
 
+#define DEMO_FLAG_WIRE 1
+
 #define DEMO_VERTICES_SZ_MAX 1024
 #define DEMO_FACES_SZ_MAX 1024
 #define DEMO_MATERIALS_SZ_MAX 1024
@@ -73,6 +75,7 @@ struct DEMO_SPHERE_DATA {
 };
 
 struct DEMO_OBJ_DATA {
+   int init;
    struct RETROGLU_VERTEX vertices[DEMO_VERTICES_SZ_MAX];
    int vertices_sz;
    struct RETROGLU_VERTEX vnormals[DEMO_VERTICES_SZ_MAX];
@@ -154,6 +157,8 @@ DEMOS_LIST( DEMOS_LIST_PROTOS )
 
 #ifdef DEMOS_C
 
+uint8_t g_demo_flags = 0;
+
 uint8_t g_demo_fp_map[DEMO_FP_MAP_H * DEMO_FP_MAP_W] = {
    1, 1, 1, 1, 1, 1, 1, 1,
    1, 3, 2, 5, 5, 0, 3, 1,
@@ -194,6 +199,7 @@ char g_demo_obj_name[DEMO_OBJ_NAME_SZ_MAX] = DEMO_DEFAULT_OBJ;
 
 #else
 
+extern uint8_t g_demo_flags;
 extern const char* gc_demo_names[];
 extern retroflat_loop_iter gc_demo_loops[];
 extern int g_timer;

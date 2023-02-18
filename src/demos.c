@@ -164,6 +164,10 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       data->rotate_x = 10;
       data->rotate_y = 10;
 
+      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+      }
+
       data->init = 1;
    }
 
@@ -295,6 +299,10 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
       data->translate_z = -5.0f;
 
+      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+      }
+
       data->init = 1;
    }
 
@@ -407,7 +415,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    */
    struct RETROGLU_PROJ_ARGS args;
 
-   if( 0 == data->vertices_sz ) {
+   if( 0 == data->init ) {
       demo_load_obj( g_demo_obj_name, NULL, data );
 
       assert( 0 < data->vertices_sz );
@@ -440,6 +448,12 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       retroglu_init_projection( &args );
 
       glEnable( GL_LIGHT0 );
+
+      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+      }
+
+      data->init = 1;
    }
 
    /* Input */
@@ -568,7 +582,6 @@ void demo_fp_poly_ring( struct DEMO_FP_DATA* data ) {
       ang_hole = 0,
       ang_bar = 0;
 
-   glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
    for(
       ang_hole = 0 ; 2 * RETROFLAT_PI > ang_hole ; ang_hole += DEMO_RING_HA_INC
    ) {
@@ -641,7 +654,6 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       retroglu_init_projection( &args );
 
       /* Setup map tiles: */
-      /* TODO: Do this in a way that handles animated tiles. */
 
       /* Floor 0 */
       data->tiles[0].list = glGenLists( 1 );
@@ -701,6 +713,10 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       data->translate_y = -0.5f;
       data->translate_x = (DEMO_FP_MAP_W / 2) - 2;
       data->translate_z = (DEMO_FP_MAP_H / 2) - 2;
+
+      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+      }
 
       data->init = 1;
    }
@@ -847,6 +863,10 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       args.near_plane = -100.0f;
       args.far_plane = 100.0f;
       retroglu_init_projection( &args );
+
+      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+      }
 
       data->init = 1;
    }
@@ -1001,6 +1021,10 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          data->translate_y = -8.0f;
          data->translate_z = -4.0f;
          data->rotate_x = 20;
+      }
+
+      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
       data->init = 1;
