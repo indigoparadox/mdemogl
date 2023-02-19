@@ -4,9 +4,9 @@
 OPENGL := 1
 C_FILES := src/main.c src/demos.c src/poly.c
 
-include maug/Makefile.inc
+LIBS_GCC += -lm
 
-LDFLAGS_GCC += -lm
+include maug/Makefile.inc
 
 # Target-specific options.
 .PHONY: clean
