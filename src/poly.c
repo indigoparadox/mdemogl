@@ -359,3 +359,84 @@ void poly_sphere_checker(
    }
 }
 
+void poly_ortho_skybox( const float* color ) {
+
+   glColor3fv( color );
+
+   /* Create a skybox. Note the normals, crucial for making the sides
+      * show up properly in lighting.
+      * This is a frustum shape to enhance its "3D" appearance in ortho
+      * rendering.
+      */
+
+   /* TODO: Break into triangles. */
+
+   /* Back Face */
+   glBegin( GL_QUADS );
+   glNormal3f(  0, 0, 1.0f );
+   glVertex3f(  1.0f,  1.0f, -10.0f ); /* Top Right */
+   glVertex3f( -1.0f,  1.0f, -10.0f ); /* Top Left */
+   glVertex3f( -1.0f, -1.0f, -10.0f ); /* Bottom Left */
+   glVertex3f(  1.0f, -1.0f, -10.0f ); /* Bottom Right */
+   glEnd();
+
+   /* Bottom Face */
+   glBegin( GL_QUADS );
+   glNormal3f(  0, 1.0f, 0 );
+   glVertex3f(  1.0f, -1.0f, -10.0f );
+   glVertex3f( -1.0f, -1.0f, -10.0f );
+   glVertex3f( -2.0f, -2.0f,  10.0f );
+   glVertex3f(  2.0f, -2.0f,  10.0f );
+   glEnd();
+
+   /* Right Face */
+   glBegin( GL_QUADS );
+   glNormal3f(  -1.0f, 0, 0 );
+   glVertex3f(  2.0f,  2.0f,  10.0f );
+   glVertex3f(  1.0f,  1.0f, -10.0f );
+   glVertex3f(  1.0f, -1.0f, -10.0f );
+   glVertex3f(  2.0f, -2.0f,  10.0f );
+   glEnd();
+
+   /* Top Face */
+   glBegin( GL_QUADS );
+   glNormal3f(  0, -1.0f, 0 );
+   glVertex3f(  2.0f,  2.0f,  10.0f );
+   glVertex3f( -2.0f,  2.0f,  10.0f );
+   glVertex3f( -1.0f,  1.0f, -10.0f );
+   glVertex3f(  1.0f,  1.0f, -10.0f );
+   glEnd();
+
+   /* Left Face */
+   glBegin( GL_QUADS );
+   glNormal3f(  1.0f, 0, 0 );
+   glVertex3f( -1.0f,  1.0f, -10.0f );
+   glVertex3f( -2.0f,  2.0f,  10.0f );
+   glVertex3f( -2.0f, -2.0f,  10.0f );
+   glVertex3f( -1.0f, -1.0f, -10.0f );
+   glEnd();
+}
+
+void poly_water_skybox() {
+
+   /* TODO: Use triangles. */
+
+   glBegin( GL_QUADS );
+   glColor3fv( RETROGLU_COLOR_GREEN );
+   glNormal3f( 0, 1, 0 );
+   glVertex3f( -200.0f, 0, -100.0f );
+   glVertex3f( -200.0f, 0, 100.0f );
+   glVertex3f( 200.0f, 0, 100.0f );
+   glVertex3f( 200.0f, 0, -100.0f );
+   glEnd();
+
+   glBegin( GL_QUADS );
+   glColor3fv( RETROGLU_COLOR_BLUE );
+   glNormal3f( 0, 0, 1 );
+   glVertex3f( 200.0f, 0, -50.0f );
+   glVertex3f( 200.0f, 200.0f, -50.0f );
+   glVertex3f( -200.0f, 200.0f, -50.0f );
+   glVertex3f( -200.0f, 0, -50.0f );
+   glEnd();
+}
+

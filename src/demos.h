@@ -142,13 +142,20 @@ int demo_load_obj(
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data );
 MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
 
+#ifdef DEMOS_NO_FILES
+#  define DEMOS_LIST_EXTRA( f )
+#else
+#  define DEMOS_LIST_EXTRA( f ) \
+      f( obj, struct DEMO_OBJ_DATA ) \
+      f( fp, struct DEMO_FP_DATA ) \
+      f( sprite, struct DEMO_SPRITE_DATA )
+#endif /* DEMOS_NO_FILES */
+
 #define DEMOS_LIST( f ) \
    f( cube, struct DEMO_CUBE_DATA ) \
    f( sphere, struct DEMO_SPHERE_DATA ) \
-   f( obj, struct DEMO_OBJ_DATA ) \
-   f( fp, struct DEMO_FP_DATA ) \
-   f( sprite, struct DEMO_SPRITE_DATA ) \
-   f( water, struct DEMO_WATER_DATA )
+   f( water, struct DEMO_WATER_DATA ) \
+   DEMOS_LIST_EXTRA( f )
 
 #define DEMOS_LIST_PROTOS( name, data_struct ) \
    void draw_ ## name ## _iter( data_struct* data );

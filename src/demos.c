@@ -213,72 +213,19 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    if( !data->init ) {
 
+#ifndef DEMOS_NO_LISTS
+      /* Create sphere display list. */
       data->sphere_list = glGenLists( 1 );
       glNewList( data->sphere_list, GL_COMPILE );
-
       poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 1.0f );
-
       glEndList();
 
+      /* Create Skybox display list. */
       data->skybox_list = glGenLists( 1 );
       glNewList( data->skybox_list, GL_COMPILE );
-
-         glColor3fv( RETROGLU_COLOR_WHITE );
-
-         /* Create a skybox. Note the normals, crucial for making the sides
-          * show up properly in lighting.
-          * This is a frustum shape to enhance its "3D" appearance in ortho
-          * rendering.
-          */
-
-         /* TODO: Break into triangles. */
-
-         /* Back Face */
-         glBegin( GL_QUADS );
-         glNormal3f(  0, 0, 1.0f );
-         glVertex3f(  1.0f,  1.0f, -10.0f ); /* Top Right */
-         glVertex3f( -1.0f,  1.0f, -10.0f ); /* Top Left */
-         glVertex3f( -1.0f, -1.0f, -10.0f ); /* Bottom Left */
-         glVertex3f(  1.0f, -1.0f, -10.0f ); /* Bottom Right */
-         glEnd();
-
-         /* Bottom Face */
-         glBegin( GL_QUADS );
-         glNormal3f(  0, 1.0f, 0 );
-         glVertex3f(  1.0f, -1.0f, -10.0f );
-         glVertex3f( -1.0f, -1.0f, -10.0f );
-         glVertex3f( -2.0f, -2.0f,  10.0f );
-         glVertex3f(  2.0f, -2.0f,  10.0f );
-         glEnd();
-
-         /* Right Face */
-         glBegin( GL_QUADS );
-         glNormal3f(  -1.0f, 0, 0 );
-         glVertex3f(  2.0f,  2.0f,  10.0f );
-         glVertex3f(  1.0f,  1.0f, -10.0f );
-         glVertex3f(  1.0f, -1.0f, -10.0f );
-         glVertex3f(  2.0f, -2.0f,  10.0f );
-         glEnd();
-
-         /* Top Face */
-         glBegin( GL_QUADS );
-         glNormal3f(  0, -1.0f, 0 );
-         glVertex3f(  2.0f,  2.0f,  10.0f );
-         glVertex3f( -2.0f,  2.0f,  10.0f );
-         glVertex3f( -1.0f,  1.0f, -10.0f );
-         glVertex3f(  1.0f,  1.0f, -10.0f );
-         glEnd();
-
-         /* Left Face */
-         glBegin( GL_QUADS );
-         glNormal3f(  1.0f, 0, 0 );
-         glVertex3f( -1.0f,  1.0f, -10.0f );
-         glVertex3f( -2.0f,  2.0f,  10.0f );
-         glVertex3f( -2.0f, -2.0f,  10.0f );
-         glVertex3f( -1.0f, -1.0f, -10.0f );
-         glEnd();
-
+      poly_ortho_skybox( RETROGLU_COLOR_WHITE );
       glEndList();
+#endif /* DEMOS_NO_LISTS */
 
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_ORTHO;
@@ -354,7 +301,11 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    glScalef( 8.0f, 6.0f, 1.0f );
 
+#ifndef DEMOS_NO_LISTS
+   poly_ortho_skybox( RETROGLU_COLOR_WHITE );
+#else
    glCallList( data->skybox_list );
+#endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
 
@@ -366,7 +317,11 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
    glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
 
+#ifndef DEMOS_NO_LISTS
+   poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 1.0f );
+#else
    glCallList( data->sphere_list );
+#endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
 
@@ -396,6 +351,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->translate_y += data->translate_y_inc;
    }
 }
+
+#ifndef DEMOS_NO_FILES
 
 void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
@@ -427,6 +384,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          debug_printf( 3, "demo data dumped to %s", g_demo_dump_name );
       }
 
+#ifndef DEMOS_NO_LISTS
       /* Setup display list. */
       data->obj_list = glGenLists( 1 );
       glNewList( data->obj_list, GL_COMPILE );
@@ -439,6 +397,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          data->materials, data->materials_sz );
       
       glEndList();
+#endif /* DEMOS_NO_LISTS */
 
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_FRUSTUM;
@@ -529,7 +488,16 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
 
+#ifdef DEMOS_NO_LISTS
+   retroglu_draw_poly(
+      data->vertices, data->vertices_sz,
+      data->vnormals, data->vnormals_sz,
+      data->vtextures, data->vtextures_sz,
+      data->faces, data->faces_sz,
+      data->materials, data->materials_sz );
+#else
    glCallList( data->obj_list );
+#endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
 
@@ -958,6 +926,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    }
 }
 
+#endif /* DEMOS_NO_FILES */
+
 void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    int input = 0;
@@ -977,29 +947,13 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
 
+#ifndef DEMOS_NO_LISTS
       /* Setup the skybox (such as it is). */
       data->skybox_list = glGenLists( 1 );
       glNewList( data->skybox_list, GL_COMPILE );
-
-      glBegin( GL_QUADS );
-      glColor3fv( RETROGLU_COLOR_GREEN );
-      glNormal3f( 0, 1, 0 );
-      glVertex3f( -200.0f, 0, -100.0f );
-      glVertex3f( -200.0f, 0, 100.0f );
-      glVertex3f( 200.0f, 0, 100.0f );
-      glVertex3f( 200.0f, 0, -100.0f );
-      glEnd();
-
-      glBegin( GL_QUADS );
-      glColor3fv( RETROGLU_COLOR_BLUE );
-      glNormal3f( 0, 0, 1 );
-      glVertex3f( 200.0f, 0, -50.0f );
-      glVertex3f( 200.0f, 200.0f, -50.0f );
-      glVertex3f( -200.0f, 200.0f, -50.0f );
-      glVertex3f( -200.0f, 0, -50.0f );
-      glEnd();
-
+      poly_water_skybox();
       glEndList();
+#endif /* !DEMOS_NO_LISTS */
 
       /* TODO: Add CLI option to select pattern. */
       data->pattern = 1;
@@ -1009,14 +963,15 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          data->translate_y = -4.0f;
          data->translate_z = -4.0f;
 
+#ifndef DEMOS_NO_LISTS
          /* Setup well list. */
          data->well_list = glGenLists( 1 );
          glNewList( data->well_list, GL_COMPILE );
-
          poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS + 0.75f,
             DEMO_WATER_RING_RADIUS, 2.0f, DEMO_WATER_RING_A_ITER );
-
          glEndList();
+#endif /* !DEMOS_NO_LISTS */
+
       } else {
          data->translate_y = -8.0f;
          data->translate_z = -4.0f;
@@ -1096,8 +1051,12 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    glRotatef( data->rotate_y, 0, 1.0f, 0 );
    glTranslatef( data->translate_x, data->translate_y, data->translate_z );
 
+#ifdef DEMOS_NO_LISTS
+   poly_water_skybox();
+#else
    /* Use the same skybox for either mode. */
    glCallList( data->skybox_list );
+#endif /* DEMOS_NO_LISTS */
 
    if( 0 == data->pattern ) {
 
@@ -1108,8 +1067,13 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    } else {
 
+#ifdef DEMOS_NO_LISTS
+   poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS + 0.75f,
+      DEMO_WATER_RING_RADIUS, 2.0f, DEMO_WATER_RING_A_ITER );
+#else
       /* Only the well gets drawn from a list since it's static. */
       glCallList( data->well_list );
+#endif /* DEMOS_NO_LISTS */
 
       poly_water_ring(
          RETROGLU_COLOR_CYAN, 1.0f,
