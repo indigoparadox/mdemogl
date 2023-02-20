@@ -5,7 +5,7 @@ OPENGL := 1
 C_FILES := src/main.c src/demos.c src/poly.c
 
 LIBS_GCC += -lm
-DEFINES_GCC_NDS := -DDEMOS_NO_LISTS -DDEMOS_NO_FILES
+DEFINES_GCC_NDS := -DDEMOS_NO_LISTS -DDEMOS_NO_FILES -DDEMOS_NO_LIGHTS
 
 include maug/Makefile.inc
 
@@ -14,7 +14,7 @@ include maug/Makefile.inc
 
 all: mdemogl.sdl mdemglnt.exe
 
-$(eval $(call TGTNDSLIBN,mdemogl))
+$(eval $(call TGTNDSLIBN,mdemogl,,mdemogl.bmp))
 
 # Unix
 

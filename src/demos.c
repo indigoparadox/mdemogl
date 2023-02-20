@@ -142,14 +142,14 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
    if( !data->init ) {
 
+#ifndef DEMOS_NO_LISTS
       data->cube_list = glGenLists( 1 );
       glNewList( data->cube_list, GL_COMPILE );
-
       poly_cube(
          RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
          RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
-
       glEndList();
+#endif /* DEMOS_NO_LISTS */
 
       retroglu_init_scene( RETROGLU_INIT_LIGHTS );
       args.proj = RETROGLU_PROJ_FRUSTUM;
@@ -158,8 +158,10 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       args.far_plane = 10.0f;
       retroglu_init_projection( &args );
 
+#ifndef DEMOS_NO_LIGHTS
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
+#endif /* DEMOS_NO_LIGHTS */
 
       data->rotate_x = 10;
       data->rotate_y = 10;
@@ -194,7 +196,13 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
    glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
 
+#ifdef DEMOS_NO_LISTS
+   poly_cube(
+      RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
+      RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
+#else
    glCallList( data->cube_list );
+#endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
 
@@ -234,8 +242,10 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       args.far_plane = 100.0f;
       retroglu_init_projection( &args );
 
+#ifndef DEMOS_NO_LIGHTS
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
+#endif /* !DEMOS_NO_LIGHTS */
 
       /* Start spin. */
       data->rotate_y_inc = 5;
@@ -278,7 +288,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       debug_printf( 1, "rotate_x: %d", data->rotate_x );
       break;
 
-   case RETROFLAT_KEY_P:
+   case RETROFLAT_KEY_ENTER:
       data->translate_x_inc = 0;
       data->translate_y_inc = 0;
       break;
@@ -295,13 +305,15 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+#ifndef DEMOS_NO_LIGHTS
    glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
+#endif /* !DEMOS_NO_LIGHTS */
 
    glPushMatrix();
 
    glScalef( 8.0f, 6.0f, 1.0f );
 
-#ifndef DEMOS_NO_LISTS
+#ifdef DEMOS_NO_LISTS
    poly_ortho_skybox( RETROGLU_COLOR_WHITE );
 #else
    glCallList( data->skybox_list );
@@ -317,7 +329,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
    glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
 
-#ifndef DEMOS_NO_LISTS
+#ifdef DEMOS_NO_LISTS
    poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 1.0f );
 #else
    glCallList( data->sphere_list );
@@ -406,7 +418,9 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       args.far_plane = 10.0f;
       retroglu_init_projection( &args );
 
+#ifndef DEMOS_NO_LIGHTS
       glEnable( GL_LIGHT0 );
+#endif /* !DEMOS_NO_LIGHTS */
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -420,6 +434,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    input = retroflat_poll_input( &input_evt );
 
    switch( input ) {
+#if 0
    case RETROFLAT_KEY_Q:
       tx += DEMO_ZOOM_INC;
       debug_printf( 3, "%f, %f, %f", tx, ty, tz );
@@ -439,23 +454,24 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       ty -= DEMO_ZOOM_INC;
       debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
+#endif
 
-   case RETROFLAT_KEY_E:
+   case RETROFLAT_KEY_UP:
       tz += DEMO_ZOOM_INC;
       debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
-   case RETROFLAT_KEY_D:
+   case RETROFLAT_KEY_DOWN:
       tz -= DEMO_ZOOM_INC;
       debug_printf( 3, "%f, %f, %f", tx, ty, tz );
       break;
 
-   case RETROFLAT_KEY_R:
+   case RETROFLAT_KEY_RIGHT:
       rotate_z += DEMO_ROTATE_INC;
       debug_printf( 3, "%d", rotate_z );
       break;
 
-   case RETROFLAT_KEY_F:
+   case RETROFLAT_KEY_LEFT:
       rotate_z -= DEMO_ROTATE_INC;
       debug_printf( 3, "%d", rotate_z );
       break;
@@ -482,11 +498,13 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    glRotatef( rotate_y, 0.0f, 1.0f, 0.0f );
    glRotatef( rotate_z, 0.0f, 0.0f, 1.0f );
 
+#ifndef DEMOS_NO_LIGHTS
    /*
    glLightfv( GL_LIGHT0, GL_POSITION, l_position );
    */
    glLightfv( GL_LIGHT0, GL_DIFFUSE, l_diffuse );
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
+#endif /* !DEMOS_NO_LIGHTS */
 
 #ifdef DEMOS_NO_LISTS
    retroglu_draw_poly(
@@ -675,8 +693,10 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       /* Ring */
       data->tiles[5].anim = demo_fp_poly_ring;
 
+#ifndef DEMOS_NO_LIGHTS
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
+#endif /* !DEMOS_NO_LIGHTS */
 
       data->translate_y = -0.5f;
       data->translate_x = (DEMO_FP_MAP_W / 2) - 2;
@@ -779,7 +799,9 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       }
    }
 
+#ifndef DEMOS_NO_LIGHTS
    glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
+#endif /* !DEMOS_NO_LIGHTS */
 
    glPopMatrix();
 
@@ -944,8 +966,10 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       args.far_plane = 100.0f;
       retroglu_init_projection( &args );
 
+#ifndef DEMOS_NO_LIGHTS
       glEnable( GL_LIGHT0 );
       glEnable( GL_COLOR_MATERIAL );
+#endif /* !DEMOS_NO_LIGHTS */
 
 #ifndef DEMOS_NO_LISTS
       /* Setup the skybox (such as it is). */
@@ -1000,6 +1024,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       debug_printf( 3, "ty: %f", data->translate_y );
       break;
 
+#if 0
    case RETROFLAT_KEY_PGUP:
       data->rotate_x += 5;
       debug_printf( 3, "rx: %d", data->rotate_x );
@@ -1019,13 +1044,14 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       data->translate_z -= 0.1f;
       debug_printf( 3, "tz: %f", data->translate_z );
       break;
+#endif
 
-   case RETROFLAT_KEY_R:
+   case RETROFLAT_KEY_RIGHT:
       data->freq_mod += 0.5f;
       debug_printf( 3, "freq_mod: %f", data->freq_mod );
       break;
 
-   case RETROFLAT_KEY_F:
+   case RETROFLAT_KEY_LEFT:
       data->freq_mod -= 0.5f;
       debug_printf( 3, "freq_mod: %f", data->freq_mod );
       break;
@@ -1042,7 +1068,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+#ifndef DEMOS_NO_LIGHTS
    glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
+#endif /* !DEMOS_NO_LIGHTS */
 
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
