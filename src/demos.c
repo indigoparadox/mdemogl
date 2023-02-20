@@ -568,6 +568,16 @@ void demo_fp_poly_ring( struct DEMO_FP_DATA* data ) {
       ang_hole = 0,
       ang_bar = 0;
 
+   /* Red floor. */
+   glBegin( GL_QUADS );
+   glColor3fv( RETROGLU_COLOR_DARKRED );
+   glNormal3f( 0, 1.0f, 0 );
+   glVertex3f( -0.5f, 0, -0.5f );
+   glVertex3f( -0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0, -0.5f );
+   glEnd();
+
    for(
       ang_hole = 0 ; 2 * RETROFLAT_PI > ang_hole ; ang_hole += DEMO_RING_HA_INC
    ) {
@@ -681,6 +691,17 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       /* Sphere */
       data->tiles[3].list = glGenLists( 1 );
       glNewList( data->tiles[3].list, GL_COMPILE );
+
+      /* Red floor. */
+      glBegin( GL_QUADS );
+      glColor3fv( RETROGLU_COLOR_DARKRED );
+      glNormal3f( 0, 1.0f, 0 );
+      glVertex3f( -0.5f, 0, -0.5f );
+      glVertex3f( -0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0,  0.5f );
+      glVertex3f(  0.5f, 0, -0.5f );
+      glEnd();
+
       /* Compensate for the sphere being Y-centered on zero. */
       glTranslatef( 0, 0.5f, 0 );
       poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 0.5f );
@@ -705,6 +726,13 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
+
+      glFogf( GL_FOG_MODE, GL_EXP );
+      glFogfv( GL_FOG_COLOR, RETROGLU_COLOR_WHITE );
+      glFogf( GL_FOG_DENSITY, 0.25f );
+      glFogf( GL_FOG_START, 5.0f );
+      glFogf( GL_FOG_END, 8.0f );
+      glEnable( GL_FOG );
 
       data->init = 1;
    }
