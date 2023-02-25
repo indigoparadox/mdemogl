@@ -117,6 +117,10 @@ int main( int argc, char** argv ) {
       goto cleanup;
    }
 
+#ifdef RETROFLAT_API_LIBNDS
+   g_loop = draw_sphere_iter;
+   g_data = calloc( 1, sizeof( struct DEMO_SPHERE_DATA ) );
+#else
    if( NULL == g_loop ) {
       j = rand() % i;
       g_loop = gc_demo_loops[j];
@@ -124,6 +128,7 @@ int main( int argc, char** argv ) {
          j, i, gc_demo_names[j] );
       g_data = calloc( 1, gc_demo_data_sz[j] );
    }
+#endif
 
    /* === Main Loop === */
 
