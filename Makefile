@@ -28,6 +28,8 @@ $(eval $(call TGTWASMSDL,mdemogl))
 
 $(eval $(call TGTWINNT,mdemgl))
 
+$(eval $(call TGTWINNTGCC,mdemgl))
+
 $(eval $(call TGTWIN64GCC,mdemgl))
 
 # Clean
