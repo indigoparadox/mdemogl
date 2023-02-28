@@ -12,7 +12,7 @@ include maug/Makefile.inc
 # Target-specific options.
 .PHONY: clean
 
-all: mdemogl.sdl mdemglnt.exe
+all: mdemogl.sdl mdemoglnt.exe
 
 $(eval $(call TGTNDSLIBN,mdemogl,,mdemogl.bmp))
 
@@ -26,11 +26,13 @@ $(eval $(call TGTWASMSDL,mdemogl))
 
 # WinNT
 
-$(eval $(call TGTWINNT,mdemgl))
+$(eval $(call TGTWINICO,mdemogl))
 
-$(eval $(call TGTWINNTGCC,mdemgl))
+$(eval $(call TGTWINNT,mdemogl))
 
-$(eval $(call TGTWIN64GCC,mdemgl))
+$(eval $(call TGTWINNTGCC,mdemogl))
+
+$(eval $(call TGTWIN64GCC,mdemogl))
 
 # Clean
 
