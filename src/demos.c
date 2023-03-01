@@ -727,12 +727,14 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+#if 0
       glFogf( GL_FOG_MODE, GL_EXP );
       glFogfv( GL_FOG_COLOR, RETROGLU_COLOR_WHITE );
       glFogf( GL_FOG_DENSITY, 0.25f );
       glFogf( GL_FOG_START, 5.0f );
       glFogf( GL_FOG_END, 8.0f );
       glEnable( GL_FOG );
+#endif
 
       data->init = 1;
    }
