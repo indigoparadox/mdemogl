@@ -7,10 +7,6 @@
 
 #define DEMO_FLAG_WIRE 1
 
-#define DEMO_VERTICES_SZ_MAX 1024
-#define DEMO_FACES_SZ_MAX 1024
-#define DEMO_MATERIALS_SZ_MAX 1024
-
 #define DEMO_ZOOM_INC 0.1f
 #define DEMO_TRANSLATE_INC 0.1f
 #define DEMO_ROTATE_INC 10
@@ -76,16 +72,7 @@ struct DEMO_SPHERE_DATA {
 
 struct DEMO_OBJ_DATA {
    int init;
-   struct RETROGLU_VERTEX vertices[DEMO_VERTICES_SZ_MAX];
-   int vertices_sz;
-   struct RETROGLU_VERTEX vnormals[DEMO_VERTICES_SZ_MAX];
-   int vnormals_sz;
-   struct RETROGLU_VERTEX vtextures[DEMO_VERTICES_SZ_MAX];
-   int vtextures_sz;
-   struct RETROGLU_FACE faces[DEMO_FACES_SZ_MAX];
-   int faces_sz;
-   struct RETROGLU_MATERIAL materials[DEMO_MATERIALS_SZ_MAX];
-   int materials_sz;
+   struct RETROGLU_OBJ obj;
    GLint obj_list;
 };
 

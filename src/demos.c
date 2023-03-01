@@ -39,14 +39,8 @@ int demo_load_obj(
    assert( obj_read == obj_buf_sz );
    fclose( obj_file );
 
-   retroglu_parse_init(
-      parser,
-      data->vertices, data->vertices_sz, DEMO_VERTICES_SZ_MAX,
-      data->vnormals, data->vnormals_sz, DEMO_VERTICES_SZ_MAX,
-      data->vtextures, data->vtextures_sz, DEMO_VERTICES_SZ_MAX,
-      data->faces, data->faces_sz, DEMO_FACES_SZ_MAX,
-      data->materials, data->materials_sz, DEMO_MATERIALS_SZ_MAX,
-      (retroglu_mtl_cb)demo_load_obj, (void*)data );
+   retroglu_parse_init( 
+      parser, &(data->obj), (retroglu_mtl_cb)demo_load_obj, (void*)data );
 
    /* Parse the obj, byte by byte. */
    for( i = 0 ; obj_buf_sz > i ; i++ ) {
@@ -56,11 +50,6 @@ int demo_load_obj(
    free( obj_buf );
    obj_buf = NULL;
    obj_buf_sz = 0;
-   data->vertices_sz = parser->vertices_sz;
-   data->vnormals_sz = parser->vnormals_sz;
-   data->vtextures_sz = parser->vtextures_sz;
-   data->faces_sz = parser->faces_sz;
-   data->materials_sz = parser->materials_sz;
 
    if( auto_parser ) {
       free( parser );
@@ -78,33 +67,38 @@ void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
    /* Dump */
    obj_file = fopen( filename, "w" );
    assert( NULL != obj_file );
-   for( i = 0 ; data->vertices_sz > i ; i++ ) {
+   for( i = 0 ; data->obj.vertices_sz > i ; i++ ) {
       fprintf( obj_file, "v %f %f %f\n",
-         data->vertices[i].x, data->vertices[i].y, data->vertices[i].z );
+         data->obj.vertices[i].x,
+         data->obj.vertices[i].y,
+         data->obj.vertices[i].z );
    }
 
    fprintf( obj_file, "\n" );
    
-   for( i = 0 ; data->vnormals_sz > i ; i++ ) {
+   for( i = 0 ; data->obj.vnormals_sz > i ; i++ ) {
       fprintf( obj_file, "vn %f %f %f\n",
-         data->vnormals[i].x, data->vnormals[i].y, data->vnormals[i].z );
+         data->obj.vnormals[i].x,
+         data->obj.vnormals[i].y,
+         data->obj.vnormals[i].z );
    }
 
-   for( i = 0 ; data->faces_sz > i ; i++ ) {
+   for( i = 0 ; data->obj.faces_sz > i ; i++ ) {
       if(
          0 == i ||
-         data->faces[i].material_idx != data->faces[i - 1].material_idx
+         data->obj.faces[i].material_idx != 
+            data->obj.faces[i - 1].material_idx
       ) {
          fprintf( obj_file, "\nusemtl %s\n\n",
-            data->materials[data->faces[i].material_idx].name );
+            data->obj.materials[data->obj.faces[i].material_idx].name );
       }
       fprintf( obj_file, "f " );
-      for( j = 0 ; data->faces[i].vertex_idxs_sz > j ; j++ ) {
+      for( j = 0 ; data->obj.faces[i].vertex_idxs_sz > j ; j++ ) {
          fprintf( obj_file, "%d/%d/%d",
-            data->faces[i].vertex_idxs[j],
-            data->faces[i].vtexture_idxs[j],
-            data->faces[i].vnormal_idxs[j] );
-         if( j + 1 < data->faces[i].vertex_idxs_sz ) {
+            data->obj.faces[i].vertex_idxs[j],
+            data->obj.faces[i].vtexture_idxs[j],
+            data->obj.faces[i].vnormal_idxs[j] );
+         if( j + 1 < data->obj.faces[i].vertex_idxs_sz ) {
             fprintf( obj_file, " " );
          }
       }
@@ -387,9 +381,9 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    if( 0 == data->init ) {
       demo_load_obj( g_demo_obj_name, NULL, data );
 
-      assert( 0 < data->vertices_sz );
-      assert( 0 < data->faces_sz );
-      assert( 0 < data->materials_sz );
+      assert( 0 < data->obj.vertices_sz );
+      assert( 0 < data->obj.faces_sz );
+      assert( 0 < data->obj.materials_sz );
 
       if( '\0' != g_demo_dump_name[0] ) {
          demo_dump_obj( g_demo_dump_name, data );
@@ -401,12 +395,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       data->obj_list = glGenLists( 1 );
       glNewList( data->obj_list, GL_COMPILE );
 
-      retroglu_draw_poly(
-         data->vertices, data->vertices_sz,
-         data->vnormals, data->vnormals_sz,
-         data->vtextures, data->vtextures_sz,
-         data->faces, data->faces_sz,
-         data->materials, data->materials_sz );
+      retroglu_draw_poly( &(data->obj) );
       
       glEndList();
 #endif /* DEMOS_NO_LISTS */
@@ -507,12 +496,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 #endif /* !DEMOS_NO_LIGHTS */
 
 #ifdef DEMOS_NO_LISTS
-   retroglu_draw_poly(
-      data->vertices, data->vertices_sz,
-      data->vnormals, data->vnormals_sz,
-      data->vtextures, data->vtextures_sz,
-      data->faces, data->faces_sz,
-      data->materials, data->materials_sz );
+   retroglu_draw_poly( &(data->obj) );
 #else
    glCallList( data->obj_list );
 #endif /* DEMOS_NO_LISTS */
