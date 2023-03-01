@@ -12,7 +12,10 @@ void poly_cube(
       * up with the face with the most similar vertexes.
       */
 
-   glScalef( 0.00390625, 0.00390625, 0.00390625 );
+   glPushMatrix();
+
+   glTranslatef( -0.5f, 0, -0.5f );
+   glScalef( 0.00390625f, 0.00390625f, 0.00390625f );
 
    /* BACK */
    glBegin( GL_TRIANGLES );
@@ -91,6 +94,8 @@ void poly_cube(
    glVertex3i( -0xff, -0xff, -0xff );
    glVertex3i(  0xff, -0xff, -0xff );
    glEnd();
+
+   glPopMatrix();
 }
 
 void poly_well(
