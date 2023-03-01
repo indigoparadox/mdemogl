@@ -14,9 +14,11 @@ include maug/Makefile.inc
 
 all: mdemogl.sdl mdemoglnt.exe
 
-$(eval $(call TGTNDSLIBN,mdemogl,,mdemogl.bmp))
+$(eval $(call TGTNDSLIBN,mdemogl,mdemogl.bmp))
 
 # Unix
+
+$(eval $(call TGTSDLICO,mdemogl))
 
 $(eval $(call TGTUNIXSDL,mdemogl))
 
