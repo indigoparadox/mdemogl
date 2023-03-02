@@ -9,56 +9,6 @@
 
 #include "poly.h"
 
-int demo_load_obj(
-   const char* filename, struct RETROGLU_PARSER* parser,
-   struct DEMO_OBJ_DATA* data
-) {
-   FILE* obj_file = NULL;
-   uint32_t i = 0; /* Index in file buffer, so long. */
-   long int obj_read = 0;
-   int auto_parser = 0; /* Did we provision parser? */
-   uint8_t* obj_buf = NULL;
-   uint32_t obj_buf_sz = 0;
-
-   if( NULL == parser ) {
-      parser = calloc( 1, sizeof( struct RETROGLU_PARSER ) );
-      assert( NULL != parser );
-      auto_parser = 1;
-   }
-
-   /* Open the file and allocate the buffer. */
-   obj_file = fopen( filename, "r" );
-   assert( NULL != obj_file );
-   fseek( obj_file, 0, SEEK_END );
-   obj_buf_sz = ftell( obj_file );
-   fseek( obj_file, 0, SEEK_SET );
-   debug_printf( 3, "opened %s, " UPRINTF_U32 " bytes", filename, obj_buf_sz );
-   obj_buf = calloc( 1, obj_buf_sz );
-   assert( NULL != obj_buf );
-   obj_read = fread( obj_buf, 1, obj_buf_sz, obj_file );
-   assert( obj_read == obj_buf_sz );
-   fclose( obj_file );
-
-   retroglu_parse_init( 
-      parser, &(data->obj), (retroglu_mtl_cb)demo_load_obj, (void*)data );
-
-   /* Parse the obj, byte by byte. */
-   for( i = 0 ; obj_buf_sz > i ; i++ ) {
-      obj_read = retroglu_parse_obj_c( parser, obj_buf[i] );
-      assert( 0 <= obj_read );
-   }
-   free( obj_buf );
-   obj_buf = NULL;
-   obj_buf_sz = 0;
-
-   if( auto_parser ) {
-      free( parser );
-      parser = NULL;
-   }
-
-   return RETROFLAT_OK;
-}
-
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
    FILE* obj_file = NULL;
    uint32_t i = 0, /* Index in file buffer, so long. */
@@ -379,7 +329,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    struct RETROGLU_PROJ_ARGS args;
 
    if( 0 == data->init ) {
-      demo_load_obj( g_demo_obj_name, NULL, data );
+      retroglu_parse_obj_file( g_demo_obj_name, NULL, &(data->obj) );
 
       assert( 0 < data->obj.vertices_sz );
       assert( 0 < data->obj.faces_sz );
