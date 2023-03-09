@@ -4,6 +4,8 @@
 
 #include <retroflt.h>
 
+#define DEMOS_OVERLAY_SZ_MAX 64
+
 #define DEMO_FLAG_WIRE 1
 
 #define DEMO_ZOOM_INC 0.1f
