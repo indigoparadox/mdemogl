@@ -3,7 +3,6 @@
 #define DEMOS_H
 
 #include <retroflt.h>
-#include <retroglu.h>
 
 #define DEMO_FLAG_WIRE 1
 

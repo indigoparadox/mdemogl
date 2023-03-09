@@ -1,13 +1,17 @@
 
 #include <stdio.h>
-
 #include <math.h>
 
 #define DEMOS_C
-#define RETROGLU_C
 #include "demos.h"
 
 #include "poly.h"
+
+void demo_draw_fps() {
+   glMatrixMode( GL_PROJECTION );
+   retroglu_string( -1.0, -1.0, 0, RETROGLU_COLOR_WHITE, "Test", 4, "", 0 );
+   glMatrixMode( GL_MODELVIEW );
+}
 
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
    FILE* obj_file = NULL;
@@ -149,6 +153,8 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
+
+   demo_draw_fps();
 
    glFlush();
 
