@@ -7,9 +7,45 @@
 
 #include "poly.h"
 
+int32_t g_frames_per_sec = 0;
+int32_t g_frames_since_last = 0;
+uint32_t g_last_frame_ms = 0;
+
 void demo_draw_fps() {
+   float aspect_ratio = 0;
+   char overlay_str[DEMOS_OVERLAY_SZ_MAX + 1];
+   uint32_t now_ms = 0;
+
+   /* Switch to projection setup. */
    glMatrixMode( GL_PROJECTION );
-   retroglu_string( -1.0, -1.0, 0, RETROGLU_COLOR_WHITE, "Test", 4, "", 0 );
+   glPushMatrix();
+
+   /* Lighting makes overlay text hard to see. */
+   glDisable( GL_LIGHTING );
+   
+   /* Use ortho for overlay. */
+   glLoadIdentity();
+   aspect_ratio = (float)retroflat_screen_w() / (float)retroflat_screen_h();
+   glOrtho( -1.0f * aspect_ratio, aspect_ratio, -1.0f, 1.0f, 0, 10.0f );
+
+   /* Generate FPS string. */
+   now_ms = retroflat_get_ms();
+
+   g_frames_since_last++;
+   if( 0 == g_last_frame_ms || g_last_frame_ms + 1000 <= now_ms ) {
+      g_last_frame_ms = now_ms;
+      g_frames_per_sec = g_frames_since_last;
+      g_frames_since_last = 0;
+   }
+   memset( overlay_str, '\0', DEMOS_OVERLAY_SZ_MAX + 1 );
+   maug_snprintf( overlay_str, DEMOS_OVERLAY_SZ_MAX,
+      "FPS: %d", g_frames_per_sec );
+   retroglu_string(
+      -1.0 * aspect_ratio, -1.0, 0, RETROGLU_COLOR_WHITE,
+      overlay_str, DEMOS_OVERLAY_SZ_MAX, "", 0 );
+   
+   /* Restore modelview. */
+   glPopMatrix();
    glMatrixMode( GL_MODELVIEW );
 }
 
@@ -77,6 +113,7 @@ MERROR_RETVAL demo_load_sprite(
       goto cleanup;
    }
    retroglu_set_sprite_tex( sprite, texture_id, bmp_w, bmp_h );
+   retroglu_set_sprite_color( sprite, RETROGLU_COLOR_WHITE );
 
 cleanup:
    return retval;
@@ -99,17 +136,12 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       glEndList();
 #endif /* DEMOS_NO_LISTS */
 
-      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
+      retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 0.5f;
       args.near_plane = 0.5f;
       args.far_plane = 10.0f;
       retroglu_init_projection( &args );
-
-#ifndef DEMOS_NO_LIGHTS
-      glEnable( GL_LIGHT0 );
-      glEnable( GL_COLOR_MATERIAL );
-#endif /* DEMOS_NO_LIGHTS */
 
       data->rotate_x = 10;
       data->rotate_y = 10;
@@ -139,6 +171,13 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
    glPushMatrix();
+
+#ifndef DEMOS_NO_LIGHTS
+   glEnable( GL_LIGHTING );
+   glEnable( GL_NORMALIZE );
+   glEnable( GL_LIGHT0 );
+   glEnable( GL_COLOR_MATERIAL );
+#endif /* DEMOS_NO_LIGHTS */
 
    glTranslatef( 0.0f, 0.0f, translate_z );
    glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
@@ -185,7 +224,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       glEndList();
 #endif /* DEMOS_NO_LISTS */
 
-      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
+      retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_ORTHO;
       args.rzoom = 10.0f;
       args.near_plane = -100.0f;
@@ -256,6 +295,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 #ifndef DEMOS_NO_LIGHTS
+   glEnable( GL_NORMALIZE );
+   glEnable( GL_LIGHTING );
    glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
 #endif /* !DEMOS_NO_LIGHTS */
 
@@ -286,6 +327,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
+
+   demo_draw_fps();
 
    glFlush();
 
@@ -356,7 +399,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       glEndList();
 #endif /* DEMOS_NO_LISTS */
 
-      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
+      retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 1.0f;
       args.near_plane = 0.5f;
@@ -444,6 +487,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    glRotatef( rotate_z, 0.0f, 0.0f, 1.0f );
 
 #ifndef DEMOS_NO_LIGHTS
+   glEnable( GL_NORMALIZE );
+   glEnable( GL_LIGHTING );
    /*
    glLightfv( GL_LIGHT0, GL_POSITION, l_position );
    */
@@ -458,6 +503,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
+
+   demo_draw_fps();
 
    glFlush();
 
@@ -582,7 +629,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    if( !data->init ) {
 
       /* Init scene. */
-      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
+      retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 0.3f;
       args.near_plane = 0.5f;
@@ -653,11 +700,6 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
       /* Ring */
       data->tiles[5].anim = demo_fp_poly_ring;
-
-#ifndef DEMOS_NO_LIGHTS
-      glEnable( GL_LIGHT0 );
-      glEnable( GL_COLOR_MATERIAL );
-#endif /* !DEMOS_NO_LIGHTS */
 
       data->translate_y = -0.5f;
       data->translate_x = (DEMO_FP_MAP_W / 2) - 2;
@@ -746,6 +788,13 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
 
+#ifndef DEMOS_NO_LIGHTS
+   glEnable( GL_LIGHTING );
+   glEnable( GL_NORMALIZE );
+   glEnable( GL_LIGHT0 );
+   glEnable( GL_COLOR_MATERIAL );
+#endif /* !DEMOS_NO_LIGHTS */
+
    /* Translate/rotate the whole scene. */
    glRotatef( data->rotate_y, 0, 1.0f, 0 );
    glTranslatef( data->translate_x, data->translate_y, data->translate_z );
@@ -770,10 +819,14 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    }
 
 #ifndef DEMOS_NO_LIGHTS
+   glEnable( GL_NORMALIZE );
+   glEnable( GL_LIGHTING );
    glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
 #endif /* !DEMOS_NO_LIGHTS */
 
    glPopMatrix();
+
+   demo_draw_fps();
 
    glFlush();
    retroflat_draw_release( NULL );
@@ -894,6 +947,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
    glPopMatrix();
 
+   demo_draw_fps();
+
    glFlush();
    retroflat_draw_release( NULL );
 
@@ -928,7 +983,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    if( 0 == data->init ) {
 
-      retroglu_init_scene( RETROGLU_INIT_LIGHTS );
+      retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 1.0f;
       /* args.near_plane = 0.5f; */
@@ -1039,6 +1094,8 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 #ifndef DEMOS_NO_LIGHTS
+   glEnable( GL_NORMALIZE );
+   glEnable( GL_LIGHTING );
    glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
 #endif /* !DEMOS_NO_LIGHTS */
 
@@ -1082,6 +1139,8 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    }
 
    glPopMatrix();
+
+   demo_draw_fps();
 
    glFlush();
    retroflat_draw_release( NULL );
