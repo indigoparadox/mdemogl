@@ -22,6 +22,8 @@ $(eval $(call TGTSDLICO,mdemogl))
 
 $(eval $(call TGTUNIXSDL,mdemogl))
 
+$(eval $(call TGTUNIXGLUT,mdemogl))
+
 # WASM
 
 $(eval $(call TGTWASMSDL,mdemogl))
