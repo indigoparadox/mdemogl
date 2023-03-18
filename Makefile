@@ -34,9 +34,15 @@ $(eval $(call TGTWINICO,mdemogl))
 
 $(eval $(call TGTWINNT,mdemogl))
 
+$(eval $(call TGTWINNTGL,mdemogl))
+
 $(eval $(call TGTWINNTGCC,mdemogl))
 
 $(eval $(call TGTWIN64GCC,mdemogl))
+
+# OS/2
+
+$(eval $(call TGTOS2GL,mdemogl))
 
 # Clean
 

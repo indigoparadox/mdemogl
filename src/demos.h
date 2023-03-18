@@ -2,6 +2,7 @@
 #ifndef DEMOS_H
 #define DEMOS_H
 
+#include <maug.h>
 #include <retroflt.h>
 
 #define DEMOS_OVERLAY_SZ_MAX 64
