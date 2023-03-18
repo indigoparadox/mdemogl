@@ -77,6 +77,8 @@ int main( int argc, char** argv ) {
 
    srand( time( NULL ) );
 
+   maug_mzero( &args, sizeof( struct RETROFLAT_ARGS ) );
+
    args.screen_w = 800;
    args.screen_h = 600;
    args.title = "mdemo";
