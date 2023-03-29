@@ -103,16 +103,10 @@ MERROR_RETVAL demo_load_sprite(
    const char* filename, struct RETROGLU_SPRITE* sprite
 ) {
    MERROR_RETVAL retval = 0;
-   uint32_t bmp_w = 0,
-      bmp_h = 0,
-      texture_id = 0;
 
-   retval = retroglu_load_tex_bmp( filename, &texture_id, &bmp_w, &bmp_h );
+   retval = retroflat_load_bitmap( filename, &(sprite->texture) );
+   maug_cleanup_if_not_ok();
 
-   if( MERROR_OK != retval ) {
-      goto cleanup;
-   }
-   retroglu_set_sprite_tex( sprite, texture_id, bmp_w, bmp_h );
    retroglu_set_sprite_color( sprite, RETROGLU_COLOR_WHITE );
 
 cleanup:
@@ -194,8 +188,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    glPopMatrix();
 
    demo_draw_fps();
-
-   glFlush();
 
    retroflat_draw_release( NULL );
 
@@ -329,8 +321,6 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    glPopMatrix();
 
    demo_draw_fps();
-
-   glFlush();
 
    retroflat_draw_release( NULL );
 
@@ -505,8 +495,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    glPopMatrix();
 
    demo_draw_fps();
-
-   glFlush();
 
    retroflat_draw_release( NULL );
 
@@ -828,7 +816,6 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    demo_draw_fps();
 
-   glFlush();
    retroflat_draw_release( NULL );
 
    data->water_peak_offset -= 0.01f;
@@ -927,7 +914,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
    case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
-      break;
+      retroglu_free_sprite( &(data->sprite) );
+      goto cleanup;
    }
 
    /* Draw */
@@ -949,7 +937,6 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
    demo_draw_fps();
 
-   glFlush();
    retroflat_draw_release( NULL );
 
    /* Set the walking frame. */
@@ -971,6 +958,10 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    } else if( 360 == data->sprite.rotate_y || -360 == data->sprite.rotate_y ) {
       data->sprite.rotate_y = 0;
    }
+
+cleanup:
+
+   return;
 }
 
 #endif /* DEMOS_NO_FILES */
@@ -1142,7 +1133,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    demo_draw_fps();
 
-   glFlush();
    retroflat_draw_release( NULL );
 
    data->peak_offset -= 0.1f;
