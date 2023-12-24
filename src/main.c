@@ -132,7 +132,7 @@ int main( int argc, char** argv ) {
 
    /* === Main Loop === */
 
-   retroflat_loop( (retroflat_loop_iter)g_loop, g_data );
+   retroflat_loop( (retroflat_loop_iter)g_loop, NULL, g_data );
 
 cleanup:
 
