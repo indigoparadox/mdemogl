@@ -83,7 +83,6 @@ struct DEMO_SPRITE_DATA {
    struct RETROGLU_SPRITE sprite;
    struct RETROGLU_TILE tiles[DEMO_MAP_TILES_SZ_MAX];
    uint8_t map[DEMO_MAP_H][DEMO_MAP_W];
-   GLint sprite_list[2];
    int tex_countdown;
    int tex_frame_idx;
 };
