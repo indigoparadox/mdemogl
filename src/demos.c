@@ -829,25 +829,20 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    if( 0 == data->init ) {
       /* Load sprite. */
       demo_load_sprite( "test", &(data->sprite) );
-      retroglu_set_sprite_clip(
-         &(data->sprite), 0, 48, 0, 32, 16, 16, RETROGLU_FLAGS_INIT_VERTICES );
       retroglu_set_sprite_pos( &(data->sprite), 400, 300 );
       data->sprite.scale_x = 4.0f;
       data->sprite.scale_y = 4.0f;
+      retroglu_init_sprite_vertices( &(data->sprite) );
 
       /* Generate texture frame 1 list. */
-      data->sprite_list[0] = glGenLists( 1 );
-      glNewList( data->sprite_list[0], GL_COMPILE );
-      retroglu_draw_sprite( &(data->sprite) );
-      glEndList();
+      retroglu_prerender_sprite(
+         &(data->sprite), 0,
+         0, 48, 0, 32, 16, 16, 0 );
 
       /* Generate texture frame 2 list. */
-      data->sprite_list[1] = glGenLists( 1 );
-      retroglu_set_sprite_clip(
-         &(data->sprite), 16, 48, 16, 32, 16, 16, 0 );
-      glNewList( data->sprite_list[1], GL_COMPILE );
-      retroglu_draw_sprite( &(data->sprite) );
-      glEndList();
+      retroglu_prerender_sprite(
+         &(data->sprite), 1,
+         16, 48, 16, 32, 16, 16, 0 );
 
       /* Load tiles. */
       /* XXX */
@@ -931,7 +926,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    /* Scale sprite down to manageable size insite this matrix. */
    retroglu_tsrot_sprite( &(data->sprite) );
 
-   glCallList( data->sprite_list[data->tex_frame_idx] );
+   retroglu_jitrender_sprite( &(data->sprite), data->tex_frame_idx );
 
    glPopMatrix();
 
