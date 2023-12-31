@@ -830,9 +830,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       /* Load sprite. */
       demo_load_sprite( "test", &(data->sprite) );
       retroglu_set_sprite_pos( &(data->sprite), 400, 300 );
-      data->sprite.scale_x = 4.0f;
-      data->sprite.scale_y = 4.0f;
-      retroglu_init_sprite_vertices( &(data->sprite) );
+      retroglu_init_sprite_vertices_scale( &(data->sprite), 0.05f );
 
       /* Generate texture frame 1 list. */
       retroglu_prerender_sprite(
@@ -846,9 +844,6 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
       /* Load tiles. */
       /* XXX */
-
-      data->sprite.scale_x = 0.05f;
-      data->sprite.scale_y = 0.05f;
 
       /* Setup projection. */
 
