@@ -77,10 +77,10 @@ int main( int argc, char** argv ) {
 
    srand( time( NULL ) );
 
+   logging_init();
+
    maug_mzero( &args, sizeof( struct RETROFLAT_ARGS ) );
 
-   args.screen_w = 800;
-   args.screen_h = 600;
    args.title = "mdemo";
    args.assets_path = "assets";
    args.flags = RETROFLAT_FLAGS_KEY_REPEAT;
@@ -136,9 +136,15 @@ int main( int argc, char** argv ) {
 
 cleanup:
 
+#ifndef RETROFLAT_OS_WASM
+
    retroflat_shutdown( retval );
 
    free( g_data );
+
+   logging_shutdown();
+
+#endif /* !RETROFLAT_OS_WASM */
 
    return retval;
 }
