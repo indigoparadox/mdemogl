@@ -115,7 +115,7 @@ cleanup:
 
 void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0;
+   RETROFLAT_IN_KEY input = 0;
    float translate_z = -5.0f;
    struct RETROGLU_PROJ_ARGS args;
 
@@ -196,7 +196,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
 void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0;
+   RETROFLAT_IN_KEY input = 0;
    struct RETROGLU_PROJ_ARGS args;
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
@@ -351,7 +351,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
 void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0;
+   RETROFLAT_IN_KEY input = 0;
    /*
    static int rotate_x = 10;
    */
@@ -602,7 +602,7 @@ void demo_fp_poly_ring( struct DEMO_FP_DATA* data ) {
 
 void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0;
+   RETROFLAT_IN_KEY input = 0;
    struct RETROGLU_PROJ_ARGS args;
    int x = 0,
       z = 0;
@@ -823,7 +823,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
 void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0;
+   RETROFLAT_IN_KEY input = 0;
    struct RETROGLU_PROJ_ARGS args;
 
    if( 0 == data->init ) {
@@ -958,7 +958,7 @@ cleanup:
 
 void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
-   int input = 0;
+   RETROFLAT_IN_KEY input = 0;
    struct RETROGLU_PROJ_ARGS args;
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
