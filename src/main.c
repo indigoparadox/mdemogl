@@ -8,6 +8,12 @@
 #define RETROFLT_C
 #include <retroflt.h>
 
+#define RETROCON_C
+#include <retrocon.h>
+
+#define RETROANI_C
+#include <retroani.h>
+
 #include "demos.h"
 
 retroflat_loop_iter g_loop = NULL;

@@ -38,8 +38,6 @@ $(eval $(call TGTWINNTGL,mdemogl))
 
 $(eval $(call TGTWINNTGCC,mdemogl))
 
-$(eval $(call TGTWIN64GCC,mdemogl))
-
 $(eval $(call TGT_GCC64_WIN_WIN32,mdemogl))
 
 $(eval $(call TGTWINSDL,mdemogl))

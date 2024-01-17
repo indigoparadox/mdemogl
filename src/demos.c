@@ -144,6 +144,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+      retrocon_init( &(data->con) );
       data->init = 1;
    }
 
@@ -186,6 +187,8 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
+
+   retrocon_display( &(data->con), NULL );
 
    demo_draw_fps();
 
@@ -241,6 +244,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+      retrocon_init( &(data->con) );
       data->init = 1;
    }
 
@@ -319,6 +323,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
+
+   retrocon_display( &(data->con), NULL );
 
    demo_draw_fps();
 
@@ -404,6 +410,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+      retrocon_init( &(data->con) );
       data->init = 1;
    }
 
@@ -493,6 +500,8 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
+
+   retrocon_display( &(data->con), NULL );
 
    demo_draw_fps();
 
@@ -706,6 +715,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEnable( GL_FOG );
 #endif
 
+      retrocon_init( &(data->con) );
       data->init = 1;
    }
 
@@ -814,6 +824,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    glPopMatrix();
 
+   retrocon_display( &(data->con), NULL );
+
    demo_draw_fps();
 
    retroflat_draw_release( NULL );
@@ -825,11 +837,14 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
    struct RETROGLU_PROJ_ARGS args;
+   MERROR_RETVAL retval = MERROR_OK;
 
    if( 0 == data->init ) {
       /* Load sprite. */
-      demo_load_sprite( "test", &(data->sprite) );
-      retroglu_set_sprite_pos( &(data->sprite), 400, 300 );
+      retval = demo_load_sprite( "test", &(data->sprite) );
+      assert( MERROR_OK == retval );
+
+      retroglu_set_sprite_pos( &(data->sprite), 120, 120 );
       retroglu_init_sprite_vertices_scale( &(data->sprite), 0.05f );
 
       /* Generate texture frame 1 list. */
@@ -858,6 +873,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+      retrocon_init( &(data->con) );
       data->init = 1;
    }
 
@@ -924,6 +940,8 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    retroglu_jitrender_sprite( &(data->sprite), data->tex_frame_idx );
 
    glPopMatrix();
+
+   retrocon_display( &(data->con), NULL );
 
    demo_draw_fps();
 
@@ -1012,6 +1030,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+      retrocon_init( &(data->con) );
       data->init = 1;
    }
 
@@ -1121,10 +1140,141 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    glPopMatrix();
 
+   retrocon_display( &(data->con), NULL );
+
    demo_draw_fps();
 
    retroflat_draw_release( NULL );
 
    data->peak_offset -= 0.1f;
+}
+
+void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
+   struct RETROFLAT_INPUT input_evt;
+   RETROFLAT_IN_KEY input = 0;
+   int8_t idx_fire = 0;
+   static struct RETROFLAT_BITMAP* bmp_fire = NULL;
+   float translate_z = -5.0f;
+   struct RETROGLU_PROJ_ARGS args;
+   MERROR_RETVAL retval = MERROR_OK;
+
+   if( !data->init ) {
+      retrocon_init( &(data->con) );
+      data->init = 1;
+
+      /* Create the animation texture. */
+
+      bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
+      assert( NULL != bmp_fire );
+      retroflat_create_bitmap(
+         RETROANI_TILE_W, RETROANI_TILE_H, bmp_fire, 0 );
+
+      /*
+      retroani_create(
+         &(data->animations[0]), ANIMATIONS_MAX,
+         RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
+         0, 0, retroflat_screen_w(), retroflat_screen_h() - RETROANI_TILE_H );
+      */
+
+      idx_fire = retroani_create(
+         &(data->animations[0]), ANIMATIONS_MAX,
+         RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
+         0, retroflat_screen_h() - RETROANI_TILE_H, retroflat_screen_w(),
+         RETROANI_TILE_H );
+
+      retroani_set_target( data->animations, idx_fire, bmp_fire );
+
+      /* Create the cube. */
+
+#if 0
+#ifndef DEMOS_NO_LISTS
+      data->cube_list = glGenLists( 1 );
+      glNewList( data->cube_list, GL_COMPILE );
+      poly_cube(
+         RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
+         RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
+      glEndList();
+#endif /* DEMOS_NO_LISTS */
+#endif
+
+      retroglu_init_scene( 0 );
+      args.proj = RETROGLU_PROJ_FRUSTUM;
+      args.rzoom = 0.5f;
+      args.near_plane = 0.5f;
+      args.far_plane = 10.0f;
+      retroglu_init_projection( &args );
+
+      data->rotate_x = 10;
+      data->rotate_y = 10;
+
+   }
+
+   input = retroflat_poll_input( &input_evt );
+
+   retrocon_input( &(data->con), &input, &input_evt );
+
+   switch( input ) {
+   case RETROFLAT_KEY_RIGHT:
+      break;
+
+   case RETROFLAT_KEY_LEFT:
+      break;
+
+   case RETROFLAT_KEY_ESC:
+      retroflat_quit( 0 );
+      break;
+   }
+
+   /* Drawing */
+
+   retroflat_draw_lock( NULL );
+
+   retroflat_draw_lock( bmp_fire );
+   retroflat_rect(
+      bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
+      RETROANI_TILE_W, RETROANI_TILE_H,
+      RETROFLAT_FLAGS_FILL );
+   retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
+   retroflat_draw_release( bmp_fire );
+
+   glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+   glPushMatrix();
+
+#ifndef DEMOS_NO_LIGHTS
+   glEnable( GL_LIGHTING );
+   glEnable( GL_NORMALIZE );
+   glEnable( GL_LIGHT0 );
+   glEnable( GL_COLOR_MATERIAL );
+#endif /* DEMOS_NO_LIGHTS */
+
+   glTranslatef( 0.0f, 0.0f, translate_z );
+   glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
+   glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
+
+/* #ifdef DEMOS_NO_LISTS */
+   poly_cube_tex(
+      bmp_fire,
+      RETROGLU_COLOR_CYAN, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE,
+      RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE );
+#if 0
+/* #else */
+   glCallList( data->cube_list );
+/* #endif */ /* DEMOS_NO_LISTS */
+#endif
+
+   glPopMatrix();
+
+   retrocon_display( &(data->con), NULL );
+
+   demo_draw_fps();
+
+   retroflat_draw_release( NULL );
+
+   data->rotate_y += 5;
+
+cleanup:
+   return;
 }
 
