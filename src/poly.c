@@ -8,39 +8,81 @@ void poly_cube(
    const float color_bk[], const float color_ft[], const float color_rt[],
    const float color_lt[], const float color_tp[], const float color_bt[]
 ) {
+   poly_cube_tex( NULL, color_bk, color_ft, color_rt, color_lt,
+      color_tp, color_bt );
+}
+
+void poly_cube_tex(
+   struct RETROFLAT_BITMAP* tex,
+   const float color_bk[], const float color_ft[], const float color_rt[],
+   const float color_lt[], const float color_tp[], const float color_bt[]
+) {
+   GLenum error = GL_NO_ERROR;
+
    /* Note that the normals begin in the middle of the face and line
       * up with the face with the most similar vertexes.
       */
+
+   error = glGetError();
+   assert( GL_NO_ERROR == error );
 
    glPushMatrix();
 
    glTranslatef( -0.5f, 0, -0.5f );
    glScalef( 0.00390625f, 0.00390625f, 0.00390625f );
 
+   if( NULL != tex ) {
+      maug_mlock( tex->tex.bytes_h, tex->tex.bytes );
+      assert( NULL != tex->tex.bytes );
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
+         tex->tex.w, tex->tex.h, 0,
+         GL_RGBA, GL_UNSIGNED_BYTE,
+         tex->tex.bytes ); 
+      error = glGetError();
+      assert( GL_NO_ERROR == error );
+      /*
+      glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+      */
+   }
+
    /* BACK */
    glBegin( GL_TRIANGLES );
-   glNormal3f(  0, 0, 1.0f );
+   glNormal3i(      0,     0, 0xff );
    glColor3fv( color_bk );
-   glVertex3i(  0xff, -0xff, 0xff );
-   glVertex3i(  0xff,  0xff, 0xff );
-   glVertex3i( -0xff,  0xff, 0xff );
+   glTexCoord2i(    1,     0 );
+   glVertex3i(   0xff, -0xff, 0xff );
+   glTexCoord2i(    1,     1 );
+   glVertex3i(   0xff,  0xff, 0xff );
+   glTexCoord2i(    0,     0 );
+   glVertex3i(  -0xff,  0xff, 0xff );
 
-   glVertex3i( -0xff,  0xff, 0xff );
-   glVertex3i( -0xff, -0xff, 0xff );
-   glVertex3i(  0xff, -0xff, 0xff );
+   glTexCoord2i(    0,     1 );
+   glVertex3i(  -0xff,  0xff, 0xff );
+   glTexCoord2i(    0,     0 );
+   glVertex3i(  -0xff, -0xff, 0xff );
+   glTexCoord2i(    1,     0 );
+   glVertex3i(   0xff, -0xff, 0xff );
    glEnd();
    
    /* RIGHT */
    glBegin( GL_TRIANGLES );
-   glNormal3f(  1.0f,     0,     0 );
+   glNormal3i(   0xff,     0,     0 );
    glColor3fv( color_rt );
-   glVertex3i(  0xff, -0xff, -0xff );
-   glVertex3i(  0xff,  0xff, -0xff );
-   glVertex3i(  0xff,  0xff,  0xff );
+   glTexCoord2i(           0,     0 );
+   glVertex3i(   0xff, -0xff, -0xff );
+   glTexCoord2i(           1,     0 );
+   glVertex3i(   0xff,  0xff, -0xff );
+   glTexCoord2i(           1,     1 );
+   glVertex3i(   0xff,  0xff,  0xff );
 
-   glVertex3i(  0xff,  0xff,  0xff );
-   glVertex3i(  0xff, -0xff,  0xff );
-   glVertex3i(  0xff, -0xff, -0xff );
+   glTexCoord2i(           1,     1 );
+   glVertex3i(   0xff,  0xff,  0xff );
+   glTexCoord2i(           0,     1 );
+   glVertex3i(   0xff, -0xff,  0xff );
+   glTexCoord2i(           0,     0 );
+   glVertex3i(   0xff, -0xff, -0xff );
    glEnd();
    
    /* LEFT */
@@ -94,6 +136,14 @@ void poly_cube(
    glVertex3i( -0xff, -0xff, -0xff );
    glVertex3i(  0xff, -0xff, -0xff );
    glEnd();
+
+   if( NULL != tex ) {
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
+         0, 0, 0,
+         GL_RGBA, GL_UNSIGNED_BYTE, NULL ); 
+
+      maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
+   }
 
    glPopMatrix();
 }

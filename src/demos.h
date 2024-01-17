@@ -4,6 +4,8 @@
 
 #include <maug.h>
 #include <retroflt.h>
+#include <retrocon.h>
+#include <retroani.h>
 
 #define DEMOS_OVERLAY_SZ_MAX 64
 
@@ -46,12 +48,15 @@
 #define DEMO_MAP_W 40
 #define DEMO_MAP_H 40
 
+#define ANIMATIONS_MAX 10
+
 #define hash_mat_r( m ) (fmod( m[0] * 0.01f, 1.0f ) * 2)
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
 #define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
 
 struct DEMO_CUBE_DATA {
    int init;
+   struct RETROCON con;
    GLint cube_list;
    int rotate_x;
    int rotate_y;
@@ -59,6 +64,7 @@ struct DEMO_CUBE_DATA {
 
 struct DEMO_SPHERE_DATA {
    int init;
+   struct RETROCON con;
    GLint sphere_list;
    GLint skybox_list;
    int rotate_x;
@@ -74,12 +80,14 @@ struct DEMO_SPHERE_DATA {
 
 struct DEMO_OBJ_DATA {
    int init;
+   struct RETROCON con;
    struct RETROGLU_OBJ obj;
    GLint obj_list;
 };
 
 struct DEMO_SPRITE_DATA {
    int init;
+   struct RETROCON con;
    struct RETROGLU_SPRITE sprite;
    struct RETROGLU_TILE tiles[DEMO_MAP_TILES_SZ_MAX];
    uint8_t map[DEMO_MAP_H][DEMO_MAP_W];
@@ -98,6 +106,7 @@ struct DEMO_FP_TILE {
 
 struct DEMO_FP_DATA {
    int init;
+   struct RETROCON con;
    struct DEMO_FP_TILE tiles[DEMO_FP_TILES_SZ_MAX];
    float water_peak_offset;
    float translate_x;
@@ -108,6 +117,7 @@ struct DEMO_FP_DATA {
 
 struct DEMO_WATER_DATA {
    int init;
+   struct RETROCON con;
    int pattern;
    float freq_mod;
    float amp_mod;
@@ -119,6 +129,15 @@ struct DEMO_WATER_DATA {
    float peak_offset;
    GLint well_list;
    GLint skybox_list;
+};
+
+struct DEMO_RETROANI_DATA {
+   int init;
+   struct RETROCON con;
+   struct RETROANI animations[ANIMATIONS_MAX];
+   GLint cube_list;
+   int rotate_x;
+   int rotate_y;
 };
 
 void demo_init_scene( uint8_t flags );
@@ -143,6 +162,7 @@ MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sp
    f( cube, struct DEMO_CUBE_DATA ) \
    f( sphere, struct DEMO_SPHERE_DATA ) \
    f( water, struct DEMO_WATER_DATA ) \
+   f( retroani, struct DEMO_RETROANI_DATA ) \
    DEMOS_LIST_EXTRA( f )
 
 #define DEMOS_LIST_PROTOS( name, data_struct ) \
