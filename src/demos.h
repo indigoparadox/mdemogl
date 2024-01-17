@@ -4,7 +4,9 @@
 
 #include <maug.h>
 #include <retroflt.h>
-#include <retrocon.h>
+#ifndef RETROFLAT_API_NDS
+#  include <retrocon.h>
+#endif /* !RETROFLAT_API_NDS */
 #include <retroani.h>
 
 #define DEMOS_OVERLAY_SZ_MAX 64
