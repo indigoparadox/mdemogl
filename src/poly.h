@@ -3,10 +3,12 @@
 #define POLY_H
 
 void poly_cube(
+   float scale,
    const float color_bk[], const float color_ft[], const float color_rt[],
    const float color_lt[], const float color_tp[], const float color_bt[] );
 void poly_cube_tex(
    struct RETROFLAT_BITMAP* tex,
+   float scale,
    const float color_bk[], const float color_ft[], const float color_rt[],
    const float color_lt[], const float color_tp[], const float color_bt[] );
 void poly_well(

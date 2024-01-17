@@ -8,8 +8,10 @@
 #define RETROFLT_C
 #include <retroflt.h>
 
-#define RETROCON_C
-#include <retrocon.h>
+#ifndef RETROFLAT_NO_KEYBOARD
+#  define RETROCON_C
+#  include <retrocon.h>
+#endif /* !RETROFLAT_API_NDS */
 
 #define RETROANI_C
 #include <retroani.h>

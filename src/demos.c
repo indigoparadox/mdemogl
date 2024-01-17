@@ -125,6 +125,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       data->cube_list = glGenLists( 1 );
       glNewList( data->cube_list, GL_COMPILE );
       poly_cube(
+         1.0f,
          RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
          RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
       glEndList();
@@ -144,7 +145,9 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+#ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
+#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -180,6 +183,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
 #ifdef DEMOS_NO_LISTS
    poly_cube(
+      1.0f,
       RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
       RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
 #else
@@ -188,7 +192,9 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
    glPopMatrix();
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_display( &(data->con), NULL );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -244,7 +250,9 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+#ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
+#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -324,7 +332,9 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    glPopMatrix();
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_display( &(data->con), NULL );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -410,7 +420,9 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+#ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
+#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -501,7 +513,9 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 
    glPopMatrix();
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_display( &(data->con), NULL );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -654,6 +668,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       /* Compensate for the cube being Y-centered on zero. */
       glTranslatef( 0, 0.5f, 0 );
       poly_cube(
+         1.0f,
          RETROGLU_COLOR_RED, RETROGLU_COLOR_GREEN, RETROGLU_COLOR_BLUE,
          RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_MAGENTA );
       glTranslatef( 0, -0.5f, 0 );
@@ -715,7 +730,9 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEnable( GL_FOG );
 #endif
 
+#ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
+#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -824,7 +841,9 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    glPopMatrix();
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_display( &(data->con), NULL );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -873,7 +892,9 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+#ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
+#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -941,7 +962,9 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
 
    glPopMatrix();
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_display( &(data->con), NULL );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -1030,7 +1053,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+#ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
+#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -1140,7 +1165,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    glPopMatrix();
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_display( &(data->con), NULL );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -1156,10 +1183,11 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    static struct RETROFLAT_BITMAP* bmp_fire = NULL;
    float translate_z = -5.0f;
    struct RETROGLU_PROJ_ARGS args;
-   MERROR_RETVAL retval = MERROR_OK;
 
    if( !data->init ) {
+#ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
+#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
 
       /* Create the animation texture. */
@@ -1167,7 +1195,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
       assert( NULL != bmp_fire );
       retroflat_create_bitmap(
-         RETROANI_TILE_W, RETROANI_TILE_H, bmp_fire, 0 );
+         RETROANI_TILE_W * 2, RETROANI_TILE_H * 2, bmp_fire, 0 );
 
       /*
       retroani_create(
@@ -1179,8 +1207,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       idx_fire = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
          RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
-         0, retroflat_screen_h() - RETROANI_TILE_H, retroflat_screen_w(),
-         RETROANI_TILE_H );
+         0, 0, bmp_fire->tex.w, bmp_fire->tex.h );
 
       retroani_set_target( data->animations, idx_fire, bmp_fire );
 
@@ -1211,7 +1238,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    input = retroflat_poll_input( &input_evt );
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_input( &(data->con), &input, &input_evt );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    switch( input ) {
    case RETROFLAT_KEY_RIGHT:
@@ -1230,6 +1259,10 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    retroflat_draw_lock( NULL );
 
    retroflat_draw_lock( bmp_fire );
+   assert( NULL != bmp_fire->tex.bytes );
+   assert( 0 == bmp_fire->tex.w % RETROANI_TILE_W );
+   assert( 0 == bmp_fire->tex.h % RETROANI_TILE_H );
+   assert( 0 < bmp_fire->tex.id );
    retroflat_rect(
       bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
       RETROANI_TILE_W, RETROANI_TILE_H,
@@ -1255,7 +1288,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
 /* #ifdef DEMOS_NO_LISTS */
    poly_cube_tex(
-      bmp_fire,
+      bmp_fire, 1.0f,
       RETROGLU_COLOR_CYAN, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE,
       RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE );
 #if 0
@@ -1266,7 +1299,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    glPopMatrix();
 
+#ifndef RETROFLAT_NO_KEYBOARD
    retrocon_display( &(data->con), NULL );
+#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -1274,7 +1309,6 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    data->rotate_y += 5;
 
-cleanup:
    return;
 }
 
