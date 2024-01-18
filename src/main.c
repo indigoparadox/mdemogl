@@ -145,6 +145,8 @@ int main( int argc, char** argv ) {
 cleanup:
 
 #ifndef RETROFLAT_OS_WASM
+   
+   debug_printf( 1, "shutting down..." );
 
    retroflat_shutdown( retval );
 
