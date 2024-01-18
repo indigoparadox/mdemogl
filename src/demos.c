@@ -940,9 +940,9 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       break;
 
    case RETROFLAT_KEY_ESC:
-      retroflat_quit( 0 );
       retroglu_free_sprite( &(data->sprite) );
-      goto cleanup;
+      retroflat_quit( 0 );
+      goto end_func;
    }
 
    /* Draw */
@@ -990,8 +990,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
       data->sprite.rotate_y = 0;
    }
 
-cleanup:
-
+end_func:
    return;
 }
 
@@ -1250,8 +1249,11 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       break;
 
    case RETROFLAT_KEY_ESC:
+      retroani_stop_all( &(data->animations[0]), ANIMATIONS_MAX );
+      retroflat_destroy_bitmap( bmp_fire );
+      free( bmp_fire );
       retroflat_quit( 0 );
-      break;
+      goto end_func;
    }
 
    /* Drawing */
@@ -1309,6 +1311,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    data->rotate_y += 5;
 
+end_func:
    return;
 }
 
