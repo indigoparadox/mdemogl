@@ -31,40 +31,40 @@ void poly_cube_tex(
    glPushMatrix();
 
    if( NULL != tex ) {
-#if 0
       maug_mlock( tex->tex.bytes_h, tex->tex.bytes );
       assert( NULL != tex->tex.bytes );
       glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
-         tex->tex.w, tex->tex.h, 0,
+         RETROANI_TILE_W, RETROANI_TILE_H, 0,
          GL_RGBA, GL_UNSIGNED_BYTE,
          tex->tex.bytes ); 
-#endif
+#if 0
       glBindTexture( GL_TEXTURE_2D, tex->tex.id );
+#endif
       error = glGetError();
       assert( GL_NO_ERROR == error );
-      /*
       glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-      */
    }
 
    /* BACK */
    glBegin( GL_TRIANGLES );
    glNormal3i(      0,     0, scale );
    glColor3fv( color_bk );
-   glTexCoord2i(    1,     0 );
-   glVertex3f(   scale, -scale, scale );
-   glTexCoord2i(    1,     1 );
+   glTexCoord2i(    0,     0 );
    glVertex3f(   scale,  scale, scale );
-   glTexCoord2i(    0,     0 );
-   glVertex3f(  -scale,  scale, scale );
-
-   glTexCoord2i(    0,     1 );
-   glVertex3f(  -scale,  scale, scale );
-   glTexCoord2i(    0,     0 );
-   glVertex3f(  -scale, -scale, scale );
    glTexCoord2i(    1,     0 );
+   glVertex3f(  -scale,  scale, scale );
+   glTexCoord2i(    0,     1 );
+   glVertex3f(   scale, -scale, scale );
+   glEnd();
+
+   glBegin( GL_TRIANGLES );
+   glTexCoord2i(    1,     0 );
+   glVertex3f(  -scale,  scale, scale );
+   glTexCoord2i(    1,     1 );
+   glVertex3f(  -scale, -scale, scale );
+   glTexCoord2i(    0,     1 );
    glVertex3f(   scale, -scale, scale );
    glEnd();
    
@@ -72,18 +72,18 @@ void poly_cube_tex(
    glBegin( GL_TRIANGLES );
    glNormal3i(   scale,     0,     0 );
    glColor3fv( color_rt );
-   glTexCoord2i(           0,     0 );
+   glTexCoord2i(           1,     1 );
    glVertex3f(   scale, -scale, -scale );
    glTexCoord2i(           1,     0 );
    glVertex3f(   scale,  scale, -scale );
-   glTexCoord2i(           1,     1 );
+   glTexCoord2i(           0,     0 );
    glVertex3f(   scale,  scale,  scale );
 
-   glTexCoord2i(           1,     1 );
+   glTexCoord2i(           0,     0 );
    glVertex3f(   scale,  scale,  scale );
    glTexCoord2i(           0,     1 );
    glVertex3f(   scale, -scale,  scale );
-   glTexCoord2i(           0,     0 );
+   glTexCoord2i(           1,     1 );
    glVertex3f(   scale, -scale, -scale );
    glEnd();
    
@@ -91,12 +91,18 @@ void poly_cube_tex(
    glBegin( GL_TRIANGLES );
    glNormal3f( -1.0f,     0,    0 );
    glColor3fv( color_lt );
+   glTexCoord2i(           0,     1 );
    glVertex3f( -scale, -scale,  scale );
+   glTexCoord2i(           0,     0 );
    glVertex3f( -scale,  scale,  scale );
+   glTexCoord2i(           1,     0 );
    glVertex3f( -scale,  scale, -scale );
 
+   glTexCoord2i(           1,     0 );
    glVertex3f( -scale,  scale, -scale );
+   glTexCoord2i(           1,     1 );
    glVertex3f( -scale, -scale, -scale );
+   glTexCoord2i(           0,     1 );
    glVertex3f( -scale, -scale,  scale );
    glEnd();
 
@@ -104,15 +110,18 @@ void poly_cube_tex(
    glBegin( GL_TRIANGLES );
    glNormal3f(     0,     0, -1.0f );
    glColor3fv( color_ft );
-   glTexCoord2i(    0,      0 );
-   glVertex3f( -scale, -scale, -scale );
-   glTexCoord2i(    0,      1 );
-   glVertex3f( -scale,  scale, -scale );
    glTexCoord2i(    1,      1 );
+   glVertex3f( -scale, -scale, -scale );
+   glTexCoord2i(    1,      0 );
+   glVertex3f( -scale,  scale, -scale );
+   glTexCoord2i(    0,      0 );
    glVertex3f(  scale,  scale, -scale );
 
+   glTexCoord2i(    0,      0 );
    glVertex3f(  scale,  scale, -scale );
+   glTexCoord2i(    0,      1 );
    glVertex3f(  scale, -scale, -scale );
+   glTexCoord2i(    1,      1 );
    glVertex3f( -scale, -scale, -scale );
    glEnd();
    
@@ -141,16 +150,15 @@ void poly_cube_tex(
    glVertex3f( -scale, -scale, -scale );
    glVertex3f(  scale, -scale, -scale );
    glEnd();
-
    if( NULL != tex ) {
-      glBindTexture( GL_TEXTURE_2D, 0 );
 #if 0
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
+      glBindTexture( GL_TEXTURE_2D, 0 );
+#endif
+      /* glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
          0, 0, 0,
-         GL_RGBA, GL_UNSIGNED_BYTE, NULL ); 
+         GL_RGBA, GL_UNSIGNED_BYTE, NULL ); */
 
       maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
-#endif
    }
 
    glPopMatrix();
