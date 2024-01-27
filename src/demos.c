@@ -99,6 +99,30 @@ void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
    obj_file = NULL;
 }
 
+void demo_dump_tex( struct RETROFLAT_BITMAP* tex_bmp ) {
+   size_t x, y;
+
+   printf( "\n" );
+   for( y = 0 ; tex_bmp->tex.h > y ; y++ ) {
+      for( x = 0 ; tex_bmp->tex.w > x ; x++ ) {
+         printf( "%02x|",
+            tex_bmp->tex.bytes[
+               ((y * tex_bmp->tex.w) * 4) + (x * 4)] );
+         printf( "%02x|",
+            tex_bmp->tex.bytes[
+               ((y * tex_bmp->tex.w) * 4) + (x * 4) + 1] );
+         printf( "%02x|",
+            tex_bmp->tex.bytes[
+               ((y * tex_bmp->tex.w) * 4) + (x * 4) + 2] );
+         printf( "%02x ",
+            tex_bmp->tex.bytes[
+               ((y * tex_bmp->tex.w) * 4) + (x * 4) + 3] );
+      }
+      printf( "\n" );
+   }
+   printf( "\n" );
+}
+
 MERROR_RETVAL demo_load_sprite(
    const char* filename, struct RETROGLU_SPRITE* sprite
 ) {
@@ -1182,6 +1206,8 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    static struct RETROFLAT_BITMAP* bmp_fire = NULL;
    float translate_z = -5.0f;
    struct RETROGLU_PROJ_ARGS args;
+   static uint8_t do_rotate = 0xff;
+   static uint8_t last_space = 0;
 
    if( !data->init ) {
 #ifndef RETROFLAT_NO_KEYBOARD
@@ -1194,7 +1220,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
       assert( NULL != bmp_fire );
       retroflat_create_bitmap(
-         RETROANI_TILE_W * 2, RETROANI_TILE_H * 2, bmp_fire, 0 );
+         RETROANI_TILE_W, RETROANI_TILE_H, bmp_fire, 0 );
 
       /*
       retroani_create(
@@ -1209,6 +1235,15 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
          0, 0, bmp_fire->tex.w, bmp_fire->tex.h );
 
       retroani_set_target( data->animations, idx_fire, bmp_fire );
+
+      retroflat_draw_lock( bmp_fire );
+      retroflat_rect(
+         bmp_fire, RETROFLAT_COLOR_RED, 0, 0,
+         RETROANI_TILE_W, RETROANI_TILE_H,
+         RETROFLAT_FLAGS_FILL );
+      retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
+      retroflat_draw_release( bmp_fire );
+
 
       /* Create the cube. */
 
@@ -1254,6 +1289,17 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       free( bmp_fire );
       retroflat_quit( 0 );
       goto end_func;
+
+   case RETROFLAT_KEY_SPACE:
+      if( !last_space ) {
+         do_rotate = ~do_rotate;
+         last_space = 1;
+      }
+      break;
+
+   default:
+      last_space = 0;
+      break;
    }
 
    /* Drawing */
@@ -1279,9 +1325,8 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
 #ifndef DEMOS_NO_LIGHTS
    glEnable( GL_LIGHTING );
-   glEnable( GL_NORMALIZE );
    glEnable( GL_LIGHT0 );
-   glEnable( GL_COLOR_MATERIAL );
+   glEnable( GL_NORMALIZE );
 #endif /* DEMOS_NO_LIGHTS */
 
    glTranslatef( 0.0f, 0.0f, translate_z );
@@ -1291,8 +1336,8 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 /* #ifdef DEMOS_NO_LISTS */
    poly_cube_tex(
       bmp_fire, 1.0f,
-      RETROGLU_COLOR_CYAN, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE,
-      RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE );
+      RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_CYAN,
+      RETROGLU_COLOR_CYAN, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_CYAN );
 #if 0
 /* #else */
    glCallList( data->cube_list );
@@ -1309,7 +1354,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    retroflat_draw_release( NULL );
 
-   data->rotate_y += 5;
+   if( do_rotate ) {
+      data->rotate_y += 5;
+   }
 
 end_func:
    return;
