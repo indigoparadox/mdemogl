@@ -245,7 +245,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       /* Create Skybox display list. */
       data->skybox_list = glGenLists( 1 );
       glNewList( data->skybox_list, GL_COMPILE );
-      poly_ortho_skybox( RETROGLU_COLOR_WHITE );
+      poly_ortho_skybox( RETROGLU_COLOR_WHITE, NULL );
       glEndList();
 #endif /* DEMOS_NO_LISTS */
 
@@ -333,7 +333,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    glScalef( 8.0f, 6.0f, 1.0f );
 
 #ifdef DEMOS_NO_LISTS
-   poly_ortho_skybox( RETROGLU_COLOR_WHITE );
+   poly_ortho_skybox( RETROGLU_COLOR_WHITE, NULL );
 #else
    glCallList( data->skybox_list );
 #endif /* DEMOS_NO_LISTS */
@@ -1202,12 +1202,8 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
-   int8_t idx_fire = 0;
-   static struct RETROFLAT_BITMAP* bmp_fire = NULL;
    float translate_z = -5.0f;
    struct RETROGLU_PROJ_ARGS args;
-   static uint8_t do_rotate = 0xff;
-   static uint8_t last_space = 0;
 
    if( !data->init ) {
 #ifndef RETROFLAT_NO_KEYBOARD
@@ -1215,35 +1211,47 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 #endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
 
-      /* Create the animation texture. */
+      /* Create the fire animation texture. */
 
-      bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
-      assert( NULL != bmp_fire );
+      data->bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
+      assert( NULL != data->bmp_fire );
       retroflat_create_bitmap(
-         RETROANI_TILE_W, RETROANI_TILE_H, bmp_fire, 0 );
+         RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_fire, 0 );
 
-      /*
-      retroani_create(
-         &(data->animations[0]), ANIMATIONS_MAX,
-         RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
-         0, 0, retroflat_screen_w(), retroflat_screen_h() - RETROANI_TILE_H );
-      */
-
-      idx_fire = retroani_create(
-         &(data->animations[0]), ANIMATIONS_MAX,
-         RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
-         0, 0, bmp_fire->tex.w, bmp_fire->tex.h );
-
-      retroani_set_target( data->animations, idx_fire, bmp_fire );
-
-      retroflat_draw_lock( bmp_fire );
+      retroflat_draw_lock( data->bmp_fire );
       retroflat_rect(
-         bmp_fire, RETROFLAT_COLOR_RED, 0, 0,
+         data->bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
          RETROANI_TILE_W, RETROANI_TILE_H,
          RETROFLAT_FLAGS_FILL );
-      retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
-      retroflat_draw_release( bmp_fire );
+      retroflat_draw_release( data->bmp_fire );
 
+      data->idx_fire = retroani_create(
+         &(data->animations[0]), ANIMATIONS_MAX,
+         RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
+         0, 0, data->bmp_fire->tex.w, data->bmp_fire->tex.h );
+
+      retroani_set_target( data->animations, data->idx_fire, data->bmp_fire );
+
+      /* Create the snow animation texture. */
+
+      data->bmp_snow = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
+      assert( NULL != data->bmp_snow );
+      retroflat_create_bitmap(
+         RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_snow, 0 );
+
+      retroflat_draw_lock( data->bmp_snow );
+      retroflat_rect(
+         data->bmp_snow, RETROFLAT_COLOR_BLACK, 0, 0,
+         RETROANI_TILE_W, RETROANI_TILE_H,
+         RETROFLAT_FLAGS_FILL );
+      retroflat_draw_release( data->bmp_snow );
+
+      data->idx_snow = retroani_create(
+         &(data->animations[0]), ANIMATIONS_MAX,
+         RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
+         0, 0, data->bmp_snow->tex.w, data->bmp_snow->tex.h );
+
+      retroani_set_target( data->animations, data->idx_snow, data->bmp_snow );
 
       /* Create the cube. */
 
@@ -1262,7 +1270,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 0.5f;
       args.near_plane = 0.5f;
-      args.far_plane = 10.0f;
+      args.far_plane = 100.0f;
       retroglu_init_projection( &args );
 
       data->rotate_x = 10;
@@ -1285,38 +1293,29 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    case RETROFLAT_KEY_ESC:
       retroani_stop_all( &(data->animations[0]), ANIMATIONS_MAX );
-      retroflat_destroy_bitmap( bmp_fire );
-      free( bmp_fire );
+      retroflat_destroy_bitmap( data->bmp_fire );
+      free( data->bmp_fire );
+      retroflat_destroy_bitmap( data->bmp_snow );
+      free( data->bmp_snow );
       retroflat_quit( 0 );
       goto end_func;
 
    case RETROFLAT_KEY_SPACE:
-      if( !last_space ) {
-         do_rotate = ~do_rotate;
-         last_space = 1;
-      }
       break;
 
    default:
-      last_space = 0;
       break;
    }
 
    /* Drawing */
 
    retroflat_draw_lock( NULL );
-
-   retroflat_draw_lock( bmp_fire );
-   assert( NULL != bmp_fire->tex.bytes );
-   assert( 0 == bmp_fire->tex.w % RETROANI_TILE_W );
-   assert( 0 == bmp_fire->tex.h % RETROANI_TILE_H );
-   assert( 0 < bmp_fire->tex.id );
-   retroflat_rect(
-      bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
-      RETROANI_TILE_W, RETROANI_TILE_H,
-      RETROFLAT_FLAGS_FILL );
+ 
+   retroflat_draw_lock( data->bmp_fire );
+   retroflat_draw_lock( data->bmp_snow );
    retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
-   retroflat_draw_release( bmp_fire );
+   retroflat_draw_release( data->bmp_fire );
+   retroflat_draw_release( data->bmp_snow );
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -1324,10 +1323,13 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    glPushMatrix();
 
 #ifndef DEMOS_NO_LIGHTS
-   glEnable( GL_LIGHTING );
-   glEnable( GL_LIGHT0 );
    glEnable( GL_NORMALIZE );
 #endif /* DEMOS_NO_LIGHTS */
+
+   glPushMatrix();
+   glScalef( 8.0f, 6.0f, 1.0f );
+   poly_ortho_skybox( RETROGLU_COLOR_WHITE, data->bmp_snow );
+   glPopMatrix();
 
    glTranslatef( 0.0f, 0.0f, translate_z );
    glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
@@ -1335,9 +1337,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
 /* #ifdef DEMOS_NO_LISTS */
    poly_cube_tex(
-      bmp_fire, 1.0f,
-      RETROGLU_COLOR_WHITE, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_CYAN,
-      RETROGLU_COLOR_CYAN, RETROGLU_COLOR_CYAN, RETROGLU_COLOR_CYAN );
+      data->bmp_fire, 1.0f,
+      RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE,
+      RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE, RETROGLU_COLOR_WHITE );
 #if 0
 /* #else */
    glCallList( data->cube_list );
@@ -1354,9 +1356,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    retroflat_draw_release( NULL );
 
-   if( do_rotate ) {
-      data->rotate_y += 5;
-   }
+   data->rotate_y += 5;
 
 end_func:
    return;
