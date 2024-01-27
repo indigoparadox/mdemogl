@@ -140,6 +140,10 @@ struct DEMO_RETROANI_DATA {
    GLint cube_list;
    int rotate_x;
    int rotate_y;
+   int8_t idx_fire;
+   int8_t idx_snow;
+   struct RETROFLAT_BITMAP* bmp_fire;
+   struct RETROFLAT_BITMAP* bmp_snow;
 };
 
 void demo_init_scene( uint8_t flags );

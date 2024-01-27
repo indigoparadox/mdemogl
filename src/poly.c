@@ -150,13 +150,14 @@ void poly_cube_tex(
    glVertex3f( -scale, -scale, -scale );
    glVertex3f(  scale, -scale, -scale );
    glEnd();
+
    if( NULL != tex ) {
 #if 0
       glBindTexture( GL_TEXTURE_2D, 0 );
 #endif
-      /* glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
          0, 0, 0,
-         GL_RGBA, GL_UNSIGNED_BYTE, NULL ); */
+         GL_RGBA, GL_UNSIGNED_BYTE, NULL );
 
       maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
    }
@@ -432,7 +433,8 @@ void poly_sphere_checker(
    }
 }
 
-void poly_ortho_skybox( const float* color ) {
+void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex ) {
+   GLenum error = GL_NO_ERROR;
 
    glColor3fv( color );
 
@@ -442,14 +444,35 @@ void poly_ortho_skybox( const float* color ) {
       * rendering.
       */
 
+   if( NULL != tex ) {
+      maug_mlock( tex->tex.bytes_h, tex->tex.bytes );
+      assert( NULL != tex->tex.bytes );
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
+         RETROANI_TILE_W, RETROANI_TILE_H, 0,
+         GL_RGBA, GL_UNSIGNED_BYTE,
+         tex->tex.bytes ); 
+#if 0
+      glBindTexture( GL_TEXTURE_2D, tex->tex.id );
+#endif
+      error = glGetError();
+      assert( GL_NO_ERROR == error );
+      glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+   }
+
    /* TODO: Break into triangles. */
 
    /* Back Face */
    glBegin( GL_QUADS );
    glNormal3f(  0, 0, 1.0f );
+   glTexCoord2i(   0,     0 );
    glVertex3f(  1.0f,  1.0f, -10.0f ); /* Top Right */
+   glTexCoord2i(   1,     0 );
    glVertex3f( -1.0f,  1.0f, -10.0f ); /* Top Left */
+   glTexCoord2i(   1,     1 );
    glVertex3f( -1.0f, -1.0f, -10.0f ); /* Bottom Left */
+   glTexCoord2i(   0,     1 );
    glVertex3f(  1.0f, -1.0f, -10.0f ); /* Bottom Right */
    glEnd();
 
@@ -465,9 +488,13 @@ void poly_ortho_skybox( const float* color ) {
    /* Right Face */
    glBegin( GL_QUADS );
    glNormal3f(  -1.0f, 0, 0 );
+   glTexCoord2i(   0,     0 );
    glVertex3f(  2.0f,  2.0f,  10.0f );
+   glTexCoord2i(   1,     0 );
    glVertex3f(  1.0f,  1.0f, -10.0f );
+   glTexCoord2i(   1,     1 );
    glVertex3f(  1.0f, -1.0f, -10.0f );
+   glTexCoord2i(   0,     1 );
    glVertex3f(  2.0f, -2.0f,  10.0f );
    glEnd();
 
@@ -483,11 +510,26 @@ void poly_ortho_skybox( const float* color ) {
    /* Left Face */
    glBegin( GL_QUADS );
    glNormal3f(  1.0f, 0, 0 );
+   glTexCoord2i(   0,     0 );
    glVertex3f( -1.0f,  1.0f, -10.0f );
+   glTexCoord2i(   1,     0 );
    glVertex3f( -2.0f,  2.0f,  10.0f );
+   glTexCoord2i(   1,     1 );
    glVertex3f( -2.0f, -2.0f,  10.0f );
+   glTexCoord2i(   0,     1 );
    glVertex3f( -1.0f, -1.0f, -10.0f );
    glEnd();
+
+   if( NULL != tex ) {
+#if 0
+      glBindTexture( GL_TEXTURE_2D, 0 );
+#endif
+      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
+         0, 0, 0,
+         GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+
+      maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
+   }
 }
 
 void poly_water_skybox() {
