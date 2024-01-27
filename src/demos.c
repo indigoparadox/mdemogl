@@ -1356,7 +1356,10 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    retroflat_draw_release( NULL );
 
-   data->rotate_y += 5;
+   if( data->next_rotate_ms < retroflat_get_ms() ) {
+      data->rotate_y += 5;
+      data->next_rotate_ms = retroflat_get_ms() + 50;
+   }
 
 end_func:
    return;

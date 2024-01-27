@@ -144,6 +144,7 @@ struct DEMO_RETROANI_DATA {
    int8_t idx_snow;
    struct RETROFLAT_BITMAP* bmp_fire;
    struct RETROFLAT_BITMAP* bmp_snow;
+   uint32_t next_rotate_ms;
 };
 
 void demo_init_scene( uint8_t flags );
