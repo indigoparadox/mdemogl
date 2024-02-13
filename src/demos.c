@@ -128,7 +128,7 @@ MERROR_RETVAL demo_load_sprite(
 ) {
    MERROR_RETVAL retval = 0;
 
-   retval = retroflat_load_bitmap( filename, &(sprite->texture) );
+   retval = retroflat_load_bitmap( filename, &(sprite->texture), 0 );
    maug_cleanup_if_not_ok();
 
    retroglu_set_sprite_color( sprite, RETROGLU_COLOR_WHITE );
