@@ -389,6 +389,24 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
 #ifndef DEMOS_NO_FILES
 
+void demos_obj_undulate(
+   float n_x, float n_y, float n_z,
+   float v_x, float v_y, float v_z, void* data
+) {
+   float* p_undulate_y = (float*)data;
+
+   glPushMatrix();
+   if( v_y > *p_undulate_y && v_y < *p_undulate_y + 0.2 ) {
+      glScalef( 3.5f, 3.5f, 3.5f );
+      debug_printf( 1, "%f", v_y );
+   }
+
+   glNormal3f( n_x, n_y, n_z );
+   glVertex3f( v_x, v_y, v_z );
+
+   glPopMatrix();
+}
+
 void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
@@ -402,6 +420,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       tz = -5.0f;
    const float l_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
    const float l_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+   int undulate = 1;
    /*
    const float l_position[] = {0.0f, 0.0f, 2.0f, 1.0f};
    */
@@ -444,9 +463,16 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
+      if( undulate ) {
+         data->obj.trans_cb = demos_obj_undulate;
+      }
+
 #ifndef RETROFLAT_NO_KEYBOARD
       retrocon_init( &(data->con) );
 #endif /* !RETROFLAT_NO_KEYBOARD */
+
+      data->undulate_y = -1.0f;
+
       data->init = 1;
    }
 
@@ -529,10 +555,15 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    glLightfv( GL_LIGHT0, GL_AMBIENT, l_ambient );
 #endif /* !DEMOS_NO_LIGHTS */
 
+   data->obj.trans_cb_data = &(data->undulate_y);
 #ifdef DEMOS_NO_LISTS
    retroglu_draw_poly( &(data->obj) );
 #else
-   glCallList( data->obj_list );
+   if( undulate ) {
+      retroglu_draw_poly( &(data->obj) );
+   } else {
+      glCallList( data->obj_list );
+   }
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
@@ -546,6 +577,11 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    retroflat_draw_release( NULL );
 
    rotate_y += 5;
+
+   data->undulate_y += 0.2f;
+   if( data->undulate_y > 2.0f ) {
+      data->undulate_y = -1.0f;
+   }
 
 }
 

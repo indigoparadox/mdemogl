@@ -85,6 +85,7 @@ struct DEMO_OBJ_DATA {
    struct RETROCON con;
    struct RETROGLU_OBJ obj;
    GLint obj_list;
+   float undulate_y;
 };
 
 struct DEMO_SPRITE_DATA {
