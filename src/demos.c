@@ -40,9 +40,12 @@ void demo_draw_fps() {
    memset( overlay_str, '\0', DEMOS_OVERLAY_SZ_MAX + 1 );
    maug_snprintf( overlay_str, DEMOS_OVERLAY_SZ_MAX,
       "FPS: %d", g_frames_per_sec );
+   /* TODO: Display FPS using new font system. */
+   /*
    retroglu_string(
       -1.0 * aspect_ratio, -1.0, 0, RETROGLU_COLOR_WHITE,
       overlay_str, DEMOS_OVERLAY_SZ_MAX, "", 0 );
+   */
    
    /* Restore modelview. */
    glPopMatrix();
