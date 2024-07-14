@@ -20,9 +20,11 @@ void demo_draw_fps() {
    glMatrixMode( GL_PROJECTION );
    glPushMatrix();
 
+#ifndef RETROGLU_NO_LIGHTING
    /* Lighting makes overlay text hard to see. */
    glDisable( GL_LIGHTING );
-   
+#endif /* !RETROGLU_NO_LIGHTING */
+
    /* Use ortho for overlay. */
    glLoadIdentity();
    aspect_ratio = (float)retroflat_screen_w() / (float)retroflat_screen_h();

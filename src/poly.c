@@ -19,17 +19,20 @@ void poly_cube_tex(
    const float color_bk[], const float color_ft[], const float color_rt[],
    const float color_lt[], const float color_tp[], const float color_bt[]
 ) {
-   GLenum error = GL_NO_ERROR;
+   /* GLenum error = GL_NO_ERROR; */
 
    /* Note that the normals begin in the middle of the face and line
       * up with the face with the most similar vertexes.
       */
 
+   /*
    error = glGetError();
    assert( GL_NO_ERROR == error );
+   */
 
    glPushMatrix();
 
+#ifndef RETROGLU_NO_TEXTURES
    if( NULL != tex ) {
       maug_mlock( tex->tex.bytes_h, tex->tex.bytes );
       assert( NULL != tex->tex.bytes );
@@ -46,6 +49,7 @@ void poly_cube_tex(
       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
    }
+#endif /* !RETROGLU_NO_TEXTURES */
 
    /* BACK */
    glBegin( GL_TRIANGLES );
@@ -151,6 +155,7 @@ void poly_cube_tex(
    glVertex3f(  scale, -scale, -scale );
    glEnd();
 
+#ifndef RETROGLU_NO_TEXTURES
    if( NULL != tex ) {
 #if 0
       glBindTexture( GL_TEXTURE_2D, 0 );
@@ -161,6 +166,7 @@ void poly_cube_tex(
 
       maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
    }
+#endif /* !RETROGLU_NO_TEXTURES */
 
    glPopMatrix();
 }
@@ -434,7 +440,9 @@ void poly_sphere_checker(
 }
 
 void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex ) {
+   /*
    GLenum error = GL_NO_ERROR;
+   */
 
    glColor3fv( color );
 
@@ -444,6 +452,7 @@ void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex ) {
       * rendering.
       */
 
+#ifndef RETROGLU_NO_TEXTURES
    if( NULL != tex ) {
       maug_mlock( tex->tex.bytes_h, tex->tex.bytes );
       assert( NULL != tex->tex.bytes );
@@ -454,12 +463,15 @@ void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex ) {
 #if 0
       glBindTexture( GL_TEXTURE_2D, tex->tex.id );
 #endif
+      /*
       error = glGetError();
       assert( GL_NO_ERROR == error );
+      */
       glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
    }
+#endif /* !RETROGLU_NO_TEXTURES */
 
    /* TODO: Break into triangles. */
 
@@ -520,6 +532,7 @@ void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex ) {
    glVertex3f( -1.0f, -1.0f, -10.0f );
    glEnd();
 
+#ifndef RETROGLU_NO_TEXTURES
    if( NULL != tex ) {
 #if 0
       glBindTexture( GL_TEXTURE_2D, 0 );
@@ -530,6 +543,7 @@ void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex ) {
 
       maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
    }
+#endif /* !RETROGLU_NO_TEXTURES */
 }
 
 void poly_water_skybox() {
