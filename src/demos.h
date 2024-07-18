@@ -4,9 +4,6 @@
 
 #include <maug.h>
 #include <retroflt.h>
-#ifndef RETROFLAT_API_NDS
-#  include <retrocon.h>
-#endif /* !RETROFLAT_API_NDS */
 #include <retroani.h>
 
 #define DEMOS_OVERLAY_SZ_MAX 64
@@ -58,7 +55,6 @@
 
 struct DEMO_CUBE_DATA {
    int init;
-   struct RETROCON con;
    GLint cube_list;
    int rotate_x;
    int rotate_y;
@@ -66,7 +62,6 @@ struct DEMO_CUBE_DATA {
 
 struct DEMO_SPHERE_DATA {
    int init;
-   struct RETROCON con;
    GLint sphere_list;
    GLint skybox_list;
    int rotate_x;
@@ -82,14 +77,12 @@ struct DEMO_SPHERE_DATA {
 
 struct DEMO_OBJ_DATA {
    int init;
-   struct RETROCON con;
    struct RETROGLU_OBJ obj;
    GLint obj_list;
 };
 
 struct DEMO_SPRITE_DATA {
    int init;
-   struct RETROCON con;
    struct RETROGLU_SPRITE sprite;
    struct RETROGLU_TILE tiles[DEMO_MAP_TILES_SZ_MAX];
    uint8_t map[DEMO_MAP_H][DEMO_MAP_W];
@@ -108,7 +101,6 @@ struct DEMO_FP_TILE {
 
 struct DEMO_FP_DATA {
    int init;
-   struct RETROCON con;
    struct DEMO_FP_TILE tiles[DEMO_FP_TILES_SZ_MAX];
    float water_peak_offset;
    float translate_x;
@@ -119,7 +111,6 @@ struct DEMO_FP_DATA {
 
 struct DEMO_WATER_DATA {
    int init;
-   struct RETROCON con;
    int pattern;
    float freq_mod;
    float amp_mod;
@@ -135,7 +126,6 @@ struct DEMO_WATER_DATA {
 
 struct DEMO_RETROANI_DATA {
    int init;
-   struct RETROCON con;
    struct RETROANI animations[ANIMATIONS_MAX];
    GLint cube_list;
    int rotate_x;

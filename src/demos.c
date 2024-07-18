@@ -174,9 +174,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-#ifndef RETROFLAT_NO_KEYBOARD
-      retrocon_init( &(data->con) );
-#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -220,10 +217,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
-
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_display( &(data->con), NULL );
-#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -279,9 +272,6 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-#ifndef RETROFLAT_NO_KEYBOARD
-      retrocon_init( &(data->con) );
-#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -360,10 +350,6 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
-
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_display( &(data->con), NULL );
-#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -449,9 +435,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-#ifndef RETROFLAT_NO_KEYBOARD
-      retrocon_init( &(data->con) );
-#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -541,10 +524,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
    glPopMatrix();
-
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_display( &(data->con), NULL );
-#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -759,9 +738,6 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEnable( GL_FOG );
 #endif
 
-#ifndef RETROFLAT_NO_KEYBOARD
-      retrocon_init( &(data->con) );
-#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -870,10 +846,6 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    glPopMatrix();
 
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_display( &(data->con), NULL );
-#endif /* !RETROFLAT_NO_KEYBOARD */
-
    demo_draw_fps();
 
    retroflat_draw_release( NULL );
@@ -921,9 +893,6 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-#ifndef RETROFLAT_NO_KEYBOARD
-      retrocon_init( &(data->con) );
-#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -990,10 +959,6 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    retroglu_jitrender_sprite( &(data->sprite), data->tex_frame_idx );
 
    glPopMatrix();
-
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_display( &(data->con), NULL );
-#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 
@@ -1081,9 +1046,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-#ifndef RETROFLAT_NO_KEYBOARD
-      retrocon_init( &(data->con) );
-#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
    }
 
@@ -1193,10 +1155,6 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    glPopMatrix();
 
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_display( &(data->con), NULL );
-#endif /* !RETROFLAT_NO_KEYBOARD */
-
    demo_draw_fps();
 
    retroflat_draw_release( NULL );
@@ -1211,9 +1169,6 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    struct RETROGLU_PROJ_ARGS args;
 
    if( !data->init ) {
-#ifndef RETROFLAT_NO_KEYBOARD
-      retrocon_init( &(data->con) );
-#endif /* !RETROFLAT_NO_KEYBOARD */
       data->init = 1;
 
       /* Create the fire animation texture. */
@@ -1285,10 +1240,6 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    input = retroflat_poll_input( &input_evt );
 
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_input( &(data->con), &input, &input_evt );
-#endif /* !RETROFLAT_NO_KEYBOARD */
-
    switch( input ) {
    case RETROFLAT_KEY_RIGHT:
       break;
@@ -1352,10 +1303,6 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 #endif
 
    glPopMatrix();
-
-#ifndef RETROFLAT_NO_KEYBOARD
-   retrocon_display( &(data->con), NULL );
-#endif /* !RETROFLAT_NO_KEYBOARD */
 
    demo_draw_fps();
 

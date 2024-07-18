@@ -19,7 +19,9 @@ void poly_cube_tex(
    const float color_bk[], const float color_ft[], const float color_rt[],
    const float color_lt[], const float color_tp[], const float color_bt[]
 ) {
-   /* GLenum error = GL_NO_ERROR; */
+#ifndef RETROGLU_NO_TEXTURES
+   GLenum error = GL_NO_ERROR;
+#endif /* !RETROGLU_NO_TEXTURES */
 
    /* Note that the normals begin in the middle of the face and line
       * up with the face with the most similar vertexes.
