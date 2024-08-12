@@ -397,9 +397,11 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    const float l_position[] = {0.0f, 0.0f, 2.0f, 1.0f};
    */
    struct RETROGLU_PROJ_ARGS args;
+   MERROR_RETVAL retval = MERROR_OK;
 
    if( 0 == data->init ) {
-      retroglu_parse_obj_file( g_demo_obj_name, NULL, &(data->obj) );
+      retval = retroglu_parse_obj_file( g_demo_obj_name, NULL, &(data->obj) );
+      maug_cleanup_if_not_ok();
 
       assert( 0 < data->obj.vertices_sz );
       assert( 0 < data->obj.faces_sz );
@@ -530,6 +532,12 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    retroflat_draw_release( NULL );
 
    rotate_y += 5;
+
+cleanup:
+
+   if( retval ) {
+      retroflat_quit( retval );
+   }
 
 }
 
