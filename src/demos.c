@@ -1176,29 +1176,37 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    RETROFLAT_IN_KEY input = 0;
    float translate_z = -5.0f;
    struct RETROGLU_PROJ_ARGS args;
+   MERROR_RETVAL retval = MERROR_OK;
 
    if( !data->init ) {
       data->init = 1;
 
       /* Create the fire animation texture. */
 
+      debug_printf( 1, "initializing fire cube..." );
+
       data->bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
       assert( NULL != data->bmp_fire );
-      retroflat_create_bitmap(
+      retval = retroflat_create_bitmap(
          RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_fire, 0 );
+      maug_cleanup_if_not_ok();
 
-      debug_printf( 1, "Xxxxxxxxxxxx: " SIZE_T_FMT " x " SIZE_T_FMT,
-         retroflat_bitmap_w( data->bmp_fire ),
-         retroflat_bitmap_h( data->bmp_fire ) );
       assert( RETROANI_TILE_W == retroflat_bitmap_w( data->bmp_fire ) );
       assert( RETROANI_TILE_H == retroflat_bitmap_h( data->bmp_fire ) );
+      assert( NULL != data->bmp_fire->tex.bytes_h );
 
-      retroflat_draw_lock( data->bmp_fire );
+      retval = retroflat_draw_lock( data->bmp_fire );
+      maug_cleanup_if_not_ok();
+
+      assert( NULL != data->bmp_fire->tex.bytes );
+
       retroflat_rect(
          data->bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
          RETROANI_TILE_W, RETROANI_TILE_H,
          RETROFLAT_FLAGS_FILL );
       retroflat_draw_release( data->bmp_fire );
+
+      assert( NULL != data->bmp_fire->tex.bytes_h );
 
       data->idx_fire = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
@@ -1211,12 +1219,17 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
       /* Create the snow animation texture. */
 
+      debug_printf( 1, "initializing snow cube..." );
+
       data->bmp_snow = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
       assert( NULL != data->bmp_snow );
-      retroflat_create_bitmap(
+      retval = retroflat_create_bitmap(
          RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_snow, 0 );
+      maug_cleanup_if_not_ok();
 
-      retroflat_draw_lock( data->bmp_snow );
+      retval = retroflat_draw_lock( data->bmp_snow );
+      maug_cleanup_if_not_ok();
+
       retroflat_rect(
          data->bmp_snow, RETROFLAT_COLOR_BLACK, 0, 0,
          RETROANI_TILE_W, RETROANI_TILE_H,
@@ -1336,6 +1349,12 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    if( data->next_rotate_ms < retroflat_get_ms() ) {
       data->rotate_y += 5;
       data->next_rotate_ms = retroflat_get_ms() + 50;
+   }
+
+cleanup:
+
+   if( retval ) {
+      retroflat_quit( retval );
    }
 
 end_func:
