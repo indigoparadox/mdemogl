@@ -423,6 +423,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 #endif /* DEMOS_NO_LISTS */
 
       retroglu_init_scene( 0 );
+      maug_mzero( &args, sizeof( struct RETROGLU_PROJ_ARGS ) );
       args.proj = RETROGLU_PROJ_FRUSTUM;
       args.rzoom = 1.0f;
       args.near_plane = 0.5f;
@@ -1186,6 +1187,12 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       retroflat_create_bitmap(
          RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_fire, 0 );
 
+      debug_printf( 1, "Xxxxxxxxxxxx: " SIZE_T_FMT " x " SIZE_T_FMT,
+         retroflat_bitmap_w( data->bmp_fire ),
+         retroflat_bitmap_h( data->bmp_fire ) );
+      assert( RETROANI_TILE_W == retroflat_bitmap_w( data->bmp_fire ) );
+      assert( RETROANI_TILE_H == retroflat_bitmap_h( data->bmp_fire ) );
+
       retroflat_draw_lock( data->bmp_fire );
       retroflat_rect(
          data->bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
@@ -1196,7 +1203,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       data->idx_fire = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
          RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
-         0, 0, data->bmp_fire->tex.w, data->bmp_fire->tex.h );
+         0, 0,
+         retroflat_bitmap_w( data->bmp_fire ),
+         retroflat_bitmap_h( data->bmp_fire ) );
 
       retroani_set_target( data->animations, data->idx_fire, data->bmp_fire );
 
@@ -1217,7 +1226,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       data->idx_snow = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
          RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
-         0, 0, data->bmp_snow->tex.w, data->bmp_snow->tex.h );
+         0, 0,
+         retroflat_bitmap_w( data->bmp_snow ),
+         retroflat_bitmap_h( data->bmp_snow ) );
 
       retroani_set_target( data->animations, data->idx_snow, data->bmp_snow );
 
@@ -1233,6 +1244,8 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       glEndList();
 #endif /* DEMOS_NO_LISTS */
 #endif
+
+      assert( NULL != data->bmp_fire->tex.bytes_h );
 
       retroglu_init_scene( 0 );
       args.proj = RETROGLU_PROJ_FRUSTUM;
@@ -1271,15 +1284,19 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       break;
    }
 
+   assert( NULL != data->bmp_fire->tex.bytes_h );
+
    /* Drawing */
 
    retroflat_draw_lock( NULL );
- 
+
    retroflat_draw_lock( data->bmp_fire );
    retroflat_draw_lock( data->bmp_snow );
    retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
    retroflat_draw_release( data->bmp_fire );
    retroflat_draw_release( data->bmp_snow );
+
+   assert( NULL != data->bmp_fire->tex.bytes_h );
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
