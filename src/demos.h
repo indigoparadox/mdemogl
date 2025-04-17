@@ -77,7 +77,7 @@ struct DEMO_SPHERE_DATA {
 
 struct DEMO_OBJ_DATA {
    int init;
-   struct RETROGLU_OBJ obj;
+   struct RETRO3DP_OBJ obj;
    GLint obj_list;
 };
 
@@ -140,7 +140,7 @@ struct DEMO_RETROANI_DATA {
 void demo_init_scene( uint8_t flags );
 void demo_init_projection( uint8_t demo_proj, float zoom );
 int demo_load_obj(
-   const char* filename, struct RETROGLU_PARSER* parser,
+   const char* filename, struct RETRO3DP_PARSER* parser,
    struct DEMO_OBJ_DATA* data
 );
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data );
