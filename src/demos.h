@@ -5,6 +5,8 @@
 #include <maug.h>
 #include <retroflt.h>
 #include <retroani.h>
+#include <retroglu.h>
+#include <GL/gl.h>
 
 #define DEMOS_OVERLAY_SZ_MAX 64
 
@@ -77,7 +79,7 @@ struct DEMO_SPHERE_DATA {
 
 struct DEMO_OBJ_DATA {
    int init;
-   struct RETRO3DP_OBJ obj;
+   struct RETRO3DP_MODEL obj;
    GLint obj_list;
 };
 

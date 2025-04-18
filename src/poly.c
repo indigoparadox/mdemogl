@@ -5,22 +5,24 @@
 #include "poly.h"
 
 void poly_cube(
-   float scale,
-   const float color_bk[], const float color_ft[], const float color_rt[],
-   const float color_lt[], const float color_tp[], const float color_bt[]
+   int scale,
+   RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
+   RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
 ) {
    poly_cube_tex( NULL, scale, color_bk, color_ft, color_rt, color_lt,
       color_tp, color_bt );
 }
 
+/* === */
+
 void poly_cube_tex(
    struct RETROFLAT_BITMAP* tex,
-   float scale,
-   const float color_bk[], const float color_ft[], const float color_rt[],
-   const float color_lt[], const float color_tp[], const float color_bt[]
+   int scale,
+   RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
+   RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
 ) {
 #ifndef RETROGLU_NO_TEXTURES
-   GLenum error = GL_NO_ERROR;
+   /* GLenum error = GL_NO_ERROR; */
 #endif /* !RETROGLU_NO_TEXTURES */
 
    /* Note that the normals begin in the middle of the face and line
@@ -32,6 +34,7 @@ void poly_cube_tex(
    assert( GL_NO_ERROR == error );
    */
 
+#if 0
    glPushMatrix();
 
 #ifndef RETROGLU_NO_TEXTURES
@@ -52,111 +55,99 @@ void poly_cube_tex(
       glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
    }
 #endif /* !RETROGLU_NO_TEXTURES */
+#endif
 
    /* BACK */
-   glBegin( GL_TRIANGLES );
-   glNormal3i(      0,     0, scale );
-   glColor3fv( color_bk );
-   glTexCoord2i(    0,     0 );
-   glVertex3f(   scale,  scale, scale );
-   glTexCoord2i(    1,     0 );
-   glVertex3f(  -scale,  scale, scale );
-   glTexCoord2i(    0,     1 );
-   glVertex3f(   scale, -scale, scale );
-   glEnd();
+   retro3d_tri_begin( color_bk, RETRO3D_TRI_FLAG_NORMAL_Z );
+   /* glColor3fv( color_bk ); */
+   retro3d_vx(   scale,  scale, scale, 0, 0 );
+   retro3d_vx(  -scale,  scale, scale, 1, 0 );
+   retro3d_vx(   scale, -scale, scale, 0, 1 );
+   retro3d_tri_end();
 
-   glBegin( GL_TRIANGLES );
-   glTexCoord2i(    1,     0 );
-   glVertex3f(  -scale,  scale, scale );
-   glTexCoord2i(    1,     1 );
-   glVertex3f(  -scale, -scale, scale );
-   glTexCoord2i(    0,     1 );
-   glVertex3f(   scale, -scale, scale );
-   glEnd();
+   retro3d_tri_begin( color_bk, RETRO3D_TRI_FLAG_NORMAL_Z );
+   retro3d_vx(  -scale,  scale, scale, 1, 0 );
+   retro3d_vx(  -scale, -scale, scale, 1, 1 );
+   retro3d_vx(   scale, -scale, scale, 0, 1 );
+   retro3d_tri_end();
    
    /* RIGHT */
-   glBegin( GL_TRIANGLES );
-   glNormal3i(   scale,     0,     0 );
-   glColor3fv( color_rt );
-   glTexCoord2i(           1,     1 );
-   glVertex3f(   scale, -scale, -scale );
-   glTexCoord2i(           1,     0 );
-   glVertex3f(   scale,  scale, -scale );
-   glTexCoord2i(           0,     0 );
-   glVertex3f(   scale,  scale,  scale );
+   retro3d_tri_begin( color_rt, RETRO3D_TRI_FLAG_NORMAL_X );
+   /* glColor3fv( color_rt ); */
+   retro3d_vx(   scale, -scale, -scale, 1, 1 );
+   retro3d_vx(   scale,  scale, -scale, 1, 0 );
+   retro3d_vx(   scale,  scale,  scale, 0, 0 );
+   retro3d_tri_end();
 
-   glTexCoord2i(           0,     0 );
-   glVertex3f(   scale,  scale,  scale );
-   glTexCoord2i(           0,     1 );
-   glVertex3f(   scale, -scale,  scale );
-   glTexCoord2i(           1,     1 );
-   glVertex3f(   scale, -scale, -scale );
-   glEnd();
+   retro3d_tri_begin( color_rt, RETRO3D_TRI_FLAG_NORMAL_X );
+   retro3d_vx(   scale,  scale,  scale, 0, 0 );
+   retro3d_vx(   scale, -scale,  scale, 0, 1 );
+   retro3d_vx(   scale, -scale, -scale, 1, 1 );
+   retro3d_tri_end();
    
    /* LEFT */
-   glBegin( GL_TRIANGLES );
-   glNormal3f( -1.0f,     0,    0 );
-   glColor3fv( color_lt );
-   glTexCoord2i(           0,     1 );
-   glVertex3f( -scale, -scale,  scale );
-   glTexCoord2i(           0,     0 );
-   glVertex3f( -scale,  scale,  scale );
-   glTexCoord2i(           1,     0 );
-   glVertex3f( -scale,  scale, -scale );
+   retro3d_tri_begin(
+      color_lt, RETRO3D_TRI_FLAG_NORMAL_X | RETRO3D_TRI_FLAG_NORMAL_NEG );
+   /* glColor3fv( color_lt ); */
+   retro3d_vx( -scale, -scale,  scale, 0, 1 );
+   retro3d_vx( -scale,  scale,  scale, 0, 0 );
+   retro3d_vx( -scale,  scale, -scale, 1, 0 );
+   retro3d_tri_end();
 
-   glTexCoord2i(           1,     0 );
-   glVertex3f( -scale,  scale, -scale );
-   glTexCoord2i(           1,     1 );
-   glVertex3f( -scale, -scale, -scale );
-   glTexCoord2i(           0,     1 );
-   glVertex3f( -scale, -scale,  scale );
-   glEnd();
+   retro3d_tri_begin(
+      color_lt, RETRO3D_TRI_FLAG_NORMAL_X | RETRO3D_TRI_FLAG_NORMAL_NEG );
+   retro3d_vx( -scale,  scale, -scale, 1, 0 );
+   retro3d_vx( -scale, -scale, -scale, 1, 1 );
+   retro3d_vx( -scale, -scale,  scale, 0, 1 );
+   retro3d_tri_end();
 
    /* FRONT */
-   glBegin( GL_TRIANGLES );
-   glNormal3f(     0,     0, -1.0f );
-   glColor3fv( color_ft );
-   glTexCoord2i(    1,      1 );
-   glVertex3f( -scale, -scale, -scale );
-   glTexCoord2i(    1,      0 );
-   glVertex3f( -scale,  scale, -scale );
-   glTexCoord2i(    0,      0 );
-   glVertex3f(  scale,  scale, -scale );
+   retro3d_tri_begin(
+      color_ft, RETRO3D_TRI_FLAG_NORMAL_Z | RETRO3D_TRI_FLAG_NORMAL_NEG );
+   /* glColor3fv( color_ft ); */
+   retro3d_vx( -scale, -scale, -scale, 1, 1 );
+   retro3d_vx( -scale,  scale, -scale, 1 ,0 );
+   retro3d_vx(  scale,  scale, -scale, 0, 0 );
+   retro3d_tri_end();
 
-   glTexCoord2i(    0,      0 );
-   glVertex3f(  scale,  scale, -scale );
-   glTexCoord2i(    0,      1 );
-   glVertex3f(  scale, -scale, -scale );
-   glTexCoord2i(    1,      1 );
-   glVertex3f( -scale, -scale, -scale );
-   glEnd();
+   retro3d_tri_begin(
+      color_ft, RETRO3D_TRI_FLAG_NORMAL_Z | RETRO3D_TRI_FLAG_NORMAL_NEG );
+   retro3d_vx(  scale,  scale, -scale, 0, 0 );
+   retro3d_vx(  scale, -scale, -scale, 0, 1 );
+   retro3d_vx( -scale, -scale, -scale, 1, 1 );
+   retro3d_tri_end();
    
    /* TOP */
-   glBegin( GL_TRIANGLES );
-   glNormal3f(     0,  1.0f,     0 );
-   glColor3fv( color_tp );
-   glVertex3f(  scale,  scale,  scale );
-   glVertex3f(  scale,  scale, -scale );
-   glVertex3f( -scale,  scale, -scale );
+   retro3d_tri_begin( color_tp, RETRO3D_TRI_FLAG_NORMAL_Y );
+   /* glColor3fv( color_tp ); */
+   retro3d_vx(  scale,  scale,  scale, 0, 0 );
+   retro3d_vx(  scale,  scale, -scale, 0, 0 );
+   retro3d_vx( -scale,  scale, -scale, 0, 0 );
+   retro3d_tri_end();
 
-   glVertex3f( -scale,  scale, -scale );
-   glVertex3f( -scale,  scale,  scale );
-   glVertex3f(  scale,  scale,  scale );
-   glEnd();
+   retro3d_tri_begin( color_tp, RETRO3D_TRI_FLAG_NORMAL_Y );
+   retro3d_vx( -scale,  scale, -scale, 0, 0 );
+   retro3d_vx( -scale,  scale,  scale, 0, 0 );
+   retro3d_vx(  scale,  scale,  scale, 0, 0 );
+   retro3d_tri_end();
    
    /* BOTTOM */
-   glBegin( GL_TRIANGLES );
-   glNormal3f(     0, -1.0f,     0 );
-   glColor3fv( color_bt );
-   glVertex3f(  scale, -scale, -scale );
-   glVertex3f(  scale, -scale,  scale );
-   glVertex3f( -scale, -scale,  scale );
+   retro3d_tri_begin(
+      color_bt, RETRO3D_TRI_FLAG_NORMAL_Y | RETRO3D_TRI_FLAG_NORMAL_NEG );
+   /* glColor3fv( color_bt ); */
+   retro3d_vx(  scale, -scale, -scale, 0, 0 );
+   retro3d_vx(  scale, -scale,  scale, 0, 0 );
+   retro3d_vx( -scale, -scale,  scale, 0, 0 );
+   retro3d_tri_end();
 
-   glVertex3f( -scale, -scale,  scale );
-   glVertex3f( -scale, -scale, -scale );
-   glVertex3f(  scale, -scale, -scale );
-   glEnd();
+   retro3d_tri_begin(
+      color_bt, RETRO3D_TRI_FLAG_NORMAL_Y | RETRO3D_TRI_FLAG_NORMAL_NEG );
+   retro3d_vx( -scale, -scale,  scale, 0, 0 );
+   retro3d_vx( -scale, -scale, -scale, 0, 0 );
+   retro3d_vx(  scale, -scale, -scale, 0, 0 );
+   retro3d_tri_end();
 
+#if 0
 #ifndef RETROGLU_NO_TEXTURES
    if( NULL != tex ) {
 #if 0
@@ -171,7 +162,10 @@ void poly_cube_tex(
 #endif /* !RETROGLU_NO_TEXTURES */
 
    glPopMatrix();
+#endif
 }
+
+/* === */
 
 void poly_well(
    const float color[], const float radius_outer, const float radius_inner,

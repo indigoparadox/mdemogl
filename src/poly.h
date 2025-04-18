@@ -3,14 +3,16 @@
 #define POLY_H
 
 void poly_cube(
-   float scale,
-   const float color_bk[], const float color_ft[], const float color_rt[],
-   const float color_lt[], const float color_tp[], const float color_bt[] );
+   int scale,
+   RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
+   RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
+);
 void poly_cube_tex(
    struct RETROFLAT_BITMAP* tex,
-   float scale,
-   const float color_bk[], const float color_ft[], const float color_rt[],
-   const float color_lt[], const float color_tp[], const float color_bt[] );
+   int scale,
+   RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
+   RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
+);
 void poly_well(
    const float color[], const float radius_outer, const float radius_inner,
    const float height, const float ang_iter );
