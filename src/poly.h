@@ -26,7 +26,7 @@ void poly_water_sheet(
    const float width, const float depth, const float x_iter,
    float freq_mod, float amp_mod, float peak_offset );
 void poly_sphere_checker(
-   const float color1[], const float color2[], const float radius );
+   RETROFLAT_COLOR color1, RETROFLAT_COLOR color2, const float radius );
 void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex );
 void poly_water_skybox();
 

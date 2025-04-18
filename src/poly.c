@@ -352,7 +352,7 @@ void poly_water_sheet(
 }
 
 void poly_sphere_checker(
-   const float color1[], const float color2[], const float radius
+   RETROFLAT_COLOR color1, RETROFLAT_COLOR color2, const float radius
 ) {
    float ang_xy = 0;
    float ang_xz = 0;
@@ -372,14 +372,13 @@ void poly_sphere_checker(
          2 * RETROFLAT_PI > ang_xy ;
          ang_xy += DEMO_SPHERE_INC_XY
       ) {
-         glBegin( GL_TRIANGLES );
          even_col = even_col ? 0 : 1;
 
          /* Checkerboard pattern. */
          if( even_col ) {
-            glColor3fv( color1 );
+            retro3d_tri_begin( color1, 0 );
          } else {
-            glColor3fv( color2 );
+            retro3d_tri_begin( color2, 0 );
          }
 
          /* Setup a normal for each face (2 triangles). */
@@ -387,10 +386,12 @@ void poly_sphere_checker(
             * each face reflect in its own direction, which is what we want
             * for this demo.
             */
+         /*
          glNormal3f( 
             sin( ang_xy ) * cos( ang_xz ),
             cos( ang_xy ),
             sin( ang_xy ) * sin( ang_xz ) );
+         */
 
          /* Quad panels at equal intervals around two circles intersecting
             * on orthogonal planes.
@@ -399,6 +400,7 @@ void poly_sphere_checker(
          /* Each checkerboard square is 2 triangles: */
 
          /* Triangle 1 */
+         /* TODO: Port retrofp. */
          glVertex3f( 
             sin( ang_xy ) * cos( ang_xz ) * radius,
             cos( ang_xy ) * radius,
@@ -430,7 +432,7 @@ void poly_sphere_checker(
             cos( ang_xy ) * radius,
             sin( ang_xy ) * sin( ang_xz ) * radius );
 
-         glEnd();
+         retro3d_tri_end();
       }
    }
 }

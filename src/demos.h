@@ -55,36 +55,40 @@
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
 #define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
 
-struct DEMO_CUBE_DATA {
+struct DEMO_BASE {
    int init;
-   GLint cube_list;
+   mfix_t translate_x;
+   mfix_t translate_y;
+   mfix_t translate_z;
    int rotate_x;
    int rotate_y;
+   int rotate_z;
+};
+
+struct DEMO_CUBE_DATA {
+   struct DEMO_BASE base;
+   GLint cube_list;
 };
 
 struct DEMO_SPHERE_DATA {
-   int init;
+   struct DEMO_BASE base;
+   int rotate_x_inc;
+   int rotate_y_inc;
+   int rotate_z_inc;
+   mfix_t translate_x_inc;
+   mfix_t translate_y_inc;
    GLint sphere_list;
    GLint skybox_list;
-   int rotate_x;
-   int rotate_x_inc;
-   int rotate_y;
-   int rotate_y_inc;
-   float translate_x;
-   float translate_x_inc;
-   float translate_y;
-   float translate_y_inc;
-   float translate_z;
 };
 
 struct DEMO_OBJ_DATA {
-   int init;
+   struct DEMO_BASE base;
    struct RETRO3DP_MODEL obj;
    GLint obj_list;
 };
 
 struct DEMO_SPRITE_DATA {
-   int init;
+   struct DEMO_BASE base;
    struct RETROGLU_SPRITE sprite;
    struct RETROGLU_TILE tiles[DEMO_MAP_TILES_SZ_MAX];
    uint8_t map[DEMO_MAP_H][DEMO_MAP_W];
@@ -102,36 +106,25 @@ struct DEMO_FP_TILE {
 };
 
 struct DEMO_FP_DATA {
-   int init;
+   struct DEMO_BASE base;
    struct DEMO_FP_TILE tiles[DEMO_FP_TILES_SZ_MAX];
    float water_peak_offset;
-   float translate_x;
-   float translate_y;
-   float translate_z;
-   float rotate_y;
 };
 
 struct DEMO_WATER_DATA {
-   int init;
+   struct DEMO_BASE base;
    int pattern;
    float freq_mod;
    float amp_mod;
-   float translate_x;
-   float translate_y;
-   float translate_z;
-   int rotate_x;
-   int rotate_y;
    float peak_offset;
    GLint well_list;
    GLint skybox_list;
 };
 
 struct DEMO_RETROANI_DATA {
-   int init;
+   struct DEMO_BASE base;
    struct RETROANI animations[ANIMATIONS_MAX];
    GLint cube_list;
-   int rotate_x;
-   int rotate_y;
    int8_t idx_fire;
    int8_t idx_snow;
    struct RETROFLAT_BITMAP* bmp_fire;

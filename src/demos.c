@@ -145,13 +145,14 @@ cleanup:
    return retval;
 }
 
+/* === */
+
 void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
-   mfix_t translate_z = mfix( -5.0f );
    struct RETRO3D_PROJ_ARGS args;
 
-   if( !data->init ) {
+   if( !data->base.init ) {
 
       args.proj = RETRO3D_PROJ_FRUSTUM;
       args.rzoom = 0.5f;
@@ -159,14 +160,15 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       args.far_plane = 10.0f;
       retro3d_init_projection( &args );
 
-      data->rotate_x = 10;
-      data->rotate_y = 10;
+      data->base.rotate_x = 10;
+      data->base.rotate_y = 10;
+      data->base.translate_z = mfix( -5.0f );
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-      data->init = 1;
+      data->base.init = 1;
    }
 
    /* Input */
@@ -184,8 +186,8 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    retroflat_draw_lock( NULL );
    retro3d_scene_init();
 
-   retro3d_scene_translate( 0, 0, translate_z );
-   retro3d_scene_rotate( data->rotate_x, data->rotate_y, 0 );
+   retro3d_scene_translate( 0, 0, data->base.translate_z );
+   retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
 
    poly_cube(
       100,
@@ -197,8 +199,10 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
-   data->rotate_y += 5;
+   data->base.rotate_y += 5;
 }
+
+/* === */
 
 void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
@@ -206,13 +210,13 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETRO3D_PROJ_ARGS args;
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
-   if( !data->init ) {
+   if( !data->base.init ) {
 
 #ifndef DEMOS_NO_LISTS
       /* Create sphere display list. */
       data->sphere_list = glGenLists( 1 );
       glNewList( data->sphere_list, GL_COMPILE );
-      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 1.0f );
+      poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE, 1.0f );
       glEndList();
 
       /* Create Skybox display list. */
@@ -240,13 +244,13 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->translate_x_inc = 0.2f;
       data->translate_y_inc = 0.2f;
 
-      data->translate_z = -5.0f;
+      data->base.translate_z = -5.0f;
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-      data->init = 1;
+      data->base.init = 1;
    }
 
    /* Input */
@@ -255,23 +259,23 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    switch( input ) {
    case RETROFLAT_KEY_RIGHT:
-      data->rotate_y += 10;
-      debug_printf( 1, "rotate_y: %d", data->rotate_y );
+      data->base.rotate_y += 10;
+      debug_printf( 1, "rotate_y: %d", data->base.rotate_y );
       break;
 
    case RETROFLAT_KEY_LEFT:
-      data->rotate_y -= 10;
-      debug_printf( 1, "rotate_y: %d", data->rotate_y );
+      data->base.rotate_y -= 10;
+      debug_printf( 1, "rotate_y: %d", data->base.rotate_y );
       break;
 
    case RETROFLAT_KEY_UP:
-      data->rotate_x += 10;
-      debug_printf( 1, "rotate_x: %d", data->rotate_x );
+      data->base.rotate_x += 10;
+      debug_printf( 1, "rotate_x: %d", data->base.rotate_x );
       break;
 
    case RETROFLAT_KEY_DOWN:
-      data->rotate_x -= 10;
-      debug_printf( 1, "rotate_x: %d", data->rotate_x );
+      data->base.rotate_x -= 10;
+      debug_printf( 1, "rotate_x: %d", data->base.rotate_x );
       break;
 
    case RETROFLAT_KEY_ENTER:
@@ -313,9 +317,9 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    glPushMatrix();
 
-   glTranslatef( data->translate_x, data->translate_y, data->translate_z );
-   glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
-   glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
+   retro3d_scene_translate(
+      data->base.translate_x, data->base.translate_y, data->base.translate_z );
+   retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
 
 #ifdef DEMOS_NO_LISTS
    poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 1.0f );
@@ -329,26 +333,20 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    retroflat_draw_release( NULL );
 
-   data->rotate_y += data->rotate_y_inc;
+   data->base.rotate_y += data->rotate_y_inc;
 
    /* X bounce. */
-   data->translate_x += data->translate_x_inc;
-   if(
-      9 <= data->translate_x ||
-      -9 >= data->translate_x 
-   ) {
-      data->translate_x_inc *= -1.0f;
-      data->translate_x += data->translate_x_inc;
+   data->base.translate_x += data->translate_x_inc;
+   if( 9 <= data->base.translate_x || -9 >= data->base.translate_x ) {
+      data->translate_x_inc *= -1;
+      data->base.translate_x += data->translate_x_inc;
    }
 
    /* Y bounce. */
-   data->translate_y += data->translate_y_inc;
-   if(
-      6 <= data->translate_y ||
-      -6 >= data->translate_y 
-   ) {
-      data->translate_y_inc *= -1.0f;
-      data->translate_y += data->translate_y_inc;
+   data->base.translate_y += data->translate_y_inc;
+   if( 6 <= data->base.translate_y || -6 >= data->base.translate_y ) {
+      data->translate_y_inc *= -1;
+      data->base.translate_y += data->translate_y_inc;
    }
 }
 
@@ -357,23 +355,16 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
-   /*
-   static int rotate_x = 10;
-   */
-   static int rotate_y = 10;
-   static int rotate_z = 0;
-   static mfix_t tx = 0,
-      ty = 0,
-      tz = mfix( -5.0f );
-   /*
-   const float l_position[] = {0.0f, 0.0f, 2.0f, 1.0f};
-   */
    struct RETRO3D_PROJ_ARGS args;
    MERROR_RETVAL retval = MERROR_OK;
 
-   if( 0 == data->init ) {
+   if( 0 == data->base.init ) {
       retval = retro3dp_parse_obj_file( g_demo_obj_name, NULL, &(data->obj) );
       maug_cleanup_if_not_ok();
+
+      data->base.rotate_y = 10;
+      data->base.rotate_z = 0;
+      data->base.translate_z = mfix( -5.0f );
 
       /*
       assert( 0 < data->obj.vertices_sz );
@@ -397,7 +388,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-      data->init = 1;
+      data->base.init = 1;
    }
 
    /* Input */
@@ -428,23 +419,29 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 #endif
 
    case RETROFLAT_KEY_UP:
-      tz += DEMO_ZOOM_INC;
-      debug_printf( 3, "%d, %d, %d", tx, ty, tz );
+      data->base.translate_z += DEMO_ZOOM_INC;
+      debug_printf( 3, "%d, %d, %d",
+         data->base.translate_x, data->base.translate_y,
+         data->base.translate_z );
       break;
 
    case RETROFLAT_KEY_DOWN:
-      tz -= DEMO_ZOOM_INC;
-      debug_printf( 3, "%d, %d, %d", tx, ty, tz );
+      data->base.translate_z -= DEMO_ZOOM_INC;
+      debug_printf( 3, "%d, %d, %d",
+         data->base.translate_x, data->base.translate_y,
+         data->base.translate_z );
       break;
 
    case RETROFLAT_KEY_RIGHT:
-      rotate_z += DEMO_ROTATE_INC;
-      debug_printf( 3, "%d", rotate_z );
+      data->base.rotate_z += DEMO_ROTATE_INC;
+      debug_printf( 3, "%d, %d, %d",
+         data->base.translate_x, data->base.translate_y,
+         data->base.translate_z );
       break;
 
    case RETROFLAT_KEY_LEFT:
-      rotate_z -= DEMO_ROTATE_INC;
-      debug_printf( 3, "%d", rotate_z );
+      data->base.rotate_z -= DEMO_ROTATE_INC;
+      debug_printf( 3, "%d", data->base.rotate_z );
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -459,9 +456,10 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    retro3d_scene_init();
 
    /* retro3d_scene_scale( mfix( 0.5f ), mfix( 0.5f ), mfix( 0.5f ) ); */
-   retro3d_scene_translate( tx, ty, tz );
+   retro3d_scene_translate(
+      data->base.translate_x, data->base.translate_y, data->base.translate_z );
 
-   retro3d_scene_rotate( 0, rotate_y, rotate_z );
+   retro3d_scene_rotate( 0, data->base.rotate_y, data->base.rotate_z );
 
    retro3d_draw_model( &(data->obj) );
 
@@ -470,7 +468,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
-   rotate_y += 5;
+   data->base.rotate_y += 5;
 
 cleanup:
 
@@ -593,7 +591,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       0,
       0 };
 
-   if( !data->init ) {
+   if( !data->base.init ) {
 
       /* Init scene. */
       args.proj = RETRO3D_PROJ_FRUSTUM;
@@ -658,7 +656,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
       /* Compensate for the sphere being Y-centered on zero. */
       glTranslatef( 0, 0.5f, 0 );
-      poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 0.5f );
+      poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE, 0.5f );
       glTranslatef( 0, -0.5f, 0 );
       glEndList();
 
@@ -668,9 +666,9 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       /* Ring */
       data->tiles[5].anim = demo_fp_poly_ring;
 
-      data->translate_y = -0.5f;
-      data->translate_x = (DEMO_FP_MAP_W / 2) - 2;
-      data->translate_z = (DEMO_FP_MAP_H / 2) - 2;
+      data->base.translate_y = -0.5f;
+      data->base.translate_x = (DEMO_FP_MAP_W / 2) - 2;
+      data->base.translate_z = (DEMO_FP_MAP_H / 2) - 2;
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -685,7 +683,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       glEnable( GL_FOG );
 #endif
 
-      data->init = 1;
+      data->base.init = 1;
    }
 
    /* Input */
@@ -694,48 +692,50 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
    switch( input ) {
    case RETROFLAT_KEY_W:
-      z_diff = cos( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
-      x_diff = sin( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      z_diff = cos( (data->base.rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      x_diff = sin( (data->base.rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
       if( 
-         0 > ceil( data->translate_z + z_diff ) ||
-         0 > ceil( data->translate_x - x_diff ) ||
-         DEMO_FP_MAP_H <= ceil( data->translate_z + z_diff )  ||
-         DEMO_FP_MAP_W <= ceil( data->translate_x - x_diff ) 
+         0 > ceil( data->base.translate_z + z_diff ) ||
+         0 > ceil( data->base.translate_x - x_diff ) ||
+         DEMO_FP_MAP_H <= ceil( data->base.translate_z + z_diff )  ||
+         DEMO_FP_MAP_W <= ceil( data->base.translate_x - x_diff ) 
       ) {
          break;
       }
-      data->translate_z += z_diff;
-      data->translate_x -= x_diff;
-      debug_printf( 3, "tx: %f, tz: %f", data->translate_x, data->translate_z );
+      data->base.translate_z += z_diff;
+      data->base.translate_x -= x_diff;
+      debug_printf( 3, "tx: %d, tz: %d",
+            data->base.translate_x, data->base.translate_z );
       debug_printf( 3, "map x: %d, y: %d",
-         DEMO_FP_MAP_W - (int)(ceil( data->translate_x )),
-         DEMO_FP_MAP_H - (int)(ceil( data->translate_z )) - 1 );
+         DEMO_FP_MAP_W - (int)(ceil( data->base.translate_x )),
+         DEMO_FP_MAP_H - (int)(ceil( data->base.translate_z )) - 1 );
       break;
 
    case RETROFLAT_KEY_S:
-      data->translate_z -=
-         cos( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
-      data->translate_x +=
-         sin( (data->rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
-      debug_printf( 3, "tx: %f, tz: %f", data->translate_x, data->translate_z );
+      data->base.translate_z -=
+         cos( (data->base.rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      data->base.translate_x +=
+         sin( (data->base.rotate_y * (2 * RETROFLAT_PI)) / 360 ) * 0.1f;
+      debug_printf( 3, "tx: %d, tz: %d",
+         data->base.translate_x, data->base.translate_z );
       break;
 
    case RETROFLAT_KEY_A:
-      if( 5 > data->rotate_y ) {
-         data->rotate_y = 355.0f;
+      if( 5 > data->base.rotate_y ) {
+         data->base.rotate_y = 355;
       } else {
-         data->rotate_y -= 5.0f;
+         data->base.rotate_y -= 5;
       }
-      debug_printf( 3, "ry: %f", data->rotate_y );
+      debug_printf( 3, "ry: %d", data->base.rotate_y );
       break;
 
    case RETROFLAT_KEY_D:
-      if( 355 <= data->rotate_y ) {
-         data->rotate_y = 0;
+      if( 355 <= data->base.rotate_y ) {
+         data->base.rotate_y = 0;
       } else {
-         data->rotate_y += 5.0f;
+         data->base.rotate_y += 5;
       }
-      debug_printf( 3, "ry: %f", data->rotate_y );
+      debug_printf( 3, "ry: %d", data->base.rotate_y );
       break;
 
    case RETROFLAT_KEY_ESC:
@@ -763,8 +763,8 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 #endif /* !DEMOS_NO_LIGHTS */
 
    /* Translate/rotate the whole scene. */
-   glRotatef( data->rotate_y, 0, 1.0f, 0 );
-   glTranslatef( data->translate_x, data->translate_y, data->translate_z );
+   glRotatef( data->base.rotate_y, 0, 1.0f, 0 );
+   glTranslatef( data->base.translate_x, data->base.translate_y, data->base.translate_z );
 
    /* Draw the map tiles around us. */
    glTranslatef( 1.0f, 0, 1.0f );
@@ -806,7 +806,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    struct RETRO3D_PROJ_ARGS args;
    MERROR_RETVAL retval = MERROR_OK;
 
-   if( 0 == data->init ) {
+   if( 0 == data->base.init ) {
       /* Load sprite. */
       retval = demo_load_sprite( "test", &(data->sprite) );
       assert( MERROR_OK == retval );
@@ -839,7 +839,7 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-      data->init = 1;
+      data->base.init = 1;
    }
 
    /* Input */
@@ -942,7 +942,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETRO3D_PROJ_ARGS args;
    const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
-   if( 0 == data->init ) {
+   if( 0 == data->base.init ) {
 
       args.proj = RETRO3D_PROJ_FRUSTUM;
       args.rzoom = 1.0f;
@@ -969,8 +969,8 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       data->freq_mod = 7.0f;
       data->amp_mod = 0.1f;
       if( 1 == data->pattern ) {
-         data->translate_y = -4.0f;
-         data->translate_z = -4.0f;
+         data->base.translate_y = mfix( -4.0f );
+         data->base.translate_z = mfix( -4.0f );
 
 #ifndef DEMOS_NO_LISTS
          /* Setup well list. */
@@ -982,16 +982,16 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 #endif /* !DEMOS_NO_LISTS */
 
       } else {
-         data->translate_y = -8.0f;
-         data->translate_z = -4.0f;
-         data->rotate_x = 20;
+         data->base.translate_y = -8.0f;
+         data->base.translate_z = -4.0f;
+         data->base.rotate_x = 20;
       }
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
 
-      data->init = 1;
+      data->base.init = 1;
    }
 
    /* Input */
@@ -1000,13 +1000,13 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    switch( input ) {
    case RETROFLAT_KEY_UP:
-      data->translate_y += 0.1f;
-      debug_printf( 3, "ty: %f", data->translate_y );
+      data->base.translate_y += mfix( 0.1f );
+      debug_printf( 3, "ty: %d", data->base.translate_y );
       break;
 
    case RETROFLAT_KEY_DOWN:
-      data->translate_y -= 0.1f;
-      debug_printf( 3, "ty: %f", data->translate_y );
+      data->base.translate_y -= mfix( 0.1f );
+      debug_printf( 3, "ty: %d", data->base.translate_y );
       break;
 
 #if 0
@@ -1062,9 +1062,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    /* Create a new matrix to apply transformations for this frame. */
    glPushMatrix();
 
-   glRotatef( data->rotate_x, 1.0f, 0, 0 );
-   glRotatef( data->rotate_y, 0, 1.0f, 0 );
-   glTranslatef( data->translate_x, data->translate_y, data->translate_z );
+   retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
+   retro3d_scene_translate(
+      data->base.translate_x, data->base.translate_y, data->base.translate_z );
 
 #ifdef DEMOS_NO_LISTS
    poly_water_skybox();
@@ -1110,16 +1110,17 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
-   float translate_z = -5.0f;
    struct RETRO3D_PROJ_ARGS args;
    MERROR_RETVAL retval = MERROR_OK;
 
-   if( !data->init ) {
-      data->init = 1;
+   if( !data->base.init ) {
+      data->base.init = 1;
 
       /* Create the fire animation texture. */
 
       debug_printf( 1, "initializing fire cube..." );
+
+      data->base.translate_z = mfix( -5.0f );
 
       data->bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
       assert( NULL != data->bmp_fire );
@@ -1202,8 +1203,8 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       args.far_plane = 100.0f;
       retro3d_init_projection( &args );
 
-      data->rotate_x = 10;
-      data->rotate_y = 10;
+      data->base.rotate_x = 10;
+      data->base.rotate_y = 10;
 
    }
 
@@ -1260,9 +1261,8 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    poly_ortho_skybox( RETROGLU_COLOR_WHITE, data->bmp_snow );
    glPopMatrix();
 
-   glTranslatef( 0.0f, 0.0f, translate_z );
-   glRotatef( data->rotate_x, 1.0f, 0.0f, 0.0f );
-   glRotatef( data->rotate_y, 0.0f, 1.0f, 0.0f );
+   retro3d_scene_translate( 0, 0, data->base.translate_z );
+   retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
 
 /* #ifdef DEMOS_NO_LISTS */
    poly_cube_tex(
@@ -1282,7 +1282,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    retroflat_draw_release( NULL );
 
    if( data->next_rotate_ms < retroflat_get_ms() ) {
-      data->rotate_y += 5;
+      data->base.rotate_y += 5;
       data->next_rotate_ms = retroflat_get_ms() + 50;
    }
 
