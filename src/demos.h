@@ -20,12 +20,12 @@
 
 #define DEMO_OBJ_NAME_SZ_MAX 255
 
-#define DEMO_SPHERE_INC_XY (RETROFLAT_PI / 10)
-#define DEMO_SPHERE_INC_XZ (RETROFLAT_PI / 10)
+#define DEMO_SPHERE_INC_XY (MFIX_PI / 10)
+#define DEMO_SPHERE_INC_XZ (MFIX_PI / 10)
 
-#define DEMO_WATER_SHEET_DEPTH 20.0f
-#define DEMO_WATER_SHEET_WIDTH 40.0f
-#define DEMO_WATER_SHEET_X_ITER 0.1f
+#define DEMO_WATER_SHEET_DEPTH mfix_from_f( 20.0f )
+#define DEMO_WATER_SHEET_WIDTH mfix_from_f( 40.0f )
+#define DEMO_WATER_SHEET_X_ITER mfix_from_f( 0.1f )
 #define DEMO_WATER_RING_R_ITER 0.2f
 #define DEMO_WATER_RING_A_ITER 0.2f
 #define DEMO_WATER_RING_RADIUS 3.0f
@@ -67,7 +67,7 @@ struct DEMO_BASE {
 
 struct DEMO_CUBE_DATA {
    struct DEMO_BASE base;
-   GLint cube_list;
+   struct RETROFLAT_BITMAP tex_cube;
 };
 
 struct DEMO_SPHERE_DATA {
@@ -117,8 +117,7 @@ struct DEMO_WATER_DATA {
    float freq_mod;
    float amp_mod;
    float peak_offset;
-   GLint well_list;
-   GLint skybox_list;
+   struct RETROFLAT_BITMAP tex_water;
 };
 
 struct DEMO_RETROANI_DATA {

@@ -320,58 +320,52 @@ void poly_water_ring(
 }
 
 void poly_water_sheet(
-   const float color[],
-   const float width, const float depth, const float x_iter,
+   struct RETROFLAT_BITMAP* tex, RETROFLAT_COLOR color,
+   const mfix_t width, const mfix_t depth, const mfix_t x_iter,
    float freq_mod, float amp_mod, float peak_offset
 ) {
-   float x = 0,  
+   mfix_t x = 0,  
       x_next = 0,
       y = 0,
       y_next = 0;
+   const mfix_t t1 = mfix_from_f( 0.1f );
 
    /* Flat rectangle of even waves based on sine. */
    for( x = 0 - (width / 2) ; width / 2 > x ; x += x_iter ) {
       x_next = x + x_iter;
-      y = (sin( x + peak_offset ) * amp_mod) + 1.0f;
-      y_next = (sin( x_next + peak_offset ) * amp_mod) + 1.0f;
+      y = (mfix_sin( x + mfix_from_f( peak_offset ) ) *
+         amp_mod ) + mfix_from_f( 1.0f );
+      y_next = (mfix_sin( x_next + mfix_from_f( peak_offset ) ) *
+         amp_mod) + mfix_from_f( 1.0f );
 
       assert( 0 <= y );
 
-      glBegin( GL_TRIANGLES );
-      glNormal3f( 0.75f,           y / 4,      0 );
-      glColor3fv( color );
-      glVertex3f( x,           y, 0 - (depth / 2) ); /* Far Left */
-      glVertex3f( x,           y,  depth / 2 ); /* Near Left */
-      glVertex3f( x_next, y_next,  depth / 2 ); /* Near Right */
+      retro3d_tri_begin( color, 0 );
+      retro3d_vx( x,             y, 0 - (depth / 2), t1,  0 ); /* Far Left */
+      retro3d_vx( x,             y,       depth / 2,  0,  0 ); /* Near Left */
+      retro3d_vx( x_next,   y_next,       depth / 2,  0, t1 ); /* Near Right */
+      retro3d_tri_end();
 
-      glVertex3f( x_next, y_next,  depth / 2 ); /* Near Right */
-      glVertex3f( x_next, y_next, 0 - (depth / 2) ); /* Far Right */
-      glVertex3f( x,           y, 0 - (depth / 2) ); /* Far Left */
-      glEnd();
+      retro3d_tri_begin( color, 0 );
+      retro3d_vx( x_next,   y_next,       depth / 2,  0, t1 ); /* Near Right */
+      retro3d_vx( x_next,   y_next, 0 - (depth / 2), t1, t1 ); /* Far Right */
+      retro3d_vx( x,             y, 0 - (depth / 2), t1,  0 ); /* Far Left */
+      retro3d_tri_end();
    }
 }
 
-void poly_sphere_checker(
-   RETROFLAT_COLOR color1, RETROFLAT_COLOR color2, const float radius
-) {
-   float ang_xy = 0;
-   float ang_xz = 0;
+void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 ) {
+   mfix_t ang_xy = 0;
+   mfix_t ang_xz = 0;
    int even_col = 1;
+   int ct = 0;
 
    /* Generate a sphere using the cos() as X and sin() as Y of angles at 
       * DEMO_SPHERE_INC_XY and DEMO_SPHERE_INC_XZ increments around the
       * origin (0, 0).
       */
-   for(
-      ang_xz = 2 * RETROFLAT_PI ;
-      0 <= ang_xz ;
-      ang_xz -= DEMO_SPHERE_INC_XZ
-   ) {
-      for(
-         ang_xy = 0 ;
-         2 * RETROFLAT_PI > ang_xy ;
-         ang_xy += DEMO_SPHERE_INC_XY
-      ) {
+   for( ang_xz = 2 * MFIX_PI ; 0 <= ang_xz ; ang_xz -= DEMO_SPHERE_INC_XZ ) {
+      for( ang_xy = 0 ; 2 * MFIX_PI > ang_xy ; ang_xy += DEMO_SPHERE_INC_XY ) {
          even_col = even_col ? 0 : 1;
 
          /* Checkerboard pattern. */
@@ -401,147 +395,131 @@ void poly_sphere_checker(
 
          /* Triangle 1 */
          /* TODO: Port retrofp. */
-         glVertex3f( 
-            sin( ang_xy ) * cos( ang_xz ) * radius,
-            cos( ang_xy ) * radius,
-            sin( ang_xy ) * sin( ang_xz ) * radius );
-         glVertex3f( 
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) * cos( ang_xz ) * radius,
-            cos( ang_xy + DEMO_SPHERE_INC_XY ) * radius,
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) * sin( ang_xz ) * radius );
-         glVertex3f( 
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * cos( ang_xz + DEMO_SPHERE_INC_XZ ) * radius,
-            cos( ang_xy + DEMO_SPHERE_INC_XY ) * radius,
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * sin( ang_xz + DEMO_SPHERE_INC_XZ ) * radius );
+
+         printf( "%d: ", ct );
+         retro3d_vx(
+            mfix_mult( mfix_sin( ang_xy ), mfix_cos( ang_xz ) ),
+            mfix_cos( ang_xy ),
+            mfix_mult( mfix_sin( ang_xy ), mfix_sin( ang_xz ) ),
+            0, 0 );
+         printf( "%d: ", ct );
+         retro3d_vx(
+            mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
+               mfix_cos( ang_xz ) ),
+            mfix_cos( ang_xy + DEMO_SPHERE_INC_XY ),
+            mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
+               mfix_sin( ang_xz ) ),
+            0, 0 );
+         printf( "%d: ", ct );
+         retro3d_vx(
+            mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
+               mfix_cos( ang_xz + DEMO_SPHERE_INC_XZ ) ),
+            mfix_cos( ang_xy + DEMO_SPHERE_INC_XY ),
+            mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
+               mfix_sin( ang_xz + DEMO_SPHERE_INC_XZ ) ),
+            0, 0 );
 
          /* Triangle 2 */
-         glVertex3f( 
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * cos( ang_xz + DEMO_SPHERE_INC_XZ ) * radius,
-            cos( ang_xy + DEMO_SPHERE_INC_XY ) * radius,
-            sin( ang_xy + DEMO_SPHERE_INC_XY ) 
-               * sin( ang_xz + DEMO_SPHERE_INC_XZ ) * radius );
-         glVertex3f(
-            sin( ang_xy ) * cos( ang_xz + DEMO_SPHERE_INC_XZ ) * radius,
-            cos( ang_xy ) * radius,
-            sin( ang_xy ) * sin( ang_xz + DEMO_SPHERE_INC_XZ ) * radius );
-         glVertex3f( 
-            sin( ang_xy ) * cos( ang_xz ) * radius,
-            cos( ang_xy ) * radius,
-            sin( ang_xy ) * sin( ang_xz ) * radius );
+         retro3d_vx(
+            mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
+               mfix_cos( ang_xz + DEMO_SPHERE_INC_XZ ) ),
+            mfix_cos( ang_xy + DEMO_SPHERE_INC_XY ),
+            mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
+               mfix_sin( ang_xz + DEMO_SPHERE_INC_XZ ) ),
+            0, 0 );
+         retro3d_vx(
+            mfix_mult( mfix_sin( ang_xy ),
+               mfix_cos( ang_xz + DEMO_SPHERE_INC_XZ ) ),
+            mfix_cos( ang_xy ),
+            mfix_mult( mfix_sin( ang_xy ),
+               mfix_sin( ang_xz + DEMO_SPHERE_INC_XZ ) ),
+            0, 0 );
+         retro3d_vx(
+            mfix_mult( mfix_sin( ang_xy ), mfix_cos( ang_xz ) ),
+            mfix_cos( ang_xy ),
+            mfix_mult( mfix_sin( ang_xy ), mfix_sin( ang_xz ) ),
+            0, 0 );
+         ct++;
 
          retro3d_tri_end();
       }
    }
 }
 
-void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex ) {
-   /*
-   GLenum error = GL_NO_ERROR;
-   */
+void poly_ortho_skybox( RETROFLAT_COLOR color, struct RETROFLAT_BITMAP* tex ) {
+   const mfix_t w = mfix_from_f( 8.0f ),
+      h = mfix_from_f( 6.0f ),
+      d = mfix_from_f( 10.0f );
 
-   glColor3fv( color );
-
-   /* Create a skybox. Note the normals, crucial for making the sides
-      * show up properly in lighting.
-      * This is a frustum shape to enhance its "3D" appearance in ortho
-      * rendering.
-      */
-
-#ifndef RETROGLU_NO_TEXTURES
-   if( NULL != tex ) {
-      maug_mlock( tex->tex.bytes_h, tex->tex.bytes );
-      assert( NULL != tex->tex.bytes );
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
-         RETROANI_TILE_W, RETROANI_TILE_H, 0,
-         GL_RGBA, GL_UNSIGNED_BYTE,
-         tex->tex.bytes ); 
-#if 0
-      glBindTexture( GL_TEXTURE_2D, tex->tex.id );
-#endif
-      /*
-      error = glGetError();
-      assert( GL_NO_ERROR == error );
-      */
-      glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-   }
-#endif /* !RETROGLU_NO_TEXTURES */
-
-   /* TODO: Break into triangles. */
+   /* Create a skybox.This is a frustum shape to enhance its "3D" appearance in
+    * ortho rendering.
+    */
 
    /* Back Face */
-   glBegin( GL_QUADS );
-   glNormal3f(  0, 0, 1.0f );
-   glTexCoord2i(   0,     0 );
-   glVertex3f(  1.0f,  1.0f, -10.0f ); /* Top Right */
-   glTexCoord2i(   1,     0 );
-   glVertex3f( -1.0f,  1.0f, -10.0f ); /* Top Left */
-   glTexCoord2i(   1,     1 );
-   glVertex3f( -1.0f, -1.0f, -10.0f ); /* Bottom Left */
-   glTexCoord2i(   0,     1 );
-   glVertex3f(  1.0f, -1.0f, -10.0f ); /* Bottom Right */
-   glEnd();
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx(  w,  h, -d, 0, 0 );
+   retro3d_vx( -w,  h, -d, 0, 0 );
+   retro3d_vx( -w, -h, -d, 0, 0 );
+   retro3d_tri_end();
+
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx( -w, -h, -d, 0, 0 );
+   retro3d_vx(  w, -h, -d, 0, 0 );
+   retro3d_vx(  w,  h, -d, 0, 0 );
+   retro3d_tri_end();
 
    /* Bottom Face */
-   glBegin( GL_QUADS );
-   glNormal3f(  0, 1.0f, 0 );
-   glVertex3f(  1.0f, -1.0f, -10.0f );
-   glVertex3f( -1.0f, -1.0f, -10.0f );
-   glVertex3f( -2.0f, -2.0f,  10.0f );
-   glVertex3f(  2.0f, -2.0f,  10.0f );
-   glEnd();
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx(      w,     -h, -d, 0, 0 );
+   retro3d_vx(     -w,     -h, -d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 * -h, d, 0, 0 );
+   retro3d_tri_end();
+
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx( 2 * -w, 2 * -h, d, 0, 0 );
+   retro3d_vx( 2 *  w, 2 * -h, d, 0, 0 );
+   retro3d_vx(      w,     -h, d, 0, 0 );
+   retro3d_tri_end();
 
    /* Right Face */
-   glBegin( GL_QUADS );
-   glNormal3f(  -1.0f, 0, 0 );
-   glTexCoord2i(   0,     0 );
-   glVertex3f(  2.0f,  2.0f,  10.0f );
-   glTexCoord2i(   1,     0 );
-   glVertex3f(  1.0f,  1.0f, -10.0f );
-   glTexCoord2i(   1,     1 );
-   glVertex3f(  1.0f, -1.0f, -10.0f );
-   glTexCoord2i(   0,     1 );
-   glVertex3f(  2.0f, -2.0f,  10.0f );
-   glEnd();
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
+   retro3d_vx(      w,      h, -d, 0, 0 );
+   retro3d_vx(      w,     -h, -d, 0, 0 );
+   retro3d_tri_end();
+
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx(      w,     -h, -d, 0, 0 );
+   retro3d_vx( 2 *  w, 2 * -h,  d, 0, 0 );
+   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
+   retro3d_tri_end();
 
    /* Top Face */
-   glBegin( GL_QUADS );
-   glNormal3f(  0, -1.0f, 0 );
-   glVertex3f(  2.0f,  2.0f,  10.0f );
-   glVertex3f( -2.0f,  2.0f,  10.0f );
-   glVertex3f( -1.0f,  1.0f, -10.0f );
-   glVertex3f(  1.0f,  1.0f, -10.0f );
-   glEnd();
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 *  h,  d, 0, 0 );
+   retro3d_vx(     -w,      h, -d, 0, 0 );
+   retro3d_tri_end();
+
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx(     -w,      h, -d, 0, 0 );
+   retro3d_vx(      w,      h, -d, 0, 0 );
+   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
+   retro3d_tri_end();
 
    /* Left Face */
-   glBegin( GL_QUADS );
-   glNormal3f(  1.0f, 0, 0 );
-   glTexCoord2i(   0,     0 );
-   glVertex3f( -1.0f,  1.0f, -10.0f );
-   glTexCoord2i(   1,     0 );
-   glVertex3f( -2.0f,  2.0f,  10.0f );
-   glTexCoord2i(   1,     1 );
-   glVertex3f( -2.0f, -2.0f,  10.0f );
-   glTexCoord2i(   0,     1 );
-   glVertex3f( -1.0f, -1.0f, -10.0f );
-   glEnd();
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx(     -w,      h, -d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 *  h,  d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 * -h,  d, 0, 0 );
+   retro3d_tri_end();
 
-#ifndef RETROGLU_NO_TEXTURES
-   if( NULL != tex ) {
-#if 0
-      glBindTexture( GL_TEXTURE_2D, 0 );
-#endif
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
-         0, 0, 0,
-         GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+   retro3d_tri_begin( color, 0 );
+   retro3d_vx( 2 * -w, 2 * -h,  d, 0, 0 );
+   retro3d_vx(     -w,     -h, -d, 0, 0 );
+   retro3d_vx(     -w,      h, -d, 0, 0 );
+   retro3d_tri_end();
 
-      maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
-   }
-#endif /* !RETROGLU_NO_TEXTURES */
 }
 
 void poly_water_skybox() {

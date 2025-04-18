@@ -151,6 +151,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
    struct RETRO3D_PROJ_ARGS args;
+   MERROR_RETVAL retval = MERROR_OK;
 
    if( !data->base.init ) {
 
@@ -160,9 +161,14 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       args.far_plane = 10.0f;
       retro3d_init_projection( &args );
 
+      retro3d_check_errors( "dump" );
+      retval = retro3d_texture_load_bitmap(
+         "assets/light_water.bmp", &(data->tex_cube), 0 );
+      maug_cleanup_if_not_ok();
+
       data->base.rotate_x = 10;
       data->base.rotate_y = 10;
-      data->base.translate_z = mfix( -5.0f );
+      data->base.translate_z = mfix_from_f( -5.0f );
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -189,10 +195,17 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    retro3d_scene_translate( 0, 0, data->base.translate_z );
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
 
+   retval = retro3d_texture_activate( &(data->tex_cube), 0 );
+   maug_cleanup_if_not_ok();
+
    poly_cube(
       100,
       RETROFLAT_COLOR_RED, RETROFLAT_COLOR_GREEN, RETROFLAT_COLOR_BLUE,
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_CYAN, RETROFLAT_COLOR_MAGENTA );
+
+   retval = retro3d_texture_activate(
+      &(data->tex_cube), RETRO3D_TEX_FLAG_DEACTIVATE );
+   maug_cleanup_if_not_ok();
 
    demo_draw_fps();
 
@@ -200,6 +213,12 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    retroflat_draw_release( NULL );
 
    data->base.rotate_y += 5;
+
+cleanup:
+
+   assert( MERROR_OK == retval );
+
+   return;
 }
 
 /* === */
@@ -208,43 +227,24 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
    struct RETRO3D_PROJ_ARGS args;
-   const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
 
    if( !data->base.init ) {
 
-#ifndef DEMOS_NO_LISTS
-      /* Create sphere display list. */
-      data->sphere_list = glGenLists( 1 );
-      glNewList( data->sphere_list, GL_COMPILE );
-      poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE, 1.0f );
-      glEndList();
-
-      /* Create Skybox display list. */
-      data->skybox_list = glGenLists( 1 );
-      glNewList( data->skybox_list, GL_COMPILE );
-      poly_ortho_skybox( RETROGLU_COLOR_WHITE, NULL );
-      glEndList();
-#endif /* DEMOS_NO_LISTS */
-
+      maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
       args.proj = RETRO3D_PROJ_ORTHO;
       args.rzoom = 10.0f;
       args.near_plane = -100.0f;
       args.far_plane = 100.0f;
       retro3d_init_projection( &args );
 
-#ifndef DEMOS_NO_LIGHTS
-      glEnable( GL_LIGHT0 );
-      glEnable( GL_COLOR_MATERIAL );
-#endif /* !DEMOS_NO_LIGHTS */
-
       /* Start spin. */
       data->rotate_y_inc = 5;
 
       /* Start bounce. */
-      data->translate_x_inc = 0.2f;
-      data->translate_y_inc = 0.2f;
+      data->translate_x_inc = mfix_from_f( 0.2f );
+      data->translate_y_inc = mfix_from_f( 0.2f );
 
-      data->base.translate_z = -5.0f;
+      data->base.translate_z = mfix_from_f( -5.0f );
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -291,60 +291,40 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    /* Draw */
 
    retroflat_draw_lock( NULL );
+   retro3d_scene_init();
 
-   glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-#ifndef DEMOS_NO_LIGHTS
-   glEnable( GL_NORMALIZE );
-   glEnable( GL_LIGHTING );
-   glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
-#endif /* !DEMOS_NO_LIGHTS */
-
-   glPushMatrix();
-
-   glScalef( 8.0f, 6.0f, 1.0f );
-
-#ifdef DEMOS_NO_LISTS
-   poly_ortho_skybox( RETROGLU_COLOR_WHITE, NULL );
-#else
-   glCallList( data->skybox_list );
-#endif /* DEMOS_NO_LISTS */
-
-   glPopMatrix();
+   poly_ortho_skybox( RETROFLAT_COLOR_WHITE, NULL );
 
    /* Draw sphere from display list. */
-
-   glPushMatrix();
 
    retro3d_scene_translate(
       data->base.translate_x, data->base.translate_y, data->base.translate_z );
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
-
-#ifdef DEMOS_NO_LISTS
-   poly_sphere_checker( RETROGLU_COLOR_RED, RETROGLU_COLOR_WHITE, 1.0f );
-#else
-   glCallList( data->sphere_list );
-#endif /* DEMOS_NO_LISTS */
-
-   glPopMatrix();
+   poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE );
 
    demo_draw_fps();
 
+   retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
    data->base.rotate_y += data->rotate_y_inc;
 
    /* X bounce. */
    data->base.translate_x += data->translate_x_inc;
-   if( 9 <= data->base.translate_x || -9 >= data->base.translate_x ) {
+   if(
+      mfix_from_f( 9.0f ) <= data->base.translate_x ||
+      mfix_from_f( -9.0f ) >= data->base.translate_x
+   ) {
       data->translate_x_inc *= -1;
       data->base.translate_x += data->translate_x_inc;
    }
 
    /* Y bounce. */
    data->base.translate_y += data->translate_y_inc;
-   if( 6 <= data->base.translate_y || -6 >= data->base.translate_y ) {
+   if(
+      mfix_from_f( 6.0f ) <= data->base.translate_y ||
+      mfix_from_f( -6.0f ) >= data->base.translate_y
+   ) {
       data->translate_y_inc *= -1;
       data->base.translate_y += data->translate_y_inc;
    }
@@ -364,7 +344,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 
       data->base.rotate_y = 10;
       data->base.rotate_z = 0;
-      data->base.translate_z = mfix( -5.0f );
+      data->base.translate_z = mfix_from_f( -5.0f );
 
       /*
       assert( 0 < data->obj.vertices_sz );
@@ -455,7 +435,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    retroflat_draw_lock( NULL );
    retro3d_scene_init();
 
-   /* retro3d_scene_scale( mfix( 0.5f ), mfix( 0.5f ), mfix( 0.5f ) ); */
+   /* retro3d_scene_scale( mfix_from_f( 0.5f ), mfix_from_f( 0.5f ), mfix_from_f( 0.5f ) ); */
    retro3d_scene_translate(
       data->base.translate_x, data->base.translate_y, data->base.translate_z );
 
@@ -621,7 +601,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       /* Compensate for the cube being Y-centered on zero. */
       glTranslatef( 0, 0.5f, 0 );
       poly_cube(
-         1.0f,
+         1,
          RETROFLAT_COLOR_RED, RETROFLAT_COLOR_GREEN, RETROFLAT_COLOR_BLUE,
          RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_CYAN, RETROFLAT_COLOR_MAGENTA );
       glTranslatef( 0, -0.5f, 0 );
@@ -656,7 +636,7 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
 
       /* Compensate for the sphere being Y-centered on zero. */
       glTranslatef( 0, 0.5f, 0 );
-      poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE, 0.5f );
+      poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE );
       glTranslatef( 0, -0.5f, 0 );
       glEndList();
 
@@ -940,10 +920,15 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
    struct RETRO3D_PROJ_ARGS args;
-   const float light_pos[] = { 6.0f, 6.0f, 10.0f, 1.0f };
+   MERROR_RETVAL retval = MERROR_OK;
 
    if( 0 == data->base.init ) {
 
+      retval = retro3d_texture_load_bitmap(
+         "assets/light_water.bmp", &(data->tex_water), 0 );
+      maug_cleanup_if_not_ok();
+
+      maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
       args.proj = RETRO3D_PROJ_FRUSTUM;
       args.rzoom = 1.0f;
       /* args.near_plane = 0.5f; */
@@ -951,39 +936,17 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       args.far_plane = 100.0f;
       retro3d_init_projection( &args );
 
-#ifndef DEMOS_NO_LIGHTS
-      glEnable( GL_LIGHT0 );
-      glEnable( GL_COLOR_MATERIAL );
-#endif /* !DEMOS_NO_LIGHTS */
-
-#ifndef DEMOS_NO_LISTS
-      /* Setup the skybox (such as it is). */
-      data->skybox_list = glGenLists( 1 );
-      glNewList( data->skybox_list, GL_COMPILE );
-      poly_water_skybox();
-      glEndList();
-#endif /* !DEMOS_NO_LISTS */
-
       /* TODO: Add CLI option to select pattern. */
-      data->pattern = 1;
+      data->pattern = 0;
       data->freq_mod = 7.0f;
       data->amp_mod = 0.1f;
       if( 1 == data->pattern ) {
-         data->base.translate_y = mfix( -4.0f );
-         data->base.translate_z = mfix( -4.0f );
-
-#ifndef DEMOS_NO_LISTS
-         /* Setup well list. */
-         data->well_list = glGenLists( 1 );
-         glNewList( data->well_list, GL_COMPILE );
-         poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS + 0.75f,
-            DEMO_WATER_RING_RADIUS, 2.0f, DEMO_WATER_RING_A_ITER );
-         glEndList();
-#endif /* !DEMOS_NO_LISTS */
+         data->base.translate_y = mfix_from_f( -4.0f );
+         data->base.translate_z = mfix_from_f( -4.0f );
 
       } else {
-         data->base.translate_y = -8.0f;
-         data->base.translate_z = -4.0f;
+         data->base.translate_y = mfix_from_f( -8.0f );
+         data->base.translate_z = mfix_from_f( -4.0f );
          data->base.rotate_x = 20;
       }
 
@@ -1000,12 +963,12 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    switch( input ) {
    case RETROFLAT_KEY_UP:
-      data->base.translate_y += mfix( 0.1f );
+      data->base.translate_y += mfix_from_f( 0.1f );
       debug_printf( 3, "ty: %d", data->base.translate_y );
       break;
 
    case RETROFLAT_KEY_DOWN:
-      data->base.translate_y -= mfix( 0.1f );
+      data->base.translate_y -= mfix_from_f( 0.1f );
       debug_printf( 3, "ty: %d", data->base.translate_y );
       break;
 
@@ -1049,62 +1012,53 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    /* Draw */
 
    retroflat_draw_lock( NULL );
-
-   glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-#ifndef DEMOS_NO_LIGHTS
-   glEnable( GL_NORMALIZE );
-   glEnable( GL_LIGHTING );
-   glLightfv( GL_LIGHT0, GL_POSITION, light_pos );
-#endif /* !DEMOS_NO_LIGHTS */
-
-   /* Create a new matrix to apply transformations for this frame. */
-   glPushMatrix();
+   retro3d_scene_init();
 
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
    retro3d_scene_translate(
       data->base.translate_x, data->base.translate_y, data->base.translate_z );
 
-#ifdef DEMOS_NO_LISTS
    poly_water_skybox();
-#else
-   /* Use the same skybox for either mode. */
-   glCallList( data->skybox_list );
-#endif /* DEMOS_NO_LISTS */
 
    if( 0 == data->pattern ) {
 
+      retval = retro3d_texture_activate( &(data->tex_water), 0 );
+      maug_cleanup_if_not_ok();
+
       poly_water_sheet(
-         RETROGLU_COLOR_CYAN, DEMO_WATER_SHEET_WIDTH, DEMO_WATER_SHEET_DEPTH,
+         &(data->tex_water),
+         RETROFLAT_COLOR_WHITE, DEMO_WATER_SHEET_WIDTH, DEMO_WATER_SHEET_DEPTH,
          DEMO_WATER_SHEET_X_ITER,
          data->freq_mod, data->amp_mod, data->peak_offset );
 
+      retval = retro3d_texture_activate(
+         &(data->tex_water), RETRO3D_TEX_FLAG_DEACTIVATE );
+      maug_cleanup_if_not_ok();
+
    } else {
 
-#ifdef DEMOS_NO_LISTS
-   poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS + 0.75f,
-      DEMO_WATER_RING_RADIUS, 2.0f, DEMO_WATER_RING_A_ITER );
-#else
-      /* Only the well gets drawn from a list since it's static. */
-      glCallList( data->well_list );
-#endif /* DEMOS_NO_LISTS */
+      poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS + 0.75f,
+         DEMO_WATER_RING_RADIUS, 2.0f, DEMO_WATER_RING_A_ITER );
 
       poly_water_ring(
          RETROGLU_COLOR_CYAN, 1.0f,
          DEMO_WATER_RING_RADIUS, DEMO_WATER_RING_R_ITER,
          DEMO_WATER_RING_A_ITER, 0.3f, data->freq_mod, data->amp_mod,
          data->peak_offset );
-
    }
-
-   glPopMatrix();
 
    demo_draw_fps();
 
+   retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
    data->peak_offset -= 0.1f;
+
+cleanup:
+
+   assert( MERROR_OK == retval );
+
+   return;
 }
 
 void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
@@ -1120,7 +1074,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
       debug_printf( 1, "initializing fire cube..." );
 
-      data->base.translate_z = mfix( -5.0f );
+      data->base.translate_z = mfix_from_f( -5.0f );
 
       data->bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
       assert( NULL != data->bmp_fire );
@@ -1184,19 +1138,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
       /* Create the cube. */
 
-#if 0
-#ifndef DEMOS_NO_LISTS
-      data->cube_list = glGenLists( 1 );
-      glNewList( data->cube_list, GL_COMPILE );
-      poly_cube(
-         RETROGLU_COLOR_RED, RETROFLAT_COLOR_GREEN, RETROFLAT_COLOR_BLUE,
-         RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_CYAN, RETROFLAT_COLOR_MAGENTA );
-      glEndList();
-#endif /* DEMOS_NO_LISTS */
-#endif
-
       assert( NULL != data->bmp_fire->tex.bytes_h );
 
+      maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
       args.proj = RETRO3D_PROJ_FRUSTUM;
       args.rzoom = 0.5f;
       args.near_plane = 0.5f;
@@ -1252,14 +1196,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    glPushMatrix();
 
-#ifndef DEMOS_NO_LIGHTS
-   glEnable( GL_NORMALIZE );
-#endif /* DEMOS_NO_LIGHTS */
-
-   glPushMatrix();
-   glScalef( 8.0f, 6.0f, 1.0f );
-   poly_ortho_skybox( RETROGLU_COLOR_WHITE, data->bmp_snow );
-   glPopMatrix();
+   poly_ortho_skybox( RETROFLAT_COLOR_WHITE, data->bmp_snow );
 
    retro3d_scene_translate( 0, 0, data->base.translate_z );
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );

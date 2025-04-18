@@ -22,12 +22,11 @@ void poly_water_ring(
    const float ang_iter, const float normal_mod,
    float freq_mod, float amp_mod, float peak_offset );
 void poly_water_sheet(
-   const float color[],
-   const float width, const float depth, const float x_iter,
+   struct RETROFLAT_BITMAP* tex, RETROFLAT_COLOR color,
+   const mfix_t width, const mfix_t depth, const mfix_t x_iter,
    float freq_mod, float amp_mod, float peak_offset );
-void poly_sphere_checker(
-   RETROFLAT_COLOR color1, RETROFLAT_COLOR color2, const float radius );
-void poly_ortho_skybox( const float* color, struct RETROFLAT_BITMAP* tex );
+void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 );
+void poly_ortho_skybox( RETROFLAT_COLOR color, struct RETROFLAT_BITMAP* tex );
 void poly_water_skybox();
 
 #endif /* !POLY_H */
