@@ -5,8 +5,22 @@
 #include <maug.h>
 #include <retroflt.h>
 #include <retroani.h>
+#include <retrofnt.h>
+#include <retrogxc.h>
+#include <retrogui.h>
+#include <retrowin.h>
 #include <retroglu.h>
 #include <GL/gl.h>
+
+#define DEMO_WIN_W 140
+#define DEMO_WIN_H 40
+
+#define DEMO_IDC_WIN 100
+
+#define DEMO_IDC_TITLE_1 101
+
+#define DEMO_TEX_WATER "assets/light_water.bmp"
+#define DEMO_TEX_TILE "assets/tile_1.bmp"
 
 #define DEMOS_OVERLAY_SZ_MAX 64
 
@@ -14,7 +28,7 @@
 
 #define DEMO_ZOOM_INC 0.1f
 #define DEMO_TRANSLATE_INC 0.1f
-#define DEMO_ROTATE_INC 10
+#define DEMO_ROTATE_INC mfix_from_i( 10 )
 
 #define DEMO_DEFAULT_OBJ "metalbug.obj"
 
@@ -60,14 +74,16 @@ struct DEMO_BASE {
    mfix_t translate_x;
    mfix_t translate_y;
    mfix_t translate_z;
-   int rotate_x;
-   int rotate_y;
-   int rotate_z;
+   mfix_t rotate_x;
+   mfix_t rotate_y;
+   mfix_t rotate_z;
+   struct RETROGUI gui;
+   struct MDATA_VECTOR win;
 };
 
 struct DEMO_CUBE_DATA {
    struct DEMO_BASE base;
-   struct RETROFLAT_BITMAP tex_cube;
+   struct RETROFLAT_3DTEX tex_cube;
 };
 
 struct DEMO_SPHERE_DATA {
@@ -75,6 +91,7 @@ struct DEMO_SPHERE_DATA {
    int rotate_x_inc;
    int rotate_y_inc;
    int rotate_z_inc;
+   struct RETROFLAT_3DTEX tex_walls;
    mfix_t translate_x_inc;
    mfix_t translate_y_inc;
    GLint sphere_list;
@@ -117,7 +134,7 @@ struct DEMO_WATER_DATA {
    float freq_mod;
    float amp_mod;
    float peak_offset;
-   struct RETROFLAT_BITMAP tex_water;
+   struct RETROFLAT_3DTEX tex_water;
 };
 
 struct DEMO_RETROANI_DATA {
@@ -126,8 +143,8 @@ struct DEMO_RETROANI_DATA {
    GLint cube_list;
    int8_t idx_fire;
    int8_t idx_snow;
-   struct RETROFLAT_BITMAP* bmp_fire;
-   struct RETROFLAT_BITMAP* bmp_snow;
+   struct RETROFLAT_3DTEX* bmp_fire;
+   struct RETROFLAT_3DTEX* bmp_snow;
    uint32_t next_rotate_ms;
 };
 
@@ -160,6 +177,8 @@ MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sp
    void draw_ ## name ## _iter( data_struct* data );
 
 DEMOS_LIST( DEMOS_LIST_PROTOS )
+
+MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base );
 
 #ifdef DEMOS_C
 

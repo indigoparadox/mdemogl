@@ -16,7 +16,7 @@ void poly_cube(
 /* === */
 
 void poly_cube_tex(
-   struct RETROFLAT_BITMAP* tex,
+   struct RETROFLAT_3DTEX* tex,
    int scale,
    RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
    RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
@@ -320,7 +320,7 @@ void poly_water_ring(
 }
 
 void poly_water_sheet(
-   struct RETROFLAT_BITMAP* tex, RETROFLAT_COLOR color,
+   struct RETROFLAT_3DTEX* tex, RETROFLAT_COLOR color,
    const mfix_t width, const mfix_t depth, const mfix_t x_iter,
    float freq_mod, float amp_mod, float peak_offset
 ) {
@@ -396,13 +396,11 @@ void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 ) {
          /* Triangle 1 */
          /* TODO: Port retrofp. */
 
-         printf( "%d: ", ct );
          retro3d_vx(
             mfix_mult( mfix_sin( ang_xy ), mfix_cos( ang_xz ) ),
             mfix_cos( ang_xy ),
             mfix_mult( mfix_sin( ang_xy ), mfix_sin( ang_xz ) ),
             0, 0 );
-         printf( "%d: ", ct );
          retro3d_vx(
             mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
                mfix_cos( ang_xz ) ),
@@ -410,7 +408,6 @@ void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 ) {
             mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
                mfix_sin( ang_xz ) ),
             0, 0 );
-         printf( "%d: ", ct );
          retro3d_vx(
             mfix_mult( mfix_sin( ang_xy + DEMO_SPHERE_INC_XY ),
                mfix_cos( ang_xz + DEMO_SPHERE_INC_XZ ) ),
@@ -446,7 +443,9 @@ void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 ) {
    }
 }
 
-void poly_ortho_skybox( RETROFLAT_COLOR color, struct RETROFLAT_BITMAP* tex ) {
+void poly_ortho_skybox(
+   struct RETROFLAT_3DTEX* tex, RETROFLAT_COLOR color1, RETROFLAT_COLOR color2
+) {
    const mfix_t w = mfix_from_f( 8.0f ),
       h = mfix_from_f( 6.0f ),
       d = mfix_from_f( 10.0f );
@@ -456,65 +455,65 @@ void poly_ortho_skybox( RETROFLAT_COLOR color, struct RETROFLAT_BITMAP* tex ) {
     */
 
    /* Back Face */
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color1, 0 );
    retro3d_vx(  w,  h, -d, 0, 0 );
    retro3d_vx( -w,  h, -d, 0, 0 );
    retro3d_vx( -w, -h, -d, 0, 0 );
    retro3d_tri_end();
 
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color1, 0 );
    retro3d_vx( -w, -h, -d, 0, 0 );
    retro3d_vx(  w, -h, -d, 0, 0 );
    retro3d_vx(  w,  h, -d, 0, 0 );
    retro3d_tri_end();
 
    /* Bottom Face */
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color1, 0 );
    retro3d_vx(      w,     -h, -d, 0, 0 );
    retro3d_vx(     -w,     -h, -d, 0, 0 );
    retro3d_vx( 2 * -w, 2 * -h, d, 0, 0 );
    retro3d_tri_end();
 
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color1, 0 );
    retro3d_vx( 2 * -w, 2 * -h, d, 0, 0 );
    retro3d_vx( 2 *  w, 2 * -h, d, 0, 0 );
    retro3d_vx(      w,     -h, d, 0, 0 );
    retro3d_tri_end();
 
    /* Right Face */
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color1, 0 );
    retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
    retro3d_vx(      w,      h, -d, 0, 0 );
    retro3d_vx(      w,     -h, -d, 0, 0 );
    retro3d_tri_end();
 
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color1, 0 );
    retro3d_vx(      w,     -h, -d, 0, 0 );
    retro3d_vx( 2 *  w, 2 * -h,  d, 0, 0 );
    retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
    retro3d_tri_end();
 
    /* Top Face */
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color2, 0 );
    retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
    retro3d_vx( 2 * -w, 2 *  h,  d, 0, 0 );
    retro3d_vx(     -w,      h, -d, 0, 0 );
    retro3d_tri_end();
 
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color2, 0 );
    retro3d_vx(     -w,      h, -d, 0, 0 );
    retro3d_vx(      w,      h, -d, 0, 0 );
    retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
    retro3d_tri_end();
 
    /* Left Face */
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color2, 0 );
    retro3d_vx(     -w,      h, -d, 0, 0 );
    retro3d_vx( 2 * -w, 2 *  h,  d, 0, 0 );
    retro3d_vx( 2 * -w, 2 * -h,  d, 0, 0 );
    retro3d_tri_end();
 
-   retro3d_tri_begin( color, 0 );
+   retro3d_tri_begin( color2, 0 );
    retro3d_vx( 2 * -w, 2 * -h,  d, 0, 0 );
    retro3d_vx(     -w,     -h, -d, 0, 0 );
    retro3d_vx(     -w,      h, -d, 0, 0 );

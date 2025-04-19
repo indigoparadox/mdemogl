@@ -107,24 +107,24 @@ void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
 #endif
 }
 
-void demo_dump_tex( struct RETROFLAT_BITMAP* tex_bmp ) {
+void demo_dump_tex( struct RETROFLAT_3DTEX* tex_bmp ) {
    size_t x, y;
 
    printf( "\n" );
-   for( y = 0 ; tex_bmp->tex.h > y ; y++ ) {
-      for( x = 0 ; tex_bmp->tex.w > x ; x++ ) {
+   for( y = 0 ; tex_bmp->h > y ; y++ ) {
+      for( x = 0 ; tex_bmp->w > x ; x++ ) {
          printf( "%02x|",
-            tex_bmp->tex.bytes[
-               ((y * tex_bmp->tex.w) * 4) + (x * 4)] );
+            tex_bmp->bytes[
+               ((y * tex_bmp->w) * 4) + (x * 4)] );
          printf( "%02x|",
-            tex_bmp->tex.bytes[
-               ((y * tex_bmp->tex.w) * 4) + (x * 4) + 1] );
+            tex_bmp->bytes[
+               ((y * tex_bmp->w) * 4) + (x * 4) + 1] );
          printf( "%02x|",
-            tex_bmp->tex.bytes[
-               ((y * tex_bmp->tex.w) * 4) + (x * 4) + 2] );
+            tex_bmp->bytes[
+               ((y * tex_bmp->w) * 4) + (x * 4) + 2] );
          printf( "%02x ",
-            tex_bmp->tex.bytes[
-               ((y * tex_bmp->tex.w) * 4) + (x * 4) + 3] );
+            tex_bmp->bytes[
+               ((y * tex_bmp->w) * 4) + (x * 4) + 3] );
       }
       printf( "\n" );
    }
@@ -163,11 +163,11 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
 
       retro3d_check_errors( "dump" );
       retval = retro3d_texture_load_bitmap(
-         "assets/light_water.bmp", &(data->tex_cube), 0 );
+         DEMO_TEX_WATER, &(data->tex_cube), 0 );
       maug_cleanup_if_not_ok();
 
-      data->base.rotate_x = 10;
-      data->base.rotate_y = 10;
+      data->base.rotate_x = mfix_from_i( 10 );
+      data->base.rotate_y = mfix_from_i( 10 );
       data->base.translate_z = mfix_from_f( -5.0f );
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
@@ -227,6 +227,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
    struct RETRO3D_PROJ_ARGS args;
+   MERROR_RETVAL retval = MERROR_OK;
 
    if( !data->base.init ) {
 
@@ -237,14 +238,21 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       args.far_plane = 100.0f;
       retro3d_init_projection( &args );
 
+      retval = retro3d_texture_load_bitmap(
+         DEMO_TEX_TILE, &(data->tex_walls), 0 );
+      maug_cleanup_if_not_ok();
+
       /* Start spin. */
-      data->rotate_y_inc = 5;
+      data->rotate_y_inc = mfix_from_i( 5 );
 
       /* Start bounce. */
       data->translate_x_inc = mfix_from_f( 0.2f );
       data->translate_y_inc = mfix_from_f( 0.2f );
 
       data->base.translate_z = mfix_from_f( -5.0f );
+
+      retval = demo_setup_win( &(data->base) );
+      maug_cleanup_if_not_ok();
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -269,12 +277,12 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       break;
 
    case RETROFLAT_KEY_UP:
-      data->base.rotate_x += 10;
+      data->base.rotate_x += mfix_from_i( 10 );
       debug_printf( 1, "rotate_x: %d", data->base.rotate_x );
       break;
 
    case RETROFLAT_KEY_DOWN:
-      data->base.rotate_x -= 10;
+      data->base.rotate_x -= mfix_from_i( 10 );
       debug_printf( 1, "rotate_x: %d", data->base.rotate_x );
       break;
 
@@ -293,7 +301,12 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    retroflat_draw_lock( NULL );
    retro3d_scene_init();
 
-   poly_ortho_skybox( RETROFLAT_COLOR_WHITE, NULL );
+   /* retval = retro3d_texture_activate( &(data->tex_walls), 0 ); */
+   poly_ortho_skybox( NULL, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_GRAY );
+   /* retval = retro3d_texture_activate(
+      &(data->tex_walls), RETRO3D_TEX_FLAG_DEACTIVATE ); */
+
+   /* retro3d_draw_window( &(data->tex_walls), 10, 10 ); */
 
    /* Draw sphere from display list. */
 
@@ -303,6 +316,8 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE );
 
    demo_draw_fps();
+
+   retro3dw_redraw_win_stack( &(data->base.win) );
 
    retro3d_scene_complete();
    retroflat_draw_release( NULL );
@@ -328,6 +343,12 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->translate_y_inc *= -1;
       data->base.translate_y += data->translate_y_inc;
    }
+
+cleanup:
+
+   assert( MERROR_OK == retval );
+
+   return;
 }
 
 #ifndef DEMOS_NO_FILES
@@ -342,7 +363,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       retval = retro3dp_parse_obj_file( g_demo_obj_name, NULL, &(data->obj) );
       maug_cleanup_if_not_ok();
 
-      data->base.rotate_y = 10;
+      data->base.rotate_y = mfix_from_i( 10 );
       data->base.rotate_z = 0;
       data->base.translate_z = mfix_from_f( -5.0f );
 
@@ -448,7 +469,7 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
    retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
-   data->base.rotate_y += 5;
+   data->base.rotate_y += mfix_from_i( 5 );
 
 cleanup:
 
@@ -898,15 +919,30 @@ void draw_sprite_iter( struct DEMO_SPRITE_DATA* data ) {
    }
 
    /* Rotate a little bit with each frame if we're rotating. */
-   if( 0 < data->sprite.rotate_y && 180 > data->sprite.rotate_y ) {
+   if(
+      0 < data->sprite.rotate_y &&
+      mfix_from_i( 180 ) > data->sprite.rotate_y
+   ) {
       data->sprite.rotate_y += DEMO_ROTATE_INC;
-   } else if( 180 < data->sprite.rotate_y && 360 > data->sprite.rotate_y ) {
+   } else if(
+      mfix_from_i( 180 ) < data->sprite.rotate_y &&
+      mfix_from_i( 360 ) > data->sprite.rotate_y
+   ) {
       data->sprite.rotate_y += DEMO_ROTATE_INC;
-   } else if( 0 > data->sprite.rotate_y && -180 < data->sprite.rotate_y ) {
+   } else if(
+      0 > data->sprite.rotate_y &&
+      mfix_from_i( -180 ) < data->sprite.rotate_y
+   ) {
       data->sprite.rotate_y -= DEMO_ROTATE_INC;
-   } else if( -180 > data->sprite.rotate_y && -360 < data->sprite.rotate_y ) {
+   } else if(
+      mfix_from_i( -180 ) > data->sprite.rotate_y &&
+      mfix_from_i( -360 ) < data->sprite.rotate_y
+   ) {
       data->sprite.rotate_y -= DEMO_ROTATE_INC;
-   } else if( 360 == data->sprite.rotate_y || -360 == data->sprite.rotate_y ) {
+   } else if(
+      mfix_from_i( 360 ) == data->sprite.rotate_y ||
+      mfix_from_i( -360 ) == data->sprite.rotate_y
+   ) {
       data->sprite.rotate_y = 0;
    }
 
@@ -925,7 +961,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    if( 0 == data->base.init ) {
 
       retval = retro3d_texture_load_bitmap(
-         "assets/light_water.bmp", &(data->tex_water), 0 );
+         DEMO_TEX_WATER, &(data->tex_water), 0 );
       maug_cleanup_if_not_ok();
 
       maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
@@ -947,7 +983,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       } else {
          data->base.translate_y = mfix_from_f( -8.0f );
          data->base.translate_z = mfix_from_f( -4.0f );
-         data->base.rotate_x = 20;
+         data->base.rotate_x = mfix_from_i( 20 );
       }
 
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
@@ -1076,35 +1112,35 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
       data->base.translate_z = mfix_from_f( -5.0f );
 
-      data->bmp_fire = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
+      data->bmp_fire = calloc( 1, sizeof( struct RETROFLAT_3DTEX ) );
       assert( NULL != data->bmp_fire );
-      retval = retroflat_create_bitmap(
+      retval = retro3d_texture_create(
          RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_fire, 0 );
       maug_cleanup_if_not_ok();
 
-      assert( RETROANI_TILE_W == retroflat_bitmap_w( data->bmp_fire ) );
-      assert( RETROANI_TILE_H == retroflat_bitmap_h( data->bmp_fire ) );
-      assert( NULL != data->bmp_fire->tex.bytes_h );
+      assert( RETROANI_TILE_W == retro3d_texture_w( data->bmp_fire ) );
+      assert( RETROANI_TILE_H == retro3d_texture_h( data->bmp_fire ) );
+      assert( NULL != data->bmp_fire->bytes_h );
 
-      retval = retroflat_draw_lock( data->bmp_fire );
+      retval = retro3d_texture_lock( data->bmp_fire );
       maug_cleanup_if_not_ok();
 
-      assert( NULL != data->bmp_fire->tex.bytes );
+      assert( NULL != data->bmp_fire->bytes );
 
-      retroflat_rect(
+      retrosoft_rect(
          data->bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
          RETROANI_TILE_W, RETROANI_TILE_H,
          RETROFLAT_FLAGS_FILL );
-      retroflat_draw_release( data->bmp_fire );
+      retro3d_texture_release( data->bmp_fire );
 
-      assert( NULL != data->bmp_fire->tex.bytes_h );
+      assert( NULL != data->bmp_fire->bytes_h );
 
       data->idx_fire = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
          RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
          0, 0,
-         retroflat_bitmap_w( data->bmp_fire ),
-         retroflat_bitmap_h( data->bmp_fire ) );
+         retro3d_texture_w( data->bmp_fire ),
+         retro3d_texture_h( data->bmp_fire ) );
 
       retroani_set_target( data->animations, data->idx_fire, data->bmp_fire );
 
@@ -1112,33 +1148,33 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
       debug_printf( 1, "initializing snow cube..." );
 
-      data->bmp_snow = calloc( 1, sizeof( struct RETROFLAT_BITMAP ) );
+      data->bmp_snow = calloc( 1, sizeof( struct RETROFLAT_3DTEX ) );
       assert( NULL != data->bmp_snow );
-      retval = retroflat_create_bitmap(
+      retval = retro3d_texture_create(
          RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_snow, 0 );
       maug_cleanup_if_not_ok();
 
-      retval = retroflat_draw_lock( data->bmp_snow );
+      retval = retro3d_texture_lock( data->bmp_snow );
       maug_cleanup_if_not_ok();
 
-      retroflat_rect(
+      retrosoft_rect(
          data->bmp_snow, RETROFLAT_COLOR_BLACK, 0, 0,
          RETROANI_TILE_W, RETROANI_TILE_H,
          RETROFLAT_FLAGS_FILL );
-      retroflat_draw_release( data->bmp_snow );
+      retro3d_texture_release( data->bmp_snow );
 
       data->idx_snow = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
          RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
          0, 0,
-         retroflat_bitmap_w( data->bmp_snow ),
-         retroflat_bitmap_h( data->bmp_snow ) );
+         retro3d_texture_w( data->bmp_snow ),
+         retro3d_texture_h( data->bmp_snow ) );
 
       retroani_set_target( data->animations, data->idx_snow, data->bmp_snow );
 
       /* Create the cube. */
 
-      assert( NULL != data->bmp_fire->tex.bytes_h );
+      assert( NULL != data->bmp_fire->bytes_h );
 
       maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
       args.proj = RETRO3D_PROJ_FRUSTUM;
@@ -1147,8 +1183,8 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       args.far_plane = 100.0f;
       retro3d_init_projection( &args );
 
-      data->base.rotate_x = 10;
-      data->base.rotate_y = 10;
+      data->base.rotate_x = mfix_from_i( 10 );
+      data->base.rotate_y = mfix_from_i( 10 );
 
    }
 
@@ -1163,9 +1199,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    case RETROFLAT_KEY_ESC:
       retroani_stop_all( &(data->animations[0]), ANIMATIONS_MAX );
-      retroflat_destroy_bitmap( data->bmp_fire );
+      retro3d_texture_destroy( data->bmp_fire );
       free( data->bmp_fire );
-      retroflat_destroy_bitmap( data->bmp_snow );
+      retro3d_texture_destroy( data->bmp_snow );
       free( data->bmp_snow );
       retroflat_quit( 0 );
       goto end_func;
@@ -1177,26 +1213,27 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       break;
    }
 
-   assert( NULL != data->bmp_fire->tex.bytes_h );
+   assert( NULL != data->bmp_fire->bytes_h );
 
    /* Drawing */
 
    retroflat_draw_lock( NULL );
 
-   retroflat_draw_lock( data->bmp_fire );
-   retroflat_draw_lock( data->bmp_snow );
+   retro3d_texture_lock( data->bmp_fire );
+   retro3d_texture_lock( data->bmp_snow );
    retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
-   retroflat_draw_release( data->bmp_fire );
-   retroflat_draw_release( data->bmp_snow );
+   retro3d_texture_release( data->bmp_fire );
+   retro3d_texture_release( data->bmp_snow );
 
-   assert( NULL != data->bmp_fire->tex.bytes_h );
+   assert( NULL != data->bmp_fire->bytes_h );
 
    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
    glPushMatrix();
 
-   poly_ortho_skybox( RETROFLAT_COLOR_WHITE, data->bmp_snow );
+   poly_ortho_skybox(
+      data->bmp_snow, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
 
    retro3d_scene_translate( 0, 0, data->base.translate_z );
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
@@ -1219,7 +1256,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    retroflat_draw_release( NULL );
 
    if( data->next_rotate_ms < retroflat_get_ms() ) {
-      data->base.rotate_y += 5;
+      data->base.rotate_y += mfix_from_i( 5 );
       data->next_rotate_ms = retroflat_get_ms() + 50;
    }
 

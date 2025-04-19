@@ -12,6 +12,47 @@
 retroflat_loop_iter g_loop = NULL;
 void* g_data = NULL;
 
+MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
+   MERROR_RETVAL retval = MERROR_OK;
+   union RETROGUI_CTL ctl;
+   struct RETROWIN3D* win = NULL;
+
+   retval = retro3dw_push_win(
+      NULL, /* This window should create and manage its own GUI. */
+      &(base->win),
+      DEMO_IDC_WIN, "unscii-8.hex",
+      10, 10,
+      DEMO_WIN_W, DEMO_WIN_H, 0 );
+   maug_cleanup_if_not_ok();
+
+   mdata_vector_lock( &(base->win) );
+   win = mdata_vector_get_last( &(base->win), struct RETROWIN3D );
+   assert( NULL != win );
+   retrogui_lock( win->gui );
+
+      retrogui_init_ctl( &ctl, RETROGUI_CTL_TYPE_LABEL, DEMO_IDC_TITLE_1 );
+
+      ctl.base.x = 10;
+      ctl.base.y = 10;
+      ctl.base.w = 100;
+      ctl.base.h = 20;
+      ctl.base.fg_color = RETROFLAT_COLOR_BLACK;
+      ctl.BUTTON.label = "commit " MDEMO_COMMIT_HASH;
+      ctl.BUTTON.label_sz = 12; /* "commit " + 5 chars */
+
+      retval = retrogui_push_ctl( win->gui, &ctl );
+      maug_cleanup_if_not_ok();
+
+   retrogui_unlock( win->gui );
+   mdata_vector_unlock( &(base->win) );
+
+cleanup:
+
+   return retval;
+}
+
+/* === */
+
 static MERROR_RETVAL demo_cli_cb(
    const char* arg, ssize_t arg_c, struct RETROFLAT_ARGS* args
 ) {
@@ -82,6 +123,9 @@ int main( int argc, char** argv ) {
 
    logging_init();
 
+   retval = retrogxc_init();
+   maug_cleanup_if_not_ok();
+
    maug_mzero( &args, sizeof( struct RETROFLAT_ARGS ) );
 
    args.title = "mdemo";
@@ -120,6 +164,10 @@ int main( int argc, char** argv ) {
       goto cleanup;
    }
 
+   //xxx
+   g_loop = draw_sphere_iter;
+   g_data = calloc( 1, sizeof( struct DEMO_SPHERE_DATA ) );
+
 #ifdef RETROFLAT_API_LIBNDS
    g_loop = draw_cube_iter;
    g_data = calloc( 1, sizeof( struct DEMO_SPHERE_DATA ) );
@@ -143,8 +191,10 @@ int main( int argc, char** argv ) {
 cleanup:
 
 #ifndef RETROFLAT_OS_WASM
-   
+
    debug_printf( 1, "shutting down..." );
+
+   retrogxc_shutdown();
 
    retroflat_shutdown( retval );
 
