@@ -317,7 +317,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
 
    demo_draw_fps();
 
-   retro3dw_redraw_win_stack( &(data->base.win) );
+   retrowin_redraw_win_stack( &(data->base.win) );
 
    retro3d_scene_complete();
    retroflat_draw_release( NULL );

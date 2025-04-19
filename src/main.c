@@ -17,7 +17,7 @@ MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
    union RETROGUI_CTL ctl;
    struct RETROWIN3D* win = NULL;
 
-   retval = retro3dw_push_win(
+   retval = retrowin_push_win(
       NULL, /* This window should create and manage its own GUI. */
       &(base->win),
       DEMO_IDC_WIN, "unscii-8.hex",
