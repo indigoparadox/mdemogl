@@ -164,9 +164,10 @@ int main( int argc, char** argv ) {
       goto cleanup;
    }
 
-   //xxx
+   /*
    g_loop = draw_sphere_iter;
    g_data = calloc( 1, sizeof( struct DEMO_SPHERE_DATA ) );
+   */
 
 #ifdef RETROFLAT_API_LIBNDS
    g_loop = draw_cube_iter;
