@@ -19,8 +19,8 @@
 
 #define DEMO_IDC_TITLE_1 101
 
-#define DEMO_TEX_WATER "assets/light_water.bmp"
-#define DEMO_TEX_TILE "assets/tile_1.bmp"
+#define DEMO_TEX_WATER "light_water"
+#define DEMO_TEX_TILE "tile_1"
 
 #define DEMOS_OVERLAY_SZ_MAX 64
 
