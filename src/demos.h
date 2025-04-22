@@ -10,7 +10,9 @@
 #include <retrogui.h>
 #include <retrowin.h>
 #include <retroglu.h>
+#ifdef RETROFLAT_OPENGL
 #include <GL/gl.h>
+#endif /* RETROFLAT_OPENGL */
 
 #define DEMO_WIN_W 140
 #define DEMO_WIN_H 40
@@ -83,7 +85,7 @@ struct DEMO_BASE {
 
 struct DEMO_CUBE_DATA {
    struct DEMO_BASE base;
-   struct RETROFLAT_3DTEX tex_cube;
+   retroflat_blit_t tex_cube;
 };
 
 struct DEMO_SPHERE_DATA {
@@ -91,17 +93,14 @@ struct DEMO_SPHERE_DATA {
    int rotate_x_inc;
    int rotate_y_inc;
    int rotate_z_inc;
-   struct RETROFLAT_3DTEX tex_walls;
+   retroflat_blit_t tex_walls;
    mfix_t translate_x_inc;
    mfix_t translate_y_inc;
-   GLint sphere_list;
-   GLint skybox_list;
 };
 
 struct DEMO_OBJ_DATA {
    struct DEMO_BASE base;
    struct RETRO3DP_MODEL obj;
-   GLint obj_list;
 };
 
 struct DEMO_SPRITE_DATA {
@@ -119,7 +118,6 @@ typedef void (*demo_fp_poly_cb)( struct DEMO_FP_DATA* );
 
 struct DEMO_FP_TILE {
    demo_fp_poly_cb anim;
-   GLint list;
 };
 
 struct DEMO_FP_DATA {
@@ -134,17 +132,16 @@ struct DEMO_WATER_DATA {
    float freq_mod;
    float amp_mod;
    float peak_offset;
-   struct RETROFLAT_3DTEX tex_water;
+   retroflat_blit_t tex_water;
 };
 
 struct DEMO_RETROANI_DATA {
    struct DEMO_BASE base;
    struct RETROANI animations[ANIMATIONS_MAX];
-   GLint cube_list;
    int8_t idx_fire;
    int8_t idx_snow;
-   struct RETROFLAT_3DTEX* bmp_fire;
-   struct RETROFLAT_3DTEX* bmp_snow;
+   retroflat_blit_t* bmp_fire;
+   retroflat_blit_t* bmp_snow;
    uint32_t next_rotate_ms;
 };
 
@@ -157,14 +154,14 @@ int demo_load_obj(
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data );
 MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
 
-#ifdef DEMOS_NO_FILES
+/* #ifdef DEMOS_NO_FILES */
 #  define DEMOS_LIST_EXTRA( f )
-#else
+/* #else
 #  define DEMOS_LIST_EXTRA( f ) \
       f( obj, struct DEMO_OBJ_DATA ) \
       f( fp, struct DEMO_FP_DATA ) \
       f( sprite, struct DEMO_SPRITE_DATA )
-#endif /* DEMOS_NO_FILES */
+#endif */ /* DEMOS_NO_FILES */
 
 #define DEMOS_LIST( f ) \
    f( cube, struct DEMO_CUBE_DATA ) \

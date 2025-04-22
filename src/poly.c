@@ -16,7 +16,7 @@ void poly_cube(
 /* === */
 
 void poly_cube_tex(
-   struct RETROFLAT_3DTEX* tex,
+   retroflat_blit_t* tex,
    int scale,
    RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
    RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
@@ -171,6 +171,7 @@ void poly_well(
    const float color[], const float radius_outer, const float radius_inner,
    const float height, const float ang_iter
 ) {
+#ifdef RETROFLAT_OPENGL
    float
       x = 0,
       x_next = 0,
@@ -233,6 +234,7 @@ void poly_well(
 
 
    }
+#endif
 }
 
 void poly_water_ring(
@@ -241,6 +243,7 @@ void poly_water_ring(
    const float ang_iter, const float normal_mod,
    float freq_mod, float amp_mod, float peak_offset
 ) {
+#ifdef RETROFLAT_OPENGL
    float y = 0,
       y_next = 0,
       ang = 0,
@@ -317,10 +320,11 @@ void poly_water_ring(
          glEnd();
       }
    }
+#endif
 }
 
 void poly_water_sheet(
-   struct RETROFLAT_3DTEX* tex, RETROFLAT_COLOR color,
+   retroflat_blit_t* tex, RETROFLAT_COLOR color,
    const mfix_t width, const mfix_t depth, const mfix_t x_iter,
    float freq_mod, float amp_mod, float peak_offset
 ) {
@@ -444,7 +448,7 @@ void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 ) {
 }
 
 void poly_ortho_skybox(
-   struct RETROFLAT_3DTEX* tex, RETROFLAT_COLOR color1, RETROFLAT_COLOR color2
+   retroflat_blit_t* tex, RETROFLAT_COLOR color1, RETROFLAT_COLOR color2
 ) {
    const mfix_t w = mfix_from_f( 8.0f ),
       h = mfix_from_f( 6.0f ),
@@ -522,7 +526,7 @@ void poly_ortho_skybox(
 }
 
 void poly_water_skybox() {
-
+#if 0
    /* TODO: Use triangles. */
 
    glBegin( GL_QUADS );
@@ -542,5 +546,6 @@ void poly_water_skybox() {
    glVertex3f( -200.0f, 200.0f, -50.0f );
    glVertex3f( -200.0f, 0, -50.0f );
    glEnd();
+#endif
 }
 

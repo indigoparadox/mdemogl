@@ -15,7 +15,7 @@ void* g_data = NULL;
 MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
    MERROR_RETVAL retval = MERROR_OK;
    union RETROGUI_CTL ctl;
-   struct RETROWIN3D* win = NULL;
+   struct RETROWIN* win = NULL;
 
    retval = retrowin_push_win(
       NULL, /* This window should create and manage its own GUI. */
@@ -26,7 +26,7 @@ MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
    maug_cleanup_if_not_ok();
 
    mdata_vector_lock( &(base->win) );
-   win = mdata_vector_get_last( &(base->win), struct RETROWIN3D );
+   win = mdata_vector_get_last( &(base->win), struct RETROWIN );
    assert( NULL != win );
    retrogui_lock( win->gui );
 

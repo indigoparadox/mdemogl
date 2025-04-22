@@ -12,6 +12,7 @@ int32_t g_frames_since_last = 0;
 uint32_t g_last_frame_ms = 0;
 
 void demo_draw_fps() {
+#if 0
    float aspect_ratio = 0;
    char overlay_str[DEMOS_OVERLAY_SZ_MAX + 1];
    uint32_t now_ms = 0;
@@ -52,15 +53,16 @@ void demo_draw_fps() {
    /* Restore modelview. */
    glPopMatrix();
    glMatrixMode( GL_MODELVIEW );
+#endif
 }
 
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
+#if 0
    FILE* obj_file = NULL;
    uint32_t i = 0, /* Index in file buffer, so long. */
       j = 0;
 
    /* TODO: Fix me to work with new obj parser! */
-#if 0
    /* Dump */
    obj_file = fopen( filename, "w" );
    assert( NULL != obj_file );
@@ -107,7 +109,8 @@ void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {
 #endif
 }
 
-void demo_dump_tex( struct RETROFLAT_3DTEX* tex_bmp ) {
+#if 0
+void demo_dump_tex( * tex_bmp ) {
    size_t x, y;
 
    printf( "\n" );
@@ -144,6 +147,7 @@ MERROR_RETVAL demo_load_sprite(
 cleanup:
    return retval;
 }
+#endif
 
 /* === */
 
@@ -162,7 +166,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       retro3d_init_projection( &args );
 
       retro3d_check_errors( "dump" );
-      retval = retro3d_texture_load_bitmap(
+      retval = retroflat_2d_load_bitmap(
          DEMO_TEX_WATER, &(data->tex_cube), 0 );
       maug_cleanup_if_not_ok();
 
@@ -170,9 +174,11 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       data->base.rotate_y = mfix_from_i( 10 );
       data->base.translate_z = mfix_from_f( -5.0f );
 
+      /*
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
+      */
 
       data->base.init = 1;
    }
@@ -238,8 +244,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       args.far_plane = 100.0f;
       retro3d_init_projection( &args );
 
-      retval = retro3d_texture_load_bitmap(
-         DEMO_TEX_TILE, &(data->tex_walls), 0 );
+      retval = retroflat_2d_load_bitmap( DEMO_TEX_TILE, &(data->tex_walls), 0 );
       maug_cleanup_if_not_ok();
 
       /* Start spin. */
@@ -254,9 +259,11 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       retval = demo_setup_win( &(data->base) );
       maug_cleanup_if_not_ok();
 
+      /*
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
+      */
 
       data->base.init = 1;
    }
@@ -385,9 +392,11 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
       args.far_plane = 10.0f;
       retro3d_init_projection( &args );
 
+      /*
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
+      */
 
       data->base.init = 1;
    }
@@ -480,6 +489,7 @@ cleanup:
 
 }
 
+#if 0
 void demo_fp_poly_well( struct DEMO_FP_DATA* data ) {
    const float ang_iter = 0.2f;
 
@@ -952,6 +962,8 @@ end_func:
 
 #endif /* DEMOS_NO_FILES */
 
+#endif
+
 void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
@@ -960,7 +972,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    if( 0 == data->base.init ) {
 
-      retval = retro3d_texture_load_bitmap(
+      retval = retroflat_2d_load_bitmap(
          DEMO_TEX_WATER, &(data->tex_water), 0 );
       maug_cleanup_if_not_ok();
 
@@ -986,9 +998,11 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          data->base.rotate_x = mfix_from_i( 20 );
       }
 
+      /*
       if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
          glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       }
+      */
 
       data->base.init = 1;
    }
@@ -1073,6 +1087,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
 
    } else {
 
+      /*
       poly_well( RETROGLU_COLOR_GRAY, DEMO_WATER_RING_RADIUS + 0.75f,
          DEMO_WATER_RING_RADIUS, 2.0f, DEMO_WATER_RING_A_ITER );
 
@@ -1081,6 +1096,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
          DEMO_WATER_RING_RADIUS, DEMO_WATER_RING_R_ITER,
          DEMO_WATER_RING_A_ITER, 0.3f, data->freq_mod, data->amp_mod,
          data->peak_offset );
+      */
    }
 
    demo_draw_fps();
@@ -1112,35 +1128,37 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
       data->base.translate_z = mfix_from_f( -5.0f );
 
-      data->bmp_fire = calloc( 1, sizeof( struct RETROFLAT_3DTEX ) );
+      data->bmp_fire = calloc( 1, sizeof( retroflat_blit_t ) );
       assert( NULL != data->bmp_fire );
-      retval = retro3d_texture_create(
+      retval = retroflat_2d_create_bitmap(
          RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_fire, 0 );
       maug_cleanup_if_not_ok();
 
+      /*
       assert( RETROANI_TILE_W == retro3d_texture_w( data->bmp_fire ) );
       assert( RETROANI_TILE_H == retro3d_texture_h( data->bmp_fire ) );
       assert( NULL != data->bmp_fire->bytes_h );
+      */
 
-      retval = retro3d_texture_lock( data->bmp_fire );
+      retval = retroflat_2d_lock_bitmap( data->bmp_fire );
       maug_cleanup_if_not_ok();
 
-      assert( NULL != data->bmp_fire->bytes );
+      /* assert( NULL != data->bmp_fire->bytes ); */
 
-      retrosoft_rect(
+      retroflat_2d_rect(
          data->bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
          RETROANI_TILE_W, RETROANI_TILE_H,
          RETROFLAT_FLAGS_FILL );
-      retro3d_texture_release( data->bmp_fire );
+      retroflat_2d_release_bitmap( data->bmp_fire );
 
-      assert( NULL != data->bmp_fire->bytes_h );
+      /* assert( NULL != data->bmp_fire->bytes_h ); */
 
       data->idx_fire = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
          RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
          0, 0,
-         retro3d_texture_w( data->bmp_fire ),
-         retro3d_texture_h( data->bmp_fire ) );
+         retroflat_2d_bitmap_w( data->bmp_fire ),
+         retroflat_2d_bitmap_h( data->bmp_fire ) );
 
       retroani_set_target( data->animations, data->idx_fire, data->bmp_fire );
 
@@ -1148,33 +1166,33 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
       debug_printf( 1, "initializing snow cube..." );
 
-      data->bmp_snow = calloc( 1, sizeof( struct RETROFLAT_3DTEX ) );
+      data->bmp_snow = calloc( 1, sizeof( retroflat_blit_t ) );
       assert( NULL != data->bmp_snow );
-      retval = retro3d_texture_create(
+      retval = retroflat_2d_create_bitmap(
          RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_snow, 0 );
       maug_cleanup_if_not_ok();
 
-      retval = retro3d_texture_lock( data->bmp_snow );
+      retval = retroflat_2d_lock_bitmap( data->bmp_snow );
       maug_cleanup_if_not_ok();
 
       retrosoft_rect(
          data->bmp_snow, RETROFLAT_COLOR_BLACK, 0, 0,
          RETROANI_TILE_W, RETROANI_TILE_H,
          RETROFLAT_FLAGS_FILL );
-      retro3d_texture_release( data->bmp_snow );
+      retroflat_2d_release_bitmap( data->bmp_snow );
 
       data->idx_snow = retroani_create(
          &(data->animations[0]), ANIMATIONS_MAX,
          RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
          0, 0,
-         retro3d_texture_w( data->bmp_snow ),
-         retro3d_texture_h( data->bmp_snow ) );
+         retroflat_2d_bitmap_w( data->bmp_snow ),
+         retroflat_2d_bitmap_h( data->bmp_snow ) );
 
       retroani_set_target( data->animations, data->idx_snow, data->bmp_snow );
 
       /* Create the cube. */
 
-      assert( NULL != data->bmp_fire->bytes_h );
+      /* assert( NULL != data->bmp_fire->bytes_h ); */
 
       maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
       args.proj = RETRO3D_PROJ_FRUSTUM;
@@ -1199,9 +1217,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    case RETROFLAT_KEY_ESC:
       retroani_stop_all( &(data->animations[0]), ANIMATIONS_MAX );
-      retro3d_texture_destroy( data->bmp_fire );
+      retroflat_2d_destroy_bitmap( data->bmp_fire );
       free( data->bmp_fire );
-      retro3d_texture_destroy( data->bmp_snow );
+      retroflat_2d_destroy_bitmap( data->bmp_snow );
       free( data->bmp_snow );
       retroflat_quit( 0 );
       goto end_func;
@@ -1213,46 +1231,54 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       break;
    }
 
-   assert( NULL != data->bmp_fire->bytes_h );
+   /* assert( NULL != data->bmp_fire->bytes_h ); */
 
    /* Drawing */
 
-   retroflat_draw_lock( NULL );
-
-   retro3d_texture_lock( data->bmp_fire );
-   retro3d_texture_lock( data->bmp_snow );
+   retroflat_2d_lock_bitmap( data->bmp_fire );
+   retroflat_2d_lock_bitmap( data->bmp_snow );
    retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
-   retro3d_texture_release( data->bmp_fire );
-   retro3d_texture_release( data->bmp_snow );
+   retroflat_2d_release_bitmap( data->bmp_fire );
+   retroflat_2d_release_bitmap( data->bmp_snow );
 
-   assert( NULL != data->bmp_fire->bytes_h );
+   /* assert( NULL != data->bmp_fire->bytes_h ); */
 
-   glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-   glPushMatrix();
-
-   poly_ortho_skybox(
-      data->bmp_snow, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
+   retroflat_draw_lock( NULL );
+   retro3d_scene_init();
 
    retro3d_scene_translate( 0, 0, data->base.translate_z );
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
 
-/* #ifdef DEMOS_NO_LISTS */
+   /*
+   retval = retro3d_texture_activate( &(data->tex_cube), 0 );
+   maug_cleanup_if_not_ok();
+
+   poly_ortho_skybox(
+      data->bmp_snow, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
+
+   retval = retro3d_texture_activate(
+      &(data->tex_cube), RETRO3D_TEX_FLAG_DEACTIVATE );
+   maug_cleanup_if_not_ok();
+   */
+
+   retro3d_scene_translate( 0, 0, data->base.translate_z );
+   retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
+
+   retval = retro3d_texture_activate( data->bmp_fire, 0 );
+   maug_cleanup_if_not_ok();
+
    poly_cube_tex(
       data->bmp_fire, 1.0f,
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE,
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
-#if 0
-/* #else */
-   glCallList( data->cube_list );
-/* #endif */ /* DEMOS_NO_LISTS */
-#endif
 
-   glPopMatrix();
+   retval = retro3d_texture_activate(
+      data->bmp_fire, RETRO3D_TEX_FLAG_DEACTIVATE );
+   maug_cleanup_if_not_ok();
 
    demo_draw_fps();
 
+   retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
    if( data->next_rotate_ms < retroflat_get_ms() ) {
