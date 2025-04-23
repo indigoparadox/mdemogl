@@ -2,44 +2,49 @@
 #include "demos.h"
 #include "poly.h"
 
+MERROR_RETVAL setup_sphere( struct DEMO_SPHERE_DATA* data ) {
+   MERROR_RETVAL retval = MERROR_OK;
+   struct RETRO3D_PROJ_ARGS args;
+
+   maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
+   args.proj = RETRO3D_PROJ_ORTHO;
+   args.rzoom = 10.0f;
+   args.near_plane = -100.0f;
+   args.far_plane = 100.0f;
+   retro3d_init_projection( &args );
+
+   retval = retroflat_2d_load_bitmap( DEMO_TEX_TILE, &(data->tex_walls), 0 );
+   maug_cleanup_if_not_ok();
+
+   /* Start spin. */
+   data->rotate_y_inc = mfix_from_i( 5 );
+
+   /* Start bounce. */
+   data->translate_x_inc = mfix_from_f( 0.2f );
+   data->translate_y_inc = mfix_from_f( 0.2f );
+
+   data->base.translate_z = mfix_from_f( -5.0f );
+
+   retval = demo_setup_win( &(data->base) );
+   maug_cleanup_if_not_ok();
+
+   /*
+   if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+      glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+   }
+   */
+
+cleanup:
+
+   return retval;
+}
+
+/* === */
+
 void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
-   struct RETRO3D_PROJ_ARGS args;
    MERROR_RETVAL retval = MERROR_OK;
-
-   if( !data->base.init ) {
-
-      maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
-      args.proj = RETRO3D_PROJ_ORTHO;
-      args.rzoom = 10.0f;
-      args.near_plane = -100.0f;
-      args.far_plane = 100.0f;
-      retro3d_init_projection( &args );
-
-      retval = retroflat_2d_load_bitmap( DEMO_TEX_TILE, &(data->tex_walls), 0 );
-      maug_cleanup_if_not_ok();
-
-      /* Start spin. */
-      data->rotate_y_inc = mfix_from_i( 5 );
-
-      /* Start bounce. */
-      data->translate_x_inc = mfix_from_f( 0.2f );
-      data->translate_y_inc = mfix_from_f( 0.2f );
-
-      data->base.translate_z = mfix_from_f( -5.0f );
-
-      retval = demo_setup_win( &(data->base) );
-      maug_cleanup_if_not_ok();
-
-      /*
-      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
-         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-      }
-      */
-
-      data->base.init = 1;
-   }
 
    /* Input */
 

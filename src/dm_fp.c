@@ -24,6 +24,8 @@ void demo_fp_poly_well( struct DEMO_FP_DATA* data ) {
       data->water_peak_offset );
 }
 
+/* === */
+
 #define DEMO_RING_HR 0.3f
 #define DEMO_RING_BR 0.1f
 #define DEMO_RING_BA_INC 0.4f
@@ -99,10 +101,108 @@ void demo_fp_poly_ring( struct DEMO_FP_DATA* data ) {
    }
 }
 
+/* === */
+
+MERROR_RETVAL setup_fp( struct DEMO_FP_DATA* data ) {
+   MERROR_RETVAL retval = MERROR_OK;
+   struct RETRO3D_PROJ_ARGS args;
+
+   /* Init scene. */
+   args.proj = RETRO3D_PROJ_FRUSTUM;
+   args.rzoom = 0.3f;
+   args.near_plane = 0.5f;
+   args.far_plane = 100.0f;
+   retro3d_init_projection( &args );
+
+   /* Setup map tiles: */
+
+   /* Floor 0 */
+   data->tiles[0].list = glGenLists( 1 );
+   glNewList( data->tiles[0].list, GL_COMPILE );
+   glBegin( GL_QUADS );
+   glColor3fv( RETROGLU_COLOR_DARKGREEN );
+   glNormal3f( 0, 1.0f, 0 );
+   glVertex3f( -0.5f, 0, -0.5f );
+   glVertex3f( -0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0, -0.5f );
+   glEnd();
+   glEndList();
+
+   /* Wall 1 */
+   data->tiles[1].list = glGenLists( 1 );
+   glNewList( data->tiles[1].list, GL_COMPILE );
+   /* Compensate for the cube being Y-centered on zero. */
+   glTranslatef( 0, 0.5f, 0 );
+   poly_cube(
+      1,
+      RETROFLAT_COLOR_RED, RETROFLAT_COLOR_GREEN, RETROFLAT_COLOR_BLUE,
+      RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_CYAN, RETROFLAT_COLOR_MAGENTA );
+   glTranslatef( 0, -0.5f, 0 );
+   glEndList();
+
+   /* Floor 2 */
+   data->tiles[2].list = glGenLists( 1 );
+   glNewList( data->tiles[2].list, GL_COMPILE );
+   glBegin( GL_QUADS );
+   glColor3fv( RETROGLU_COLOR_DARKBLUE );
+   glNormal3f( 0, 1.0f, 0 );
+   glVertex3f( -0.5f, 0, -0.5f );
+   glVertex3f( -0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0, -0.5f );
+   glEnd();
+   glEndList();
+
+   /* Sphere */
+   data->tiles[3].list = glGenLists( 1 );
+   glNewList( data->tiles[3].list, GL_COMPILE );
+
+   /* Red floor. */
+   glBegin( GL_QUADS );
+   glColor3fv( RETROGLU_COLOR_DARKRED );
+   glNormal3f( 0, 1.0f, 0 );
+   glVertex3f( -0.5f, 0, -0.5f );
+   glVertex3f( -0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0,  0.5f );
+   glVertex3f(  0.5f, 0, -0.5f );
+   glEnd();
+
+   /* Compensate for the sphere being Y-centered on zero. */
+   glTranslatef( 0, 0.5f, 0 );
+   poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE );
+   glTranslatef( 0, -0.5f, 0 );
+   glEndList();
+
+   /* Well */
+   data->tiles[4].anim = demo_fp_poly_well;
+
+   /* Ring */
+   data->tiles[5].anim = demo_fp_poly_ring;
+
+   data->base.translate_y = -0.5f;
+   data->base.translate_x = (DEMO_FP_MAP_W / 2) - 2;
+   data->base.translate_z = (DEMO_FP_MAP_H / 2) - 2;
+
+   if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+      glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+   }
+
+#if 0
+   glFogf( GL_FOG_MODE, GL_EXP );
+   glFogfv( GL_FOG_COLOR, RETROGLU_COLOR_WHITE );
+   glFogf( GL_FOG_DENSITY, 0.25f );
+   glFogf( GL_FOG_START, 5.0f );
+   glFogf( GL_FOG_END, 8.0f );
+   glEnable( GL_FOG );
+#endif
+
+   return retval;
+}
+
 void draw_fp_iter( struct DEMO_FP_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
-   struct RETRO3D_PROJ_ARGS args;
    int x = 0,
       z = 0;
    float z_diff = 0,
@@ -112,101 +212,6 @@ void draw_fp_iter( struct DEMO_FP_DATA* data ) {
       0.5,
       0,
       0 };
-
-   if( !data->base.init ) {
-
-      /* Init scene. */
-      args.proj = RETRO3D_PROJ_FRUSTUM;
-      args.rzoom = 0.3f;
-      args.near_plane = 0.5f;
-      args.far_plane = 100.0f;
-      retro3d_init_projection( &args );
-
-      /* Setup map tiles: */
-
-      /* Floor 0 */
-      data->tiles[0].list = glGenLists( 1 );
-      glNewList( data->tiles[0].list, GL_COMPILE );
-      glBegin( GL_QUADS );
-      glColor3fv( RETROGLU_COLOR_DARKGREEN );
-      glNormal3f( 0, 1.0f, 0 );
-      glVertex3f( -0.5f, 0, -0.5f );
-      glVertex3f( -0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0, -0.5f );
-      glEnd();
-      glEndList();
-
-      /* Wall 1 */
-      data->tiles[1].list = glGenLists( 1 );
-      glNewList( data->tiles[1].list, GL_COMPILE );
-      /* Compensate for the cube being Y-centered on zero. */
-      glTranslatef( 0, 0.5f, 0 );
-      poly_cube(
-         1,
-         RETROFLAT_COLOR_RED, RETROFLAT_COLOR_GREEN, RETROFLAT_COLOR_BLUE,
-         RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_CYAN, RETROFLAT_COLOR_MAGENTA );
-      glTranslatef( 0, -0.5f, 0 );
-      glEndList();
-
-      /* Floor 2 */
-      data->tiles[2].list = glGenLists( 1 );
-      glNewList( data->tiles[2].list, GL_COMPILE );
-      glBegin( GL_QUADS );
-      glColor3fv( RETROGLU_COLOR_DARKBLUE );
-      glNormal3f( 0, 1.0f, 0 );
-      glVertex3f( -0.5f, 0, -0.5f );
-      glVertex3f( -0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0, -0.5f );
-      glEnd();
-      glEndList();
-
-      /* Sphere */
-      data->tiles[3].list = glGenLists( 1 );
-      glNewList( data->tiles[3].list, GL_COMPILE );
-
-      /* Red floor. */
-      glBegin( GL_QUADS );
-      glColor3fv( RETROGLU_COLOR_DARKRED );
-      glNormal3f( 0, 1.0f, 0 );
-      glVertex3f( -0.5f, 0, -0.5f );
-      glVertex3f( -0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0,  0.5f );
-      glVertex3f(  0.5f, 0, -0.5f );
-      glEnd();
-
-      /* Compensate for the sphere being Y-centered on zero. */
-      glTranslatef( 0, 0.5f, 0 );
-      poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE );
-      glTranslatef( 0, -0.5f, 0 );
-      glEndList();
-
-      /* Well */
-      data->tiles[4].anim = demo_fp_poly_well;
-
-      /* Ring */
-      data->tiles[5].anim = demo_fp_poly_ring;
-
-      data->base.translate_y = -0.5f;
-      data->base.translate_x = (DEMO_FP_MAP_W / 2) - 2;
-      data->base.translate_z = (DEMO_FP_MAP_H / 2) - 2;
-
-      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
-         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-      }
-
-#if 0
-      glFogf( GL_FOG_MODE, GL_EXP );
-      glFogfv( GL_FOG_COLOR, RETROGLU_COLOR_WHITE );
-      glFogf( GL_FOG_DENSITY, 0.25f );
-      glFogf( GL_FOG_START, 5.0f );
-      glFogf( GL_FOG_END, 8.0f );
-      glEnable( GL_FOG );
-#endif
-
-      data->base.init = 1;
-   }
 
    /* Input */
 

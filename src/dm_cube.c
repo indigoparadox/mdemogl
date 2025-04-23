@@ -33,19 +33,15 @@ MERROR_RETVAL setup_cube( struct DEMO_CUBE_DATA* data ) {
 
 cleanup:
 
-   data->base.init = 1;
-
    return retval;
 }
+
+/* === */
 
 void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
    MERROR_RETVAL retval = MERROR_OK;
-
-   if( !data->base.init ) {
-      retval = setup_cube( data );
-   }
 
    /* Input */
 

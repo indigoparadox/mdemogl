@@ -71,8 +71,9 @@
 #define hash_mat_g( m ) (fmod( m[1] * 0.01f, 1.0f ) * 2)
 #define hash_mat_b( m ) (fmod( m[2] * 0.01f, 1.0f ) * 2)
 
+typedef MERROR_RETVAL (*demo_setup)( void* data );
+
 struct DEMO_BASE {
-   int init;
    mfix_t translate_x;
    mfix_t translate_y;
    mfix_t translate_z;
@@ -170,10 +171,15 @@ void demo_draw_fps();
    f( retroani, struct DEMO_RETROANI_DATA ) \
    DEMOS_LIST_EXTRA( f )
 
-#define DEMOS_LIST_PROTOS( name, data_struct ) \
+#define DEMOS_LIST_ITER_PROTOS( name, data_struct ) \
    void draw_ ## name ## _iter( data_struct* data );
 
-DEMOS_LIST( DEMOS_LIST_PROTOS )
+DEMOS_LIST( DEMOS_LIST_ITER_PROTOS )
+
+#define DEMOS_LIST_SETUP_PROTOS( name, data_struct ) \
+   MERROR_RETVAL setup_ ## name( data_struct* data );
+
+DEMOS_LIST( DEMOS_LIST_SETUP_PROTOS )
 
 MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base );
 
@@ -207,6 +213,14 @@ retroflat_loop_iter gc_demo_loops[] = {
    NULL
 };
 
+#define DEMOS_LIST_SETUPS( name, data_struct ) \
+   (demo_setup)setup_ ## name,
+
+demo_setup gc_demo_setups[] = {
+   DEMOS_LIST( DEMOS_LIST_SETUPS )
+   NULL
+};
+
 #define DEMOS_LIST_DATA_SZ( name, data_struct ) sizeof( data_struct ),
 
 size_t gc_demo_data_sz[] = {
@@ -224,6 +238,7 @@ char g_demo_obj_name[DEMO_OBJ_NAME_SZ_MAX] = DEMO_DEFAULT_OBJ;
 extern uint8_t g_demo_flags;
 extern const char* gc_demo_names[];
 extern retroflat_loop_iter gc_demo_loops[];
+extern demo_setup gc_demo_setups[];
 extern int g_timer;
 extern char g_demo_dump_name[];
 extern char g_demo_obj_name[];

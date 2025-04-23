@@ -1,48 +1,51 @@
 
 #include "demos.h"
 
+MERROR_RETVAL setup_water( struct DEMO_WATER_DATA* data ) {
+   MERROR_RETVAL retval = MERROR_OK;
+   struct RETRO3D_PROJ_ARGS args;
+
+   retval = retroflat_2d_load_bitmap(
+      DEMO_TEX_WATER, &(data->tex_water), 0 );
+   maug_cleanup_if_not_ok();
+
+   maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
+   args.proj = RETRO3D_PROJ_FRUSTUM;
+   args.rzoom = 1.0f;
+   /* args.near_plane = 0.5f; */
+   args.near_plane = 1.0f;
+   args.far_plane = 100.0f;
+   retro3d_init_projection( &args );
+
+   /* TODO: Add CLI option to select pattern. */
+   data->pattern = 0;
+   data->freq_mod = 7.0f;
+   data->amp_mod = 0.1f;
+   if( 1 == data->pattern ) {
+      data->base.translate_y = mfix_from_f( -4.0f );
+      data->base.translate_z = mfix_from_f( -4.0f );
+
+   } else {
+      data->base.translate_y = mfix_from_f( -8.0f );
+      data->base.translate_z = mfix_from_f( -4.0f );
+      data->base.rotate_x = mfix_from_i( 20 );
+   }
+
+   /*
+   if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
+      glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+   }
+   */
+
+cleanup:
+
+   return retval;
+}
+
 void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
-   struct RETRO3D_PROJ_ARGS args;
    MERROR_RETVAL retval = MERROR_OK;
-
-   if( 0 == data->base.init ) {
-
-      retval = retroflat_2d_load_bitmap(
-         DEMO_TEX_WATER, &(data->tex_water), 0 );
-      maug_cleanup_if_not_ok();
-
-      maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
-      args.proj = RETRO3D_PROJ_FRUSTUM;
-      args.rzoom = 1.0f;
-      /* args.near_plane = 0.5f; */
-      args.near_plane = 1.0f;
-      args.far_plane = 100.0f;
-      retro3d_init_projection( &args );
-
-      /* TODO: Add CLI option to select pattern. */
-      data->pattern = 0;
-      data->freq_mod = 7.0f;
-      data->amp_mod = 0.1f;
-      if( 1 == data->pattern ) {
-         data->base.translate_y = mfix_from_f( -4.0f );
-         data->base.translate_z = mfix_from_f( -4.0f );
-
-      } else {
-         data->base.translate_y = mfix_from_f( -8.0f );
-         data->base.translate_z = mfix_from_f( -4.0f );
-         data->base.rotate_x = mfix_from_i( 20 );
-      }
-
-      /*
-      if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
-         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-      }
-      */
-
-      data->base.init = 1;
-   }
 
    /* Input */
 
