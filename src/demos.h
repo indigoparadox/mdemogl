@@ -149,10 +149,10 @@ void demo_init_scene( uint8_t flags );
 void demo_init_projection( uint8_t demo_proj, float zoom );
 int demo_load_obj(
    const char* filename, struct RETRO3DP_PARSER* parser,
-   struct DEMO_OBJ_DATA* data
-);
+   struct DEMO_OBJ_DATA* data );
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data );
 MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
+void demo_draw_fps();
 
 /* #ifdef DEMOS_NO_FILES */
 #  define DEMOS_LIST_EXTRA( f )

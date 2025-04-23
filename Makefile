@@ -3,7 +3,7 @@
 
 OPENGL := 1
 #SMALL3DL := 1
-C_FILES := src/main.c src/demos.c src/poly.c
+C_FILES := src/main.c src/demos.c src/poly.c src/dm_cube.c src/dm_obj.c src/dm_watr.c src/dm_retra.c src/dm_spher.c
 
 LIBS_GCC += -lm
 DEFINES_GCC_NDS := -DDEMOS_NO_LISTS -DDEMOS_NO_FILES -DDEMOS_NO_LIGHTS -DRETROFLAT_NDS_WASD
