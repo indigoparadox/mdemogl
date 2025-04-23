@@ -5,19 +5,18 @@
 #include "poly.h"
 
 void poly_cube(
-   int scale,
+   mfix_t scale,
    RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
    RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
 ) {
-   poly_cube_tex( NULL, scale, color_bk, color_ft, color_rt, color_lt,
-      color_tp, color_bt );
+   poly_cube_tex( NULL, scale, 1000, color_bk, color_ft, color_rt,
+      color_lt, color_tp, color_bt );
 }
 
 /* === */
 
 void poly_cube_tex(
-   retroflat_blit_t* tex,
-   int scale,
+   retroflat_blit_t* tex, mfix_t scale, mfix_t tx_scale,
    RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
    RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
 ) {
@@ -57,64 +56,66 @@ void poly_cube_tex(
 #endif /* !RETROGLU_NO_TEXTURES */
 #endif
 
+   retro3d_texture_activate( tex, 0 );
+
    /* BACK */
    retro3d_tri_begin( color_bk, RETRO3D_TRI_FLAG_NORMAL_Z );
    /* glColor3fv( color_bk ); */
    retro3d_vx(   scale,  scale, scale, 0, 0 );
-   retro3d_vx(  -scale,  scale, scale, 1, 0 );
-   retro3d_vx(   scale, -scale, scale, 0, 1 );
+   retro3d_vx(  -scale,  scale, scale, tx_scale, 0 );
+   retro3d_vx(   scale, -scale, scale, 0, tx_scale );
    retro3d_tri_end();
 
    retro3d_tri_begin( color_bk, RETRO3D_TRI_FLAG_NORMAL_Z );
-   retro3d_vx(  -scale,  scale, scale, 1, 0 );
-   retro3d_vx(  -scale, -scale, scale, 1, 1 );
-   retro3d_vx(   scale, -scale, scale, 0, 1 );
+   retro3d_vx(  -scale,  scale, scale, tx_scale, 0 );
+   retro3d_vx(  -scale, -scale, scale, tx_scale, tx_scale );
+   retro3d_vx(   scale, -scale, scale, 0, tx_scale );
    retro3d_tri_end();
    
    /* RIGHT */
    retro3d_tri_begin( color_rt, RETRO3D_TRI_FLAG_NORMAL_X );
    /* glColor3fv( color_rt ); */
-   retro3d_vx(   scale, -scale, -scale, 1, 1 );
-   retro3d_vx(   scale,  scale, -scale, 1, 0 );
+   retro3d_vx(   scale, -scale, -scale, tx_scale, tx_scale );
+   retro3d_vx(   scale,  scale, -scale, tx_scale, 0 );
    retro3d_vx(   scale,  scale,  scale, 0, 0 );
    retro3d_tri_end();
 
    retro3d_tri_begin( color_rt, RETRO3D_TRI_FLAG_NORMAL_X );
    retro3d_vx(   scale,  scale,  scale, 0, 0 );
-   retro3d_vx(   scale, -scale,  scale, 0, 1 );
-   retro3d_vx(   scale, -scale, -scale, 1, 1 );
+   retro3d_vx(   scale, -scale,  scale, 0, tx_scale );
+   retro3d_vx(   scale, -scale, -scale, tx_scale, tx_scale );
    retro3d_tri_end();
    
    /* LEFT */
    retro3d_tri_begin(
       color_lt, RETRO3D_TRI_FLAG_NORMAL_X | RETRO3D_TRI_FLAG_NORMAL_NEG );
    /* glColor3fv( color_lt ); */
-   retro3d_vx( -scale, -scale,  scale, 0, 1 );
+   retro3d_vx( -scale, -scale,  scale, 0, tx_scale );
    retro3d_vx( -scale,  scale,  scale, 0, 0 );
-   retro3d_vx( -scale,  scale, -scale, 1, 0 );
+   retro3d_vx( -scale,  scale, -scale, tx_scale, 0 );
    retro3d_tri_end();
 
    retro3d_tri_begin(
       color_lt, RETRO3D_TRI_FLAG_NORMAL_X | RETRO3D_TRI_FLAG_NORMAL_NEG );
-   retro3d_vx( -scale,  scale, -scale, 1, 0 );
-   retro3d_vx( -scale, -scale, -scale, 1, 1 );
-   retro3d_vx( -scale, -scale,  scale, 0, 1 );
+   retro3d_vx( -scale,  scale, -scale, tx_scale, 0 );
+   retro3d_vx( -scale, -scale, -scale, tx_scale, tx_scale );
+   retro3d_vx( -scale, -scale,  scale, 0, tx_scale );
    retro3d_tri_end();
 
    /* FRONT */
    retro3d_tri_begin(
       color_ft, RETRO3D_TRI_FLAG_NORMAL_Z | RETRO3D_TRI_FLAG_NORMAL_NEG );
    /* glColor3fv( color_ft ); */
-   retro3d_vx( -scale, -scale, -scale, 1, 1 );
-   retro3d_vx( -scale,  scale, -scale, 1 ,0 );
+   retro3d_vx( -scale, -scale, -scale, tx_scale, tx_scale );
+   retro3d_vx( -scale,  scale, -scale, tx_scale ,0 );
    retro3d_vx(  scale,  scale, -scale, 0, 0 );
    retro3d_tri_end();
 
    retro3d_tri_begin(
       color_ft, RETRO3D_TRI_FLAG_NORMAL_Z | RETRO3D_TRI_FLAG_NORMAL_NEG );
    retro3d_vx(  scale,  scale, -scale, 0, 0 );
-   retro3d_vx(  scale, -scale, -scale, 0, 1 );
-   retro3d_vx( -scale, -scale, -scale, 1, 1 );
+   retro3d_vx(  scale, -scale, -scale, 0, tx_scale );
+   retro3d_vx( -scale, -scale, -scale, tx_scale, tx_scale );
    retro3d_tri_end();
    
    /* TOP */
@@ -146,6 +147,8 @@ void poly_cube_tex(
    retro3d_vx( -scale, -scale, -scale, 0, 0 );
    retro3d_vx(  scale, -scale, -scale, 0, 0 );
    retro3d_tri_end();
+
+   retro3d_texture_activate( tex, RETRO3D_TEX_FLAG_DEACTIVATE );
 
 #if 0
 #ifndef RETROGLU_NO_TEXTURES
@@ -332,7 +335,7 @@ void poly_water_sheet(
       x_next = 0,
       y = 0,
       y_next = 0;
-   const mfix_t t1 = mfix_from_f( 0.1f );
+   const mfix_t t1 = mfix_from_i( 1 );
 
    /* Flat rectangle of even waves based on sine. */
    for( x = 0 - (width / 2) ; width / 2 > x ; x += x_iter ) {

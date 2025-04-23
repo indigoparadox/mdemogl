@@ -10,6 +10,7 @@ MERROR_RETVAL setup_cube( struct DEMO_CUBE_DATA* data ) {
 
    debug_printf( 1, "initializing fire cube..." );
 
+   maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
    args.proj = RETRO3D_PROJ_FRUSTUM;
    args.rzoom = 0.5f;
    args.near_plane = 0.5f;
@@ -24,6 +25,11 @@ MERROR_RETVAL setup_cube( struct DEMO_CUBE_DATA* data ) {
    data->base.rotate_x = mfix_from_i( 10 );
    data->base.rotate_y = mfix_from_i( 10 );
    data->base.translate_z = mfix_from_f( -5.0f );
+
+   data->tx_scale = mfix_from_i( 1 );
+
+   retval = demo_setup_win( &(data->base) );
+   maug_cleanup_if_not_ok();
 
    /*
    if( DEMO_FLAG_WIRE == (DEMO_FLAG_WIRE & g_demo_flags) ) {
@@ -51,6 +57,28 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
+
+   case RETROFLAT_KEY_UP:
+      data->base.translate_z += mfix_from_i( 1 );
+      break;
+
+   case RETROFLAT_KEY_DOWN:
+      data->base.translate_z -= mfix_from_i( 1 );
+      break;
+
+   case RETROFLAT_KEY_RIGHT:
+      data->tx_scale += 100;
+      debug_printf( 1, "tx_scale: %d", data->tx_scale );
+      break;
+
+   case RETROFLAT_KEY_LEFT:
+      data->tx_scale -= 100;
+      debug_printf( 1, "tx_scale: %d", data->tx_scale );
+      break;
+
+   case RETROFLAT_KEY_SPACE:
+      data->pause = ~data->pause;
+      break;
    }
 
    /* Draw */
@@ -61,24 +89,21 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
    retro3d_scene_translate( 0, 0, data->base.translate_z );
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
 
-   retval = retro3d_texture_activate( &(data->tex_cube), 0 );
-   maug_cleanup_if_not_ok();
-
-   poly_cube(
-      100,
+   poly_cube_tex(
+      &(data->tex_cube), mfix_from_i( 1 ), data->tx_scale,
       RETROFLAT_COLOR_RED, RETROFLAT_COLOR_GREEN, RETROFLAT_COLOR_BLUE,
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_CYAN, RETROFLAT_COLOR_MAGENTA );
 
-   retval = retro3d_texture_activate(
-      &(data->tex_cube), RETRO3D_TEX_FLAG_DEACTIVATE );
-   maug_cleanup_if_not_ok();
-
    demo_draw_fps();
+
+   retrowin_redraw_win_stack( &(data->base.win) );
 
    retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
-   data->base.rotate_y += 5;
+   if( !(data->pause) ) {
+      data->base.rotate_y += mfix_from_i( 5 );
+   }
 
 cleanup:
 

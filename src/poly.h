@@ -3,13 +3,12 @@
 #define POLY_H
 
 void poly_cube(
-   int scale,
+   mfix_t scale,
    RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
    RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
 );
 void poly_cube_tex(
-   retroflat_blit_t* tex,
-   int scale,
+   retroflat_blit_t* tex, mfix_t scale, mfix_t tx_scale,
    RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
    RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
 );

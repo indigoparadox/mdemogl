@@ -86,6 +86,8 @@ struct DEMO_BASE {
 
 struct DEMO_CUBE_DATA {
    struct DEMO_BASE base;
+   int pause;
+   mfix_t tx_scale;
    retroflat_blit_t tex_cube;
 };
 
@@ -155,14 +157,14 @@ void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data );
 MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
 void demo_draw_fps();
 
-/* #ifdef DEMOS_NO_FILES */
+#ifdef DEMOS_NO_FILES
 #  define DEMOS_LIST_EXTRA( f )
-/* #else
+#else
 #  define DEMOS_LIST_EXTRA( f ) \
-      f( obj, struct DEMO_OBJ_DATA ) \
-      f( fp, struct DEMO_FP_DATA ) \
-      f( sprite, struct DEMO_SPRITE_DATA )
-#endif */ /* DEMOS_NO_FILES */
+      f( obj, struct DEMO_OBJ_DATA )
+/*      f( fp, struct DEMO_FP_DATA ) \
+      f( sprite, struct DEMO_SPRITE_DATA ) */
+#endif /* DEMOS_NO_FILES */
 
 #define DEMOS_LIST( f ) \
    f( cube, struct DEMO_CUBE_DATA ) \

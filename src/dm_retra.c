@@ -160,7 +160,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    maug_cleanup_if_not_ok();
 
    poly_cube_tex(
-      data->bmp_fire, 1.0f,
+      data->bmp_fire, mfix_from_i( 1 ),  mfix_from_i( 1 ),
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE,
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
 
