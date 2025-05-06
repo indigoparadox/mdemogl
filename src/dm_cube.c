@@ -105,8 +105,6 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       data->base.rotate_y += mfix_from_i( 5 );
    }
 
-cleanup:
-
    assert( MERROR_OK == retval );
 
    return;

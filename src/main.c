@@ -18,16 +18,19 @@ MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
    union RETROGUI_CTL ctl;
    struct RETROWIN* win = NULL;
 
-   retval = retrowin_push_win(
+   base->demo_win_idx = retrowin_push_win(
       NULL, /* This window should create and manage its own GUI. */
       &(base->win),
       DEMO_IDC_WIN, "unscii-8.hex",
       10, 10,
       DEMO_WIN_W, DEMO_WIN_H, 0 );
-   maug_cleanup_if_not_ok();
+   if( 0 > base->demo_win_idx ) {
+      retval = mdata_retval( base->demo_win_idx );
+      goto cleanup;
+   }
 
    mdata_vector_lock( &(base->win) );
-   win = mdata_vector_get_last( &(base->win), struct RETROWIN );
+   win = mdata_vector_get( &(base->win), base->demo_win_idx, struct RETROWIN );
    assert( NULL != win );
    retrogui_lock( win->gui );
 

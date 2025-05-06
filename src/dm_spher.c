@@ -129,8 +129,6 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
       data->base.translate_y += data->translate_y_inc;
    }
 
-cleanup:
-
    assert( MERROR_OK == retval );
 
    return;

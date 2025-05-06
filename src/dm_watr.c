@@ -1,5 +1,6 @@
 
 #include "demos.h"
+#include "poly.h"
 
 MERROR_RETVAL setup_water( struct DEMO_WATER_DATA* data ) {
    MERROR_RETVAL retval = MERROR_OK;
@@ -20,7 +21,7 @@ MERROR_RETVAL setup_water( struct DEMO_WATER_DATA* data ) {
    /* TODO: Add CLI option to select pattern. */
    data->pattern = 0;
    data->freq_mod = 7.0f;
-   data->amp_mod = 0.1f;
+   data->amp_mod = 0.2f;
    if( 1 == data->pattern ) {
       data->base.translate_y = mfix_from_f( -4.0f );
       data->base.translate_z = mfix_from_f( -4.0f );
@@ -95,6 +96,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       break;
 
    case RETROFLAT_KEY_ESC:
+      debug_printf( 1, "escape pressed!" );
       retroflat_quit( 0 );
       break;
    }
@@ -116,7 +118,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       maug_cleanup_if_not_ok();
 
       poly_water_sheet(
-         &(data->tex_water),
+         &(data->tex_water), mfix_from_f( 0.1f ),
          RETROFLAT_COLOR_WHITE, DEMO_WATER_SHEET_WIDTH, DEMO_WATER_SHEET_DEPTH,
          DEMO_WATER_SHEET_X_ITER,
          data->freq_mod, data->amp_mod, data->peak_offset );
@@ -144,7 +146,7 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
    retro3d_scene_complete();
    retroflat_draw_release( NULL );
 
-   data->peak_offset -= 0.1f;
+   data->peak_offset -= mfix_from_f( 0.1f );
 
 cleanup:
 

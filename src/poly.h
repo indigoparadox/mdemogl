@@ -21,9 +21,9 @@ void poly_water_ring(
    const float ang_iter, const float normal_mod,
    float freq_mod, float amp_mod, float peak_offset );
 void poly_water_sheet(
-   retroflat_blit_t* tex, RETROFLAT_COLOR color,
+   retroflat_blit_t* tex, mfix_t tex_scale, RETROFLAT_COLOR color,
    const mfix_t width, const mfix_t depth, const mfix_t x_iter,
-   float freq_mod, float amp_mod, float peak_offset );
+   float freq_mod, float amp_mod, mfix_t peak_offset );
 void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 );
 void poly_ortho_skybox(
    retroflat_blit_t* tex, RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 );

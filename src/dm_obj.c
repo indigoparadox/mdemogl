@@ -125,8 +125,6 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 
    data->base.rotate_y += mfix_from_i( 5 );
 
-cleanup:
-
    if( retval ) {
       retro3dp_destroy_obj( &(data->obj) );
       retroflat_quit( retval );

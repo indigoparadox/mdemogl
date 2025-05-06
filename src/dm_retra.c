@@ -38,13 +38,13 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    /* assert( NULL != data->bmp_fire->bytes_h ); */
 
    data->idx_fire = retroani_create(
-      &(data->animations[0]), ANIMATIONS_MAX,
+      &(data->animations),
       RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
       0, 0,
       retroflat_2d_bitmap_w( data->bmp_fire ),
       retroflat_2d_bitmap_h( data->bmp_fire ) );
 
-   retroani_set_target( data->animations, data->idx_fire, data->bmp_fire );
+   retroani_set_target( &(data->animations), data->idx_fire, data->bmp_fire );
 
    /* Create the snow animation texture. */
 
@@ -66,13 +66,13 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    retroflat_2d_release_bitmap( data->bmp_snow );
 
    data->idx_snow = retroani_create(
-      &(data->animations[0]), ANIMATIONS_MAX,
+      &(data->animations),
       RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
       0, 0,
       retroflat_2d_bitmap_w( data->bmp_snow ),
       retroflat_2d_bitmap_h( data->bmp_snow ) );
 
-   retroani_set_target( data->animations, data->idx_snow, data->bmp_snow );
+   retroani_set_target( &(data->animations), data->idx_snow, data->bmp_snow );
 
    /* Create the cube. */
 
@@ -108,7 +108,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       break;
 
    case RETROFLAT_KEY_ESC:
-      retroani_stop_all( &(data->animations[0]), ANIMATIONS_MAX );
+      retroani_stop_all( &(data->animations) );
       retroflat_2d_destroy_bitmap( data->bmp_fire );
       free( data->bmp_fire );
       retroflat_2d_destroy_bitmap( data->bmp_snow );
@@ -129,7 +129,7 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
 
    retroflat_2d_lock_bitmap( data->bmp_fire );
    retroflat_2d_lock_bitmap( data->bmp_snow );
-   retroani_frame( &(data->animations[0]), ANIMATIONS_MAX, 0 );
+   retroani_frame( &(data->animations), 0 );
    retroflat_2d_release_bitmap( data->bmp_fire );
    retroflat_2d_release_bitmap( data->bmp_snow );
 

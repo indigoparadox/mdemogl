@@ -327,37 +327,67 @@ void poly_water_ring(
 }
 
 void poly_water_sheet(
-   retroflat_blit_t* tex, RETROFLAT_COLOR color,
+   retroflat_blit_t* tex, mfix_t tex_scale, RETROFLAT_COLOR color,
    const mfix_t width, const mfix_t depth, const mfix_t x_iter,
-   float freq_mod, float amp_mod, float peak_offset
+   float freq_mod, float amp_mod, mfix_t peak_offset
 ) {
    mfix_t x = 0,  
       x_next = 0,
       y = 0,
-      y_next = 0;
-   const mfix_t t1 = mfix_from_i( 1 );
+      y_next = 0,
+      z = 0,
+      z_next = 0,
+      tx = 0,
+      tx_next = 0,
+      tz = 0,
+      tz_next = 0;
+   
+   /* TODO: Add some randon peaks and falls. */
 
    /* Flat rectangle of even waves based on sine. */
    for( x = 0 - (width / 2) ; width / 2 > x ; x += x_iter ) {
+      /* Calculate the wave height for this X (and the next one). */
+      //debug_printf( 1, "x + x_iter: %d + %d = %d", x, x_iter, x + x_iter );
       x_next = x + x_iter;
-      y = (mfix_sin( x + mfix_from_f( peak_offset ) ) *
-         amp_mod ) + mfix_from_f( 1.0f );
-      y_next = (mfix_sin( x_next + mfix_from_f( peak_offset ) ) *
-         amp_mod) + mfix_from_f( 1.0f );
+      debug_printf( 1,
+         "mfix_sin( x + peak_offset ) * amp_mod: mfix_sin( %d + %d ) * %f = %d",
+         x, peak_offset, amp_mod, mfix_sin( x + peak_offset ) );
+      y = (mfix_sin( x + peak_offset ) * amp_mod);
+      y_next = (mfix_sin( x_next + peak_offset ) * amp_mod);
 
-      assert( 0 <= y );
+      /* Grab the next section of texture. */
+      tx += tex_scale;
+      if( tx >= 1000 ) {
+         tx = 0;
+      }
+      tx_next = tx + tex_scale;
+      tx = 0;
 
-      retro3d_tri_begin( color, 0 );
-      retro3d_vx( x,             y, 0 - (depth / 2), t1,  0 ); /* Far Left */
-      retro3d_vx( x,             y,       depth / 2,  0,  0 ); /* Near Left */
-      retro3d_vx( x_next,   y_next,       depth / 2,  0, t1 ); /* Near Right */
-      retro3d_tri_end();
+      for( z = 0 - (depth / 2) ; depth / 2 > z ; z += x_iter ) {
+         /* Calculate the Z depth for this section of the wave. */
+         z_next = z + x_iter;
 
-      retro3d_tri_begin( color, 0 );
-      retro3d_vx( x_next,   y_next,       depth / 2,  0, t1 ); /* Near Right */
-      retro3d_vx( x_next,   y_next, 0 - (depth / 2), t1, t1 ); /* Far Right */
-      retro3d_vx( x,             y, 0 - (depth / 2), t1,  0 ); /* Far Left */
-      retro3d_tri_end();
+         /* Grab the next section of texture. */
+         tz += tex_scale;
+         if( tz >= 1000 ) {
+            tz = 0;
+         }
+         tz_next = tz + tex_scale;
+
+         //assert( 0 <= y );
+
+         retro3d_tri_begin( color, 0 );
+         retro3d_vx( x,            y,      z, tx_next,      tz ); /* F Left */
+         retro3d_vx( x,            y, z_next,      tx,      tz ); /* N Left */
+         retro3d_vx( x_next,  y_next, z_next,      tx, tz_next ); /* N Right */
+         retro3d_tri_end();
+
+         retro3d_tri_begin( color, 0 );
+         retro3d_vx( x_next,  y_next, z_next,      tx, tz_next ); /* N Right */
+         retro3d_vx( x_next,  y_next,      z, tx_next, tz_next ); /* F Right */
+         retro3d_vx( x,            y,      z, tx_next,      tz ); /* F Left */
+         retro3d_tri_end();
+      }
    }
 }
 

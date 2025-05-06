@@ -82,6 +82,7 @@ struct DEMO_BASE {
    mfix_t rotate_z;
    struct RETROGUI gui;
    struct MDATA_VECTOR win;
+   ssize_t demo_win_idx;
 };
 
 struct DEMO_CUBE_DATA {
@@ -134,13 +135,13 @@ struct DEMO_WATER_DATA {
    int pattern;
    float freq_mod;
    float amp_mod;
-   float peak_offset;
+   mfix_t peak_offset;
    retroflat_blit_t tex_water;
 };
 
 struct DEMO_RETROANI_DATA {
    struct DEMO_BASE base;
-   struct RETROANI animations[ANIMATIONS_MAX];
+   struct MDATA_VECTOR animations;
    int8_t idx_fire;
    int8_t idx_snow;
    retroflat_blit_t* bmp_fire;
