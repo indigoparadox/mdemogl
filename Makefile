@@ -3,6 +3,7 @@
 
 OPENGL := 1
 #SMALL3DL := 1
+#DIRECT3D := 1
 C_FILES := src/main.c src/demos.c src/poly.c src/dm_cube.c src/dm_obj.c src/dm_watr.c src/dm_retra.c src/dm_spher.c
 
 LIBS_GCC += -lm
@@ -18,6 +19,7 @@ GLOBAL_DEFINES += -DRETROFLAT_NO_STRING
 #GLOBAL_DEFINES += -DRETRO3DP_TRACE_LVL=1
 #GLOBAL_DEFINES += -DRETRO3D_TRACE_LVL=1
 GLOBAL_DEFINES += -DMDEMO_COMMIT_HASH="\"$(shell git rev-parse HEAD)\""
+#GLOBAL_DEFINES += -DMFIX_DEBUG
 
 include maug/Makefile.inc
 

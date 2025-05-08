@@ -3,9 +3,6 @@
 #include <stdlib.h>
 
 #define MAUG_C
-#include <maug.h>
-#include <retroflt.h>
-#include <retroani.h>
 
 #include "demos.h"
 
