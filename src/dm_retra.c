@@ -15,7 +15,7 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    data->bmp_fire = calloc( 1, sizeof( retroflat_blit_t ) );
    assert( NULL != data->bmp_fire );
    retval = retroflat_2d_create_bitmap(
-      RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_fire, 0 );
+      RETROFLAT_TILE_W, RETROFLAT_TILE_H, data->bmp_fire, 0 );
    maug_cleanup_if_not_ok();
 
    /*
@@ -31,7 +31,7 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
 
    retroflat_2d_rect(
       data->bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
-      RETROANI_TILE_W, RETROANI_TILE_H,
+      RETROFLAT_TILE_W, RETROFLAT_TILE_H,
       RETROFLAT_FLAGS_FILL );
    retroflat_2d_release_bitmap( data->bmp_fire );
 
@@ -53,7 +53,7 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    data->bmp_snow = calloc( 1, sizeof( retroflat_blit_t ) );
    assert( NULL != data->bmp_snow );
    retval = retroflat_2d_create_bitmap(
-      RETROANI_TILE_W, RETROANI_TILE_H, data->bmp_snow, 0 );
+      RETROFLAT_TILE_W, RETROFLAT_TILE_H, data->bmp_snow, 0 );
    maug_cleanup_if_not_ok();
 
    retval = retroflat_2d_lock_bitmap( data->bmp_snow );
@@ -61,7 +61,7 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
 
    retrosoft_rect(
       data->bmp_snow, RETROFLAT_COLOR_BLACK, 0, 0,
-      RETROANI_TILE_W, RETROANI_TILE_H,
+      RETROFLAT_TILE_W, RETROFLAT_TILE_H,
       RETROFLAT_FLAGS_FILL );
    retroflat_2d_release_bitmap( data->bmp_snow );
 
