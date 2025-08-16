@@ -20,43 +20,9 @@ void poly_cube_tex(
    RETROFLAT_COLOR color_bk, RETROFLAT_COLOR color_ft, RETROFLAT_COLOR color_rt,
    RETROFLAT_COLOR color_lt, RETROFLAT_COLOR color_tp, RETROFLAT_COLOR color_bt
 ) {
-#ifndef RETROGLU_NO_TEXTURES
-   /* GLenum error = GL_NO_ERROR; */
-#endif /* !RETROGLU_NO_TEXTURES */
-
-   /* Note that the normals begin in the middle of the face and line
-      * up with the face with the most similar vertexes.
-      */
-
-   /*
-   error = glGetError();
-   assert( GL_NO_ERROR == error );
-   */
-
-#if 0
-   glPushMatrix();
-
-#ifndef RETROGLU_NO_TEXTURES
    if( NULL != tex ) {
-      maug_mlock( tex->tex.bytes_h, tex->tex.bytes );
-      assert( NULL != tex->tex.bytes );
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
-         RETROANI_TILE_W, RETROANI_TILE_H, 0,
-         GL_RGBA, GL_UNSIGNED_BYTE,
-         tex->tex.bytes ); 
-#if 0
-      glBindTexture( GL_TEXTURE_2D, tex->tex.id );
-#endif
-      error = glGetError();
-      assert( GL_NO_ERROR == error );
-      glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-      glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+      retro3d_texture_activate( tex, 0 );
    }
-#endif /* !RETROGLU_NO_TEXTURES */
-#endif
-
-   retro3d_texture_activate( tex, 0 );
 
    /* BACK */
    retro3d_tri_begin( color_bk, RETRO3D_TRI_FLAG_NORMAL_Z );
@@ -148,24 +114,10 @@ void poly_cube_tex(
    retro3d_vx(  scale, -scale, -scale, 0, 0 );
    retro3d_tri_end();
 
-   retro3d_texture_activate( tex, RETRO3D_TEX_FLAG_DEACTIVATE );
-
-#if 0
-#ifndef RETROGLU_NO_TEXTURES
    if( NULL != tex ) {
-#if 0
-      glBindTexture( GL_TEXTURE_2D, 0 );
-#endif
-      glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA,
-         0, 0, 0,
-         GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-
-      maug_munlock( tex->tex.bytes_h, tex->tex.bytes );
+      retro3d_texture_activate( tex, RETRO3D_TEX_FLAG_DEACTIVATE );
    }
-#endif /* !RETROGLU_NO_TEXTURES */
 
-   glPopMatrix();
-#endif
 }
 
 /* === */
@@ -491,70 +443,78 @@ void poly_ortho_skybox(
     * ortho rendering.
     */
 
+   if( NULL != tex ) {
+      retro3d_texture_activate( tex, 0 );
+   }
+
    /* Back Face */
    retro3d_tri_begin( color1, 0 );
-   retro3d_vx(  w,  h, -d, 0, 0 );
+   retro3d_vx(  w,  h, -d, w, 0 );
    retro3d_vx( -w,  h, -d, 0, 0 );
-   retro3d_vx( -w, -h, -d, 0, 0 );
+   retro3d_vx( -w, -h, -d, 0, h );
    retro3d_tri_end();
 
    retro3d_tri_begin( color1, 0 );
-   retro3d_vx( -w, -h, -d, 0, 0 );
-   retro3d_vx(  w, -h, -d, 0, 0 );
-   retro3d_vx(  w,  h, -d, 0, 0 );
+   retro3d_vx( -w, -h, -d, 0, h );
+   retro3d_vx(  w, -h, -d, w, h );
+   retro3d_vx(  w,  h, -d, w, 0 );
    retro3d_tri_end();
 
    /* Bottom Face */
    retro3d_tri_begin( color1, 0 );
-   retro3d_vx(      w,     -h, -d, 0, 0 );
+   retro3d_vx(      w,     -h, -d, 0, h );
    retro3d_vx(     -w,     -h, -d, 0, 0 );
-   retro3d_vx( 2 * -w, 2 * -h, d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 * -h, d, d, 0 );
    retro3d_tri_end();
 
    retro3d_tri_begin( color1, 0 );
-   retro3d_vx( 2 * -w, 2 * -h, d, 0, 0 );
-   retro3d_vx( 2 *  w, 2 * -h, d, 0, 0 );
-   retro3d_vx(      w,     -h, d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 * -h,  d, d, 0 );
+   retro3d_vx( 2 *  w, 2 * -h,  d, d, h );
+   retro3d_vx(      w,     -h, -d, 0, h );
    retro3d_tri_end();
 
    /* Right Face */
    retro3d_tri_begin( color1, 0 );
-   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
-   retro3d_vx(      w,      h, -d, 0, 0 );
-   retro3d_vx(      w,     -h, -d, 0, 0 );
+   retro3d_vx( 2 *  w, 2 *  h,  d, d, 0 );
+   retro3d_vx(      w,      h, -d, 0, 0 ); 
+   retro3d_vx(      w,     -h, -d, 0, h );
    retro3d_tri_end();
 
    retro3d_tri_begin( color1, 0 );
-   retro3d_vx(      w,     -h, -d, 0, 0 );
-   retro3d_vx( 2 *  w, 2 * -h,  d, 0, 0 );
-   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
+   retro3d_vx(      w,     -h, -d, 0, h );
+   retro3d_vx( 2 *  w, 2 * -h,  d, d, h );
+   retro3d_vx( 2 *  w, 2 *  h,  d, d, 0 );
    retro3d_tri_end();
 
    /* Top Face */
    retro3d_tri_begin( color2, 0 );
-   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
+   retro3d_vx( 2 *  w, 2 *  h,  d, 0, h );
    retro3d_vx( 2 * -w, 2 *  h,  d, 0, 0 );
-   retro3d_vx(     -w,      h, -d, 0, 0 );
+   retro3d_vx(     -w,      h, -d, d, 0 );
    retro3d_tri_end();
 
    retro3d_tri_begin( color2, 0 );
-   retro3d_vx(     -w,      h, -d, 0, 0 );
-   retro3d_vx(      w,      h, -d, 0, 0 );
-   retro3d_vx( 2 *  w, 2 *  h,  d, 0, 0 );
+   retro3d_vx(     -w,      h, -d, d, 0 );
+   retro3d_vx(      w,      h, -d, d, h );
+   retro3d_vx( 2 *  w, 2 *  h,  d, 0, h );
    retro3d_tri_end();
 
    /* Left Face */
    retro3d_tri_begin( color2, 0 );
-   retro3d_vx(     -w,      h, -d, 0, 0 );
+   retro3d_vx(     -w,      h, -d, d, 0 );
    retro3d_vx( 2 * -w, 2 *  h,  d, 0, 0 );
-   retro3d_vx( 2 * -w, 2 * -h,  d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 * -h,  d, 0, h );
    retro3d_tri_end();
 
    retro3d_tri_begin( color2, 0 );
-   retro3d_vx( 2 * -w, 2 * -h,  d, 0, 0 );
-   retro3d_vx(     -w,     -h, -d, 0, 0 );
-   retro3d_vx(     -w,      h, -d, 0, 0 );
+   retro3d_vx( 2 * -w, 2 * -h,  d, 0, h );
+   retro3d_vx(     -w,     -h, -d, d, h );
+   retro3d_vx(     -w,      h, -d, d, 0 );
    retro3d_tri_end();
+
+   if( NULL != tex ) {
+      retro3d_texture_activate( tex, RETRO3D_TEX_FLAG_DEACTIVATE );
+   }
 
 }
 

@@ -6,11 +6,9 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    MERROR_RETVAL retval = MERROR_OK;
    struct RETRO3D_PROJ_ARGS args;
 
-   /* Create the fire animation texture. */
+   /* Create the fire cube. */
 
    debug_printf( 1, "initializing fire cube..." );
-
-   data->base.translate_z = mfix_from_f( -5.0f );
 
    data->bmp_fire = calloc( 1, sizeof( retroflat_blit_t ) );
    assert( NULL != data->bmp_fire );
@@ -18,16 +16,8 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
       RETROFLAT_TILE_W, RETROFLAT_TILE_H, data->bmp_fire, 0 );
    maug_cleanup_if_not_ok();
 
-   /*
-   assert( RETROANI_TILE_W == retro3d_texture_w( data->bmp_fire ) );
-   assert( RETROANI_TILE_H == retro3d_texture_h( data->bmp_fire ) );
-   assert( NULL != data->bmp_fire->bytes_h );
-   */
-
    retval = retroflat_2d_lock_bitmap( data->bmp_fire );
    maug_cleanup_if_not_ok();
-
-   /* assert( NULL != data->bmp_fire->bytes ); */
 
    retroflat_2d_rect(
       data->bmp_fire, RETROFLAT_COLOR_BLACK, 0, 0,
@@ -35,18 +25,22 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
       RETROFLAT_FLAGS_FILL );
    retroflat_2d_release_bitmap( data->bmp_fire );
 
-   /* assert( NULL != data->bmp_fire->bytes_h ); */
-
+   /* Create the fire animation texture. */
    data->idx_fire = retroani_create(
       &(data->animations),
       RETROANI_TYPE_FIRE, RETROANI_FLAG_CLEANUP,
       0, 0,
       retroflat_2d_bitmap_w( data->bmp_fire ),
       retroflat_2d_bitmap_h( data->bmp_fire ) );
+   if( 0 > data->idx_snow ) {
+      error_printf( "invalid fire animation index!" );
+   } else {
+      debug_printf( 3, "fire animation index: " SSIZE_T_FMT, data->idx_fire );
+   }
 
    retroani_set_target( &(data->animations), data->idx_fire, data->bmp_fire );
 
-   /* Create the snow animation texture. */
+   /* Create the snow cube. */
 
    debug_printf( 1, "initializing snow cube..." );
 
@@ -65,18 +59,22 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
       RETROFLAT_FLAGS_FILL );
    retroflat_2d_release_bitmap( data->bmp_snow );
 
+   /* Create the snow animation texture. */
    data->idx_snow = retroani_create(
       &(data->animations),
       RETROANI_TYPE_SNOW, RETROANI_FLAG_CLEANUP,
       0, 0,
       retroflat_2d_bitmap_w( data->bmp_snow ),
       retroflat_2d_bitmap_h( data->bmp_snow ) );
+   if( 0 > data->idx_snow ) {
+      error_printf( "invalid snow animation index!" );
+   } else {
+      debug_printf( 3, "snow animation index: " SSIZE_T_FMT, data->idx_snow );
+   }
 
    retroani_set_target( &(data->animations), data->idx_snow, data->bmp_snow );
 
-   /* Create the cube. */
-
-   /* assert( NULL != data->bmp_fire->bytes_h ); */
+   /* Setup projection. */
 
    maug_mzero( &args, sizeof( struct RETRO3D_PROJ_ARGS ) );
    args.proj = RETRO3D_PROJ_FRUSTUM;
@@ -85,6 +83,7 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    args.far_plane = 100.0f;
    retro3d_init_projection( &args );
 
+   data->base.translate_z = mfix_from_f( -8.0f );
    data->base.rotate_x = mfix_from_i( 10 );
    data->base.rotate_y = mfix_from_i( 10 );
 
@@ -133,39 +132,26 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
    retroflat_2d_release_bitmap( data->bmp_fire );
    retroflat_2d_release_bitmap( data->bmp_snow );
 
-   /* assert( NULL != data->bmp_fire->bytes_h ); */
-
    retroflat_draw_lock( NULL );
    retro3d_scene_init();
 
-   retro3d_scene_translate( 0, 0, data->base.translate_z );
-   retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
-
-   /*
-   retval = retro3d_texture_activate( &(data->tex_cube), 0 );
-   maug_cleanup_if_not_ok();
+   /* Draw the skybox. */
+   /* The skybox has an open face towards the camera, so we're not rotating it.
+    */
 
    poly_ortho_skybox(
       data->bmp_snow, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
 
-   retval = retro3d_texture_activate(
-      &(data->tex_cube), RETRO3D_TEX_FLAG_DEACTIVATE );
-   maug_cleanup_if_not_ok();
-   */
+   /* Draw the cube. */
 
+   /* Rotate the cube! */
    retro3d_scene_translate( 0, 0, data->base.translate_z );
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
-
-   retval = retro3d_texture_activate( data->bmp_fire, 0 );
-   maug_cleanup_if_not_ok();
 
    poly_cube_tex(
       data->bmp_fire, mfix_from_i( 1 ),  mfix_from_i( 1 ),
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE,
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
-
-   retval = retro3d_texture_activate(
-      data->bmp_fire, RETRO3D_TEX_FLAG_DEACTIVATE );
    maug_cleanup_if_not_ok();
 
    demo_draw_fps();

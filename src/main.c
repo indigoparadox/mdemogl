@@ -29,7 +29,7 @@ MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
    mdata_vector_lock( &(base->win) );
    win = mdata_vector_get( &(base->win), base->demo_win_idx, struct RETROWIN );
    assert( NULL != win );
-   retrogui_lock( win->gui );
+   retrowin_lock_gui( win );
 
       retrogui_init_ctl( &ctl, RETROGUI_CTL_TYPE_LABEL, DEMO_IDC_TITLE_1 );
 
@@ -41,10 +41,10 @@ MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
       ctl.BUTTON.label = "commit " MDEMO_COMMIT_HASH;
       ctl.BUTTON.label_sz = 12; /* "commit " + 5 chars */
 
-      retval = retrogui_push_ctl( win->gui, &ctl );
+      retval = retrogui_push_ctl( win->gui_p, &ctl );
       maug_cleanup_if_not_ok();
 
-   retrogui_unlock( win->gui );
+   retrowin_unlock_gui( win );
    mdata_vector_unlock( &(base->win) );
 
 cleanup:
