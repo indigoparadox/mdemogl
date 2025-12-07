@@ -28,7 +28,7 @@ MERROR_RETVAL setup_cube( struct DEMO_CUBE_DATA* data ) {
 
    data->tx_scale = mfix_from_i( 1 );
 
-   retval = demo_setup_win( &(data->base) );
+   retval = demo_setup_win( &(data->base), RETROFLAT_COLOR_DARKBLUE );
    maug_cleanup_if_not_ok();
 
    /*
@@ -94,7 +94,7 @@ void draw_cube_iter( struct DEMO_CUBE_DATA* data ) {
       RETROFLAT_COLOR_RED, RETROFLAT_COLOR_GREEN, RETROFLAT_COLOR_BLUE,
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_CYAN, RETROFLAT_COLOR_MAGENTA );
 
-   demo_draw_fps();
+   demo_draw_fps( &(data->base) );
 
    retrowin_redraw_win_stack( &(data->base.win) );
 

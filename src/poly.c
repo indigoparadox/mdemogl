@@ -26,7 +26,6 @@ void poly_cube_tex(
 
    /* BACK */
    retro3d_tri_begin( color_bk, RETRO3D_TRI_FLAG_NORMAL_Z );
-   /* glColor3fv( color_bk ); */
    retro3d_vx(   scale,  scale, scale, 0, 0 );
    retro3d_vx(  -scale,  scale, scale, tx_scale, 0 );
    retro3d_vx(   scale, -scale, scale, 0, tx_scale );
@@ -40,7 +39,6 @@ void poly_cube_tex(
    
    /* RIGHT */
    retro3d_tri_begin( color_rt, RETRO3D_TRI_FLAG_NORMAL_X );
-   /* glColor3fv( color_rt ); */
    retro3d_vx(   scale, -scale, -scale, tx_scale, tx_scale );
    retro3d_vx(   scale,  scale, -scale, tx_scale, 0 );
    retro3d_vx(   scale,  scale,  scale, 0, 0 );
@@ -55,7 +53,6 @@ void poly_cube_tex(
    /* LEFT */
    retro3d_tri_begin(
       color_lt, RETRO3D_TRI_FLAG_NORMAL_X | RETRO3D_TRI_FLAG_NORMAL_NEG );
-   /* glColor3fv( color_lt ); */
    retro3d_vx( -scale, -scale,  scale, 0, tx_scale );
    retro3d_vx( -scale,  scale,  scale, 0, 0 );
    retro3d_vx( -scale,  scale, -scale, tx_scale, 0 );
@@ -71,7 +68,6 @@ void poly_cube_tex(
    /* FRONT */
    retro3d_tri_begin(
       color_ft, RETRO3D_TRI_FLAG_NORMAL_Z | RETRO3D_TRI_FLAG_NORMAL_NEG );
-   /* glColor3fv( color_ft ); */
    retro3d_vx( -scale, -scale, -scale, tx_scale, tx_scale );
    retro3d_vx( -scale,  scale, -scale, tx_scale ,0 );
    retro3d_vx(  scale,  scale, -scale, 0, 0 );
@@ -86,7 +82,6 @@ void poly_cube_tex(
    
    /* TOP */
    retro3d_tri_begin( color_tp, RETRO3D_TRI_FLAG_NORMAL_Y );
-   /* glColor3fv( color_tp ); */
    retro3d_vx(  scale,  scale,  scale, 0, 0 );
    retro3d_vx(  scale,  scale, -scale, 0, 0 );
    retro3d_vx( -scale,  scale, -scale, 0, 0 );
@@ -101,7 +96,6 @@ void poly_cube_tex(
    /* BOTTOM */
    retro3d_tri_begin(
       color_bt, RETRO3D_TRI_FLAG_NORMAL_Y | RETRO3D_TRI_FLAG_NORMAL_NEG );
-   /* glColor3fv( color_bt ); */
    retro3d_vx(  scale, -scale, -scale, 0, 0 );
    retro3d_vx(  scale, -scale,  scale, 0, 0 );
    retro3d_vx( -scale, -scale,  scale, 0, 0 );
@@ -364,27 +358,9 @@ void poly_sphere_checker( RETROFLAT_COLOR color1, RETROFLAT_COLOR color2 ) {
             retro3d_tri_begin( color2, 0 );
          }
 
-         /* Setup a normal for each face (2 triangles). */
-         /* We're just copying the first vertex here... that should make
-            * each face reflect in its own direction, which is what we want
-            * for this demo.
-            */
-         /*
-         glNormal3f( 
-            sin( ang_xy ) * cos( ang_xz ),
-            cos( ang_xy ),
-            sin( ang_xy ) * sin( ang_xz ) );
-         */
-
-         /* Quad panels at equal intervals around two circles intersecting
-            * on orthogonal planes.
-            */
-
          /* Each checkerboard square is 2 triangles: */
 
          /* Triangle 1 */
-         /* TODO: Port retrofp. */
-
          retro3d_vx(
             mfix_mult( mfix_sin( ang_xy ), mfix_cos( ang_xz ) ),
             mfix_cos( ang_xy ),

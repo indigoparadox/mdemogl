@@ -38,6 +38,9 @@ MERROR_RETVAL setup_water( struct DEMO_WATER_DATA* data ) {
    }
    */
 
+   retval = demo_setup_win( &(data->base), RETROFLAT_COLOR_DARKBLUE );
+   maug_cleanup_if_not_ok();
+
 cleanup:
 
    return retval;
@@ -141,7 +144,9 @@ void draw_water_iter( struct DEMO_WATER_DATA* data ) {
       */
    }
 
-   demo_draw_fps();
+   demo_draw_fps( &(data->base) );
+
+   retrowin_redraw_win_stack( &(data->base.win) );
 
    retro3d_scene_complete();
    retroflat_draw_release( NULL );

@@ -6,6 +6,9 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    MERROR_RETVAL retval = MERROR_OK;
    struct RETRO3D_PROJ_ARGS args;
 
+   retval = demo_setup_win( &(data->base), RETROFLAT_COLOR_WHITE );
+   maug_cleanup_if_not_ok();
+
    /* Create the fire cube. */
 
    debug_printf( 1, "initializing fire cube..." );
@@ -13,7 +16,8 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    data->bmp_fire = calloc( 1, sizeof( retroflat_blit_t ) );
    assert( NULL != data->bmp_fire );
    retval = retroflat_2d_create_bitmap(
-      RETROFLAT_TILE_W, RETROFLAT_TILE_H, data->bmp_fire, 0 );
+      RETROFLAT_TILE_W, RETROFLAT_TILE_H, data->bmp_fire,
+      RETROFLAT_FLAGS_OPAQUE );
    maug_cleanup_if_not_ok();
 
    retval = retroflat_2d_lock_bitmap( data->bmp_fire );
@@ -47,7 +51,8 @@ MERROR_RETVAL setup_retroani( struct DEMO_RETROANI_DATA* data ) {
    data->bmp_snow = calloc( 1, sizeof( retroflat_blit_t ) );
    assert( NULL != data->bmp_snow );
    retval = retroflat_2d_create_bitmap(
-      RETROFLAT_TILE_W, RETROFLAT_TILE_H, data->bmp_snow, 0 );
+      RETROFLAT_TILE_W, RETROFLAT_TILE_H, data->bmp_snow,
+      RETROFLAT_FLAGS_OPAQUE );
    maug_cleanup_if_not_ok();
 
    retval = retroflat_2d_lock_bitmap( data->bmp_snow );
@@ -154,7 +159,9 @@ void draw_retroani_iter( struct DEMO_RETROANI_DATA* data ) {
       RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE, RETROFLAT_COLOR_WHITE );
    maug_cleanup_if_not_ok();
 
-   demo_draw_fps();
+   demo_draw_fps( &(data->base) );
+
+   retrowin_redraw_win_stack( &(data->base.win) );
 
    retro3d_scene_complete();
    retroflat_draw_release( NULL );

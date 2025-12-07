@@ -9,17 +9,17 @@
 #include <retroani.h>
 #include <retrogui.h>
 #include <retrowin.h>
-#include <retroglu.h>
 #ifdef RETROFLAT_OPENGL
 #include <GL/gl.h>
 #endif /* RETROFLAT_OPENGL */
 
-#define DEMO_WIN_W 140
-#define DEMO_WIN_H 40
+#define DEMO_WIN_W 120
+#define DEMO_WIN_H 120
 
 #define DEMO_IDC_WIN 100
 
 #define DEMO_IDC_TITLE_1 101
+#define DEMO_IDC_FPS 102
 
 #define DEMO_TEX_WATER "light_water"
 #define DEMO_TEX_TILE "tile_1"
@@ -109,11 +109,12 @@ struct DEMO_OBJ_DATA {
 
 struct DEMO_SPRITE_DATA {
    struct DEMO_BASE base;
+   /* TODO: Update for new 3D API.
    struct RETROGLU_SPRITE sprite;
    struct RETROGLU_TILE tiles[DEMO_MAP_TILES_SZ_MAX];
    uint8_t map[DEMO_MAP_H][DEMO_MAP_W];
    int tex_countdown;
-   int tex_frame_idx;
+   int tex_frame_idx; */
 };
 
 struct DEMO_FP_DATA;
@@ -156,7 +157,7 @@ int demo_load_obj(
    struct DEMO_OBJ_DATA* data );
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data );
 MERROR_RETVAL demo_load_sprite( const char* filename, struct RETROGLU_SPRITE* sprite );
-void demo_draw_fps();
+MERROR_RETVAL demo_draw_fps( struct DEMO_BASE* base );
 
 #ifdef DEMOS_NO_FILES
 #  define DEMOS_LIST_EXTRA( f )
@@ -184,7 +185,7 @@ DEMOS_LIST( DEMOS_LIST_ITER_PROTOS )
 
 DEMOS_LIST( DEMOS_LIST_SETUP_PROTOS )
 
-MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base );
+MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base, RETROFLAT_COLOR color );
 
 #ifdef DEMOS_C
 

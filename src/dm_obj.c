@@ -36,6 +36,9 @@ MERROR_RETVAL setup_obj( struct DEMO_OBJ_DATA* data ) {
    }
    */
 
+   retval = demo_setup_win( &(data->base), RETROFLAT_COLOR_WHITE );
+   maug_cleanup_if_not_ok();
+
 cleanup:
 
    return retval;
@@ -118,7 +121,9 @@ void draw_obj_iter( struct DEMO_OBJ_DATA* data ) {
 
    retro3d_draw_model( &(data->obj) );
 
-   demo_draw_fps();
+   demo_draw_fps( &(data->base) );
+
+   retrowin_redraw_win_stack( &(data->base.win) );
 
    retro3d_scene_complete();
    retroflat_draw_release( NULL );

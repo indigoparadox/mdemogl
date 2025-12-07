@@ -11,25 +11,15 @@ int32_t g_frames_per_sec = 0;
 int32_t g_frames_since_last = 0;
 uint32_t g_last_frame_ms = 0;
 
-void demo_draw_fps() {
-#if 0
-   float aspect_ratio = 0;
-   char overlay_str[DEMOS_OVERLAY_SZ_MAX + 1];
+MERROR_RETVAL demo_draw_fps( struct DEMO_BASE* base ) {
+   struct RETROWIN* win = NULL;
+   MERROR_RETVAL retval = MERROR_OK;
    uint32_t now_ms = 0;
 
-   /* Switch to projection setup. */
-   glMatrixMode( GL_PROJECTION );
-   glPushMatrix();
-
-#ifndef RETROGLU_NO_LIGHTING
-   /* Lighting makes overlay text hard to see. */
-   glDisable( GL_LIGHTING );
-#endif /* !RETROGLU_NO_LIGHTING */
-
-   /* Use ortho for overlay. */
-   glLoadIdentity();
-   aspect_ratio = (float)retroflat_screen_w() / (float)retroflat_screen_h();
-   glOrtho( -1.0f * aspect_ratio, aspect_ratio, -1.0f, 1.0f, 0, 10.0f );
+   mdata_vector_lock( &(base->win) );
+   win = mdata_vector_get( &(base->win), base->demo_win_idx, struct RETROWIN );
+   assert( NULL != win );
+   retrowin_lock_gui( win );
 
    /* Generate FPS string. */
    now_ms = retroflat_get_ms();
@@ -40,20 +30,15 @@ void demo_draw_fps() {
       g_frames_per_sec = g_frames_since_last;
       g_frames_since_last = 0;
    }
-   memset( overlay_str, '\0', DEMOS_OVERLAY_SZ_MAX + 1 );
-   maug_snprintf( overlay_str, DEMOS_OVERLAY_SZ_MAX,
-      "FPS: %d", g_frames_per_sec );
-   /* TODO: Display FPS using new font system. */
-   /*
-   retroglu_string(
-      -1.0 * aspect_ratio, -1.0, 0, RETROGLU_COLOR_WHITE,
-      overlay_str, DEMOS_OVERLAY_SZ_MAX, "", 0 );
-   */
-   
-   /* Restore modelview. */
-   glPopMatrix();
-   glMatrixMode( GL_MODELVIEW );
-#endif
+   retrogui_set_ctl_text(
+      win->gui_p, DEMO_IDC_FPS, 12, U32_FMT " FPS", g_frames_per_sec );
+
+cleanup:
+
+   retrowin_unlock_gui( win );
+   mdata_vector_unlock( &(base->win) );
+
+   return retval;
 }
 
 void demo_dump_obj( const char* filename, struct DEMO_OBJ_DATA* data ) {

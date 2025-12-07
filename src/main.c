@@ -10,7 +10,7 @@ retroflat_loop_iter g_loop = NULL;
 demo_setup g_setup = NULL;
 void* g_data = NULL;
 
-MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
+MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base, RETROFLAT_COLOR fg ) {
    MERROR_RETVAL retval = MERROR_OK;
    union RETROGUI_CTL ctl;
    struct RETROWIN* win = NULL;
@@ -37,9 +37,22 @@ MERROR_RETVAL demo_setup_win( struct DEMO_BASE* base ) {
       ctl.base.y = 10;
       ctl.base.w = 100;
       ctl.base.h = 20;
-      ctl.base.fg_color = RETROFLAT_COLOR_BLACK;
+      ctl.base.fg_color = fg;
       ctl.BUTTON.label = "commit " MDEMO_COMMIT_HASH;
       ctl.BUTTON.label_sz = 12; /* "commit " + 5 chars */
+
+      retval = retrogui_push_ctl( win->gui_p, &ctl );
+      maug_cleanup_if_not_ok();
+
+      retrogui_init_ctl( &ctl, RETROGUI_CTL_TYPE_LABEL, DEMO_IDC_FPS );
+
+      ctl.base.x = 10;
+      ctl.base.y = 20;
+      ctl.base.w = 100;
+      ctl.base.h = 20;
+      ctl.base.fg_color = fg;
+      ctl.BUTTON.label = "xxxxx FPS";
+      ctl.BUTTON.label_sz = strlen( ctl.BUTTON.label );
 
       retval = retrogui_push_ctl( win->gui_p, &ctl );
       maug_cleanup_if_not_ok();

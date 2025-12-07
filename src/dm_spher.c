@@ -25,7 +25,7 @@ MERROR_RETVAL setup_sphere( struct DEMO_SPHERE_DATA* data ) {
 
    data->base.translate_z = mfix_from_f( -5.0f );
 
-   retval = demo_setup_win( &(data->base) );
+   retval = demo_setup_win( &(data->base), RETROFLAT_COLOR_DARKBLUE );
    maug_cleanup_if_not_ok();
 
    /*
@@ -100,7 +100,7 @@ void draw_sphere_iter( struct DEMO_SPHERE_DATA* data ) {
    retro3d_scene_rotate( data->base.rotate_x, data->base.rotate_y, 0 );
    poly_sphere_checker( RETROFLAT_COLOR_RED, RETROFLAT_COLOR_WHITE );
 
-   demo_draw_fps();
+   demo_draw_fps( &(data->base) );
 
    retrowin_redraw_win_stack( &(data->base.win) );
 
