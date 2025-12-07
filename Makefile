@@ -28,7 +28,7 @@ include maug/Makefile.inc
 # Target-specific options.
 .PHONY: clean
 
-all: mdemogl.$(shell uname -m).sdl mdemoglnt.exe mdemoglnts.exe mdemogl64.exe mdemoglntgl.exe
+all: mdemogl.$(MAUG_UNIX).sdl mdemoglnt.exe mdemoglnts.exe mdemogl64.exe mdemoglntgl.exe
 
 $(eval $(call TGTNDSLIBN,mdemogl,mdemogl.bmp))
 
